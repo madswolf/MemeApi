@@ -1,11 +1,11 @@
+using MemeApi.Models;
+using MemeApi.Models.Context;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
-using Microsoft.EntityFrameworkCore;
-using MemeApi.Models;
 
 namespace MemeApi
 {
@@ -23,10 +23,13 @@ namespace MemeApi
         {
 
             services.AddControllers();
-            services.AddDbContext<UserContext>(opt =>
+            services.AddDbContext<MemeContext>(opt =>
             {
-                opt.UseInMemoryDatabase("UserList");
+                opt.UseInMemoryDatabase("MemeList");
             });
+            services.AddControllers().AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            );
             //services.AddSwaggerGen(c =>
             //{
             //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "MemeApi", Version = "v1" });
