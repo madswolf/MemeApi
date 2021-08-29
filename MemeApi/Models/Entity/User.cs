@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MemeApi.Models
 {
@@ -11,8 +9,12 @@ namespace MemeApi.Models
         public string Username { get; set; }
         public string Email { get; set; }
         public string ProfilePicFile { get; set; }
-        public string passwordHash { get; set; }
+        public string PasswordHash { get; set; }
+        public string Salt { get; set; }
+        public string Role { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+
+        public List<Vote> Votes { get; set; }
     }
 }
