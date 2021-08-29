@@ -1,11 +1,11 @@
-﻿using System;
+﻿using MemeApi.Models;
+using MemeApi.Models.Context;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MemeApi.Models;
 
 namespace MemeApi.Controllers
 {
@@ -13,9 +13,9 @@ namespace MemeApi.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly UserContext _context;
+        private readonly MemeContext _context;
 
-        public UsersController(UserContext context)
+        public UsersController(MemeContext context)
         {
             _context = context;
         }
@@ -75,14 +75,13 @@ namespace MemeApi.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(UserDTO userDTO)
+        public async Task<ActionResult<User>> PostUser(UserCreationDTO userDTO)
         {
             var user = new User
             {
                 Username = userDTO.Username,
                 Email = userDTO.Email,
-                ProfilePicFile = userDTO.ProfilePicFile,
-                passwordHash = userDTO.password,    
+                PasswordHash = userDTO.password, // TODO: hash with salt    
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
