@@ -3,7 +3,7 @@ name: .NET
 defaults:
   run:
     shell: bash
-    working-directory: scripts
+    working-directory: MemeApi
 
 on:
   push:
