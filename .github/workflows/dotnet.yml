@@ -1,5 +1,10 @@
 name: .NET
 
+defaults:
+  run:
+    shell: bash
+    working-directory: scripts
+
 on:
   push:
     branches: [ main ]
