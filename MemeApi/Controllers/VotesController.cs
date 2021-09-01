@@ -77,10 +77,6 @@ namespace MemeApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Vote>> PostVote(VoteDTO voteDTO)
         {
-
-            var votables = _context.Votables;
-            var Users = _context.Users;
-
             var user = await _context.Votables.FindAsync(voteDTO.ElementID);
             var element = await _context.Users.FindAsync(voteDTO.UserID);
 

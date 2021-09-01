@@ -41,7 +41,7 @@ namespace MemeApi.Controllers
                 .Include(m => m.MemeVisual)
                 .Include(m => m.MemeSound)
                 .Include(m => m.MemeTopText)
-                .Include(m => m.MemeBottomtext) 
+                .Include(m => m.MemeBottomtext)
                 .Where(m => m.Id == id)
                 .First();
 
@@ -89,12 +89,7 @@ namespace MemeApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Meme>> PostMeme(MemeCreationDTO memeDTO)
         {
-            if(memeDTO.VisualFile == null)
-            {
-                return BadRequest();
-            }
-
-            var memeVisual = new MemeVisual{ Filename = memeDTO.VisualFile };
+            var memeVisual = new MemeVisual { Filename = memeDTO.VisualFile };
 
             _context.Visuals.Add(memeVisual);
 

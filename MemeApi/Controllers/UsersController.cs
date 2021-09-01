@@ -1,10 +1,17 @@
 ﻿using MemeApi.Models;
 using MemeApi.Models.Context;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace MemeApi.Controllers
@@ -14,10 +21,12 @@ namespace MemeApi.Controllers
     public class UsersController : ControllerBase
     {
         private readonly MemeContext _context;
+        private IConfiguration _config;
 
-        public UsersController(MemeContext context)
+        public UsersController(MemeContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
         }
 
         // GET: api/Users
@@ -77,11 +86,22 @@ namespace MemeApi.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(UserCreationDTO userDTO)
         {
+            byte[] salt;
+            new RNGCryptoServiceProvider().GetBytes(salt = new byte[16]);
+
+            var pbkdf2 = new Rfc2898DeriveBytes(userDTO.password, salt, 100000);
+            byte[] hash = pbkdf2.GetBytes(20);
+
+            byte[] hashBytes = new byte[36];
+            Array.Copy(salt, 0, hashBytes, 0, 16);
+            Array.Copy(hash, 0, hashBytes, 16, 20);
+            string passwordHash = Convert.ToBase64String(hashBytes);
+
             var user = new User
             {
                 Username = userDTO.Username,
                 Email = userDTO.Email,
-                PasswordHash = userDTO.password, // TODO: hash with salt    
+                PasswordHash = passwordHash,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
@@ -111,5 +131,57 @@ namespace MemeApi.Controllers
         {
             return _context.Users.Any(e => e.Id == id);
         }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("login/")]
+        public IActionResult Login(UserLoginDTO login)
+        {
+            IActionResult response = Unauthorized();
+            var user = AuthenticateUser(login);
+
+            if (user != null)
+            {
+                var tokenString = GenerateJSONWebToken(user);
+                response = Ok(new { token = tokenString });
+            }
+
+            return response;
+        }
+
+
+        private string GenerateJSONWebToken(User user)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
+              _config["Jwt:Issuer"],
+              claims: new[] { new Claim("id", user.Id.ToString()) }, // TODO: Add roles from user
+              expires: DateTime.Now.AddMinutes(120),
+              signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private User AuthenticateUser(UserLoginDTO login)
+        {
+            User user = _context.Users.Single(user => user.Username == login.Username);
+
+            byte[] hashBytes = Convert.FromBase64String(user.PasswordHash);
+            /* Get the salt */
+            byte[] salt = new byte[16];
+            Array.Copy(hashBytes, 0, salt, 0, 16);
+            /* Compute the hash on the password the user entered */
+            var pbkdf2 = new Rfc2898DeriveBytes(login.password, salt, 100000);
+            byte[] hash = pbkdf2.GetBytes(20);
+            /* Compare the results */
+            for (int i = 0; i < 20; i++)
+                if (hashBytes[i + 16] != hash[i])
+                    return null;
+            return user;
+        }
+
+
     }
 }
