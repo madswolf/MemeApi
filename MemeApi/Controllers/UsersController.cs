@@ -47,20 +47,28 @@ namespace MemeApi.Controllers
                 return NotFound();
             }
 
-            return user;
+            return Ok(user);
         }
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(long id, User user)
+        public async Task<IActionResult> UpdateUser(long id, UserUpdateDTO updateDto)
         {
-            if (id != user.Id)
-            {
-                return BadRequest();
-            }
+            var user = await _context.Users.FindAsync(id);
 
-            _context.Entry(user).State = EntityState.Modified;
+            if (user == null)
+            {
+                return NotFound();
+            }
+            user.Username = updateDto.NewUsername;
+            user.Email = updateDto.NewEmail ?? user.Email;
+            if (user.PasswordHash != null)
+            {
+                var (salt, passwordHash) = generateSaltAndHash(updateDto.NewPassword);
+                user.PasswordHash = passwordHash;
+                user.Salt = salt;
+            }
 
             try
             {
@@ -84,24 +92,16 @@ namespace MemeApi.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(UserCreationDTO userDTO)
+        public async Task<ActionResult<User>> CreateUser(UserCreationDTO userDTO)
         {
-            byte[] salt;
-            new RNGCryptoServiceProvider().GetBytes(salt = new byte[16]);
-
-            var pbkdf2 = new Rfc2898DeriveBytes(userDTO.password, salt, 100000);
-            byte[] hash = pbkdf2.GetBytes(20);
-
-            byte[] hashBytes = new byte[36];
-            Array.Copy(salt, 0, hashBytes, 0, 16);
-            Array.Copy(hash, 0, hashBytes, 16, 20);
-            string passwordHash = Convert.ToBase64String(hashBytes);
+            var (salt, passwordHash)  =  generateSaltAndHash(userDTO.Password);
 
             var user = new User
             {
                 Username = userDTO.Username,
                 Email = userDTO.Email,
                 PasswordHash = passwordHash,
+                Salt = salt,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
@@ -109,6 +109,22 @@ namespace MemeApi.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        }
+
+        private static (byte[], string) generateSaltAndHash(string password)
+        {
+            byte[] salt;
+            string passwordHash;
+            new RNGCryptoServiceProvider().GetBytes(salt = new byte[16]);
+
+            var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100000);
+            byte[] hash = pbkdf2.GetBytes(20);
+
+            byte[] hashBytes = new byte[36];
+            Array.Copy(salt, 0, hashBytes, 0, 16);
+            Array.Copy(hash, 0, hashBytes, 16, 20);
+            passwordHash = Convert.ToBase64String(hashBytes);
+            return (salt, passwordHash);
         }
 
         // DELETE: api/Users/5
@@ -149,7 +165,7 @@ namespace MemeApi.Controllers
             return response;
         }
 
-
+        //TODO: test
         private string GenerateJSONWebToken(User user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
@@ -157,6 +173,7 @@ namespace MemeApi.Controllers
 
             var token = new JwtSecurityToken(_config["Jwt:Issuer"],
               _config["Jwt:Issuer"],
+              
               claims: new[] { new Claim("id", user.Id.ToString()) }, // TODO: Add roles from user
               expires: DateTime.Now.AddMinutes(120),
               signingCredentials: credentials);
