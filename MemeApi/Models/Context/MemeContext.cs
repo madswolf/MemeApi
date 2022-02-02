@@ -13,6 +13,7 @@ namespace MemeApi.Models.Context
         public DbSet<Vote> Votes { get; set; }
         public DbSet<Votable> Votables { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Topic> Topics { get; set; }
 
 
         public MemeContext(DbContextOptions<MemeContext> options) : base(options)
@@ -51,6 +52,13 @@ namespace MemeApi.Models.Context
                 .WithMany(u => u.Votes)
                 .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired();
+
+            modelBuilder.Entity<Topic>()
+                .HasOne(t => t.Owner);
+            
+            modelBuilder.Entity<Topic>()
+                .HasMany(t => t.Moderators);
+        
         }
     }
 }
