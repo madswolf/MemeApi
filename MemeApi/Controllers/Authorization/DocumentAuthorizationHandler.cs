@@ -1,38 +1,42 @@
-﻿using MemeApi.Models;
-using MemeApi.Models.Context;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using MemeApi.Models;
+using MemeApi.Models.Context;
+using MemeApi.Models.Entity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 
-public class DocumentAuthorizationHandler :
-    AuthorizationHandler<SameAuthorRequirement, Votable>
+namespace MemeApi.Controllers.Authorization
 {
-    private readonly IServiceProvider _provider;
-
-    public DocumentAuthorizationHandler(IServiceProvider provider)
+    public class DocumentAuthorizationHandler :
+        AuthorizationHandler<SameAuthorRequirement, Votable>
     {
-        _provider = provider;
-    }
+        private readonly IServiceProvider _provider;
 
-    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context,
-                                                   SameAuthorRequirement requirement,
-                                                   Votable resource)
-    {
-        using(var scope = _provider.CreateScope())
+        public DocumentAuthorizationHandler(IServiceProvider provider)
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<MemeContext>();
-            var topic = dbContext.Topics.Single(topic => topic.Name == resource.Topic.Name);
-            if (topic.Moderators.Exists(m => m.Username == context.User.Identity?.Name) 
-                || topic.Owner.Username == context.User.Identity?.Name)
-            {
-                context.Succeed(requirement);
-            }
+            _provider = provider;
         }
 
-        return Task.CompletedTask;
-    }
-}
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context,
+            SameAuthorRequirement requirement,
+            Votable resource)
+        {
+            using(var scope = _provider.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<MemeContext>();
+                var topic = dbContext.Topics.Single(topic => topic.Name == resource.Topic.Name);
+                if (topic.Moderators.Exists(m => m.Username == context.User.Identity?.Name) 
+                    || topic.Owner.Username == context.User.Identity?.Name)
+                {
+                    context.Succeed(requirement);
+                }
+            }
 
-public class SameAuthorRequirement : IAuthorizationRequirement { }
+            return Task.CompletedTask;
+        }
+    }
+
+    public class SameAuthorRequirement : IAuthorizationRequirement { }
+}

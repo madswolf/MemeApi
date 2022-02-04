@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MemeApi.Models
+namespace MemeApi.Models.Entity
 {
     public class User
     {
@@ -18,3 +18,4 @@ namespace MemeApi.Models
         public List<Vote> Votes { get; set; }
     }
 }
+

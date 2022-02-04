@@ -13,6 +13,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using MemeApi.Models.Entity;
 
 namespace MemeApi.Controllers
 {
