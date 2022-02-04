@@ -3,8 +3,9 @@ using System.Collections.Generic;
 
 namespace MemeApi.Models
 {
-    public class MemeTopText : Votable
+    public class MemeText : Votable
     {
         public string Memetext { get; set; }
+        public MemeTextPosition postion { get; set; } 
     }
 }

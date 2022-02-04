@@ -9,23 +9,17 @@ using Microsoft.Extensions.Configuration;
 using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using MemeApi.Models;
+using MemeApi.Test.utils;
 
 namespace MemeApi.Test
 {
     public class UserControllerTest
     {
-        private readonly DbContextOptions<MemeContext> ContextOptions = new DbContextOptionsBuilder<MemeContext>().UseInMemoryDatabase("MemeList").Options;
-
-        private MemeContext createTestContext()
-        {
-            var contextOptions = new DbContextOptionsBuilder<MemeContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
-            return new MemeContext(contextOptions);
-        }
 
         [Fact]
         public async Task GIVEN_DummyUser_WHEN_CreatingUser_THEN_UserIsCreatedWithProperValues()
         {
-            using (var context = createTestContext())
+            using (var context = ContextUtils.CreateMemeTestContext())
             {
                 var controller = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
@@ -59,7 +53,7 @@ namespace MemeApi.Test
         [Fact]
         public async Task GIVEN_CreatedDummyUser_WHEN_GettingUser_THEN_UserHasProperValues()
         {
-            using (var context = createTestContext())
+            using (var context = ContextUtils.CreateMemeTestContext())
             {
                 var controller = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
@@ -93,7 +87,7 @@ namespace MemeApi.Test
         [Fact]
         public async Task GIVEN_CreatedDummyUser_WHEN_Updating_THEN_UserIsUpdatedWithGivenValues()
         {
-            using (var context = createTestContext())
+            using (var context = ContextUtils.CreateMemeTestContext())
             {
                 var controller = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
@@ -135,7 +129,7 @@ namespace MemeApi.Test
         [Fact]
         public async Task GIVEN_CreatedDummyUser_WHEN_Deleting_THEN_UserIsDeleted()
         {
-            using (var context = createTestContext())
+            using (var context = ContextUtils.CreateMemeTestContext())
             {
                 var controller = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
@@ -166,7 +160,7 @@ namespace MemeApi.Test
         [Fact]
         public async Task GIVEN_CreatedDummyUser_WHEN_LoggingIn_THEN_UserIsLoggedIn()
         {
-            using (var context = createTestContext())
+            using (var context = ContextUtils.CreateMemeTestContext())
             {
                 var controller = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
