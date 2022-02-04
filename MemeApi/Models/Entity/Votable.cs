@@ -1,7 +1,6 @@
-﻿using MemeApi.Models.Entity;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace MemeApi.Models
+namespace MemeApi.Models.Entity
 {
     public class Votable
     {

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using MemeApi.Models;
+using MemeApi.Models.Entity;
 using MemeApi.Test.utils;
 
 namespace MemeApi.Test

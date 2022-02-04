@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MemeApi.Models
+namespace MemeApi.Models.DTO
 {
     public class UserLoginDTO
     {

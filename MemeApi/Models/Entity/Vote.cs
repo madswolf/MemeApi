@@ -1,4 +1,6 @@
-﻿namespace MemeApi.Models
+﻿using MemeApi.Models.Entity;
+
+namespace MemeApi.Models
 {
     public class Vote
     {
