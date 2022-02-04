@@ -1,11 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using MemeApi.Models;
-using MemeApi.Models.Context;
+﻿using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MemeApi.Controllers.Authorization
 {

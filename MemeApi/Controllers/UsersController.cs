@@ -1,5 +1,6 @@
 ﻿using MemeApi.Models;
 using MemeApi.Models.Context;
+using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using MemeApi.Models.Entity;
+using MemeApi.Models.DTO;
 
 namespace MemeApi.Controllers
 {
