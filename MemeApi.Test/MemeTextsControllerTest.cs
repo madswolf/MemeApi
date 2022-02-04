@@ -1,16 +1,10 @@
 ﻿using FluentAssertions;
 using MemeApi.Controllers;
-using MemeApi.Models;
+using MemeApi.Models.Entity;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using MemeApi.Models.Entity;
 using Xunit;
 
 namespace MemeApi.Test

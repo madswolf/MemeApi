@@ -1,10 +1,9 @@
-﻿using System;
-using MemeApi.Models;
-using MemeApi.Models.Context;
+﻿using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
