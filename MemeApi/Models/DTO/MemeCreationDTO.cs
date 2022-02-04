@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using MemeApi.Models.Entity;
 
 namespace MemeApi.Models.DTO
 {

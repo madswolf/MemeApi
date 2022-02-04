@@ -1,4 +1,3 @@
-using MemeApi.Models;
 using MemeApi.Models.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
