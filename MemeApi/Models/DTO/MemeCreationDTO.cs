@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using MemeApi.Models.Entity;
 
 namespace MemeApi.Models.DTO
 {
@@ -7,7 +9,6 @@ namespace MemeApi.Models.DTO
         [Required]
         public string VisualFile { get; set; }
         public string SoundFile { get; set; }
-        public string Toptext { get; set; }
-        public string BottomText { get; set; }
+        public List<(string, string)> Texts { get; set; }
     }
 }

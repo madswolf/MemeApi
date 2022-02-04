@@ -8,8 +8,7 @@ namespace MemeApi.Models.Context
         public DbSet<Meme> Memes { get; set; }
         public DbSet<MemeVisual> Visuals { get; set; }
         public DbSet<MemeSound> Sounds { get; set; }
-        public DbSet<MemeTopText> Toptexts { get; set; }
-        public DbSet<MemeBottomText> BottomTexts { get; set; }
+        public DbSet<MemeText> Texts { get; set; }
         public DbSet<Vote> Votes { get; set; }
         public DbSet<Votable> Votables { get; set; }
         public DbSet<User> Users { get; set; }
@@ -36,10 +35,7 @@ namespace MemeApi.Models.Context
                 .HasOne(m => m.MemeSound);
 
             modelBuilder.Entity<Meme>()
-                .HasOne(m => m.MemeTopText);
-
-            modelBuilder.Entity<Meme>()
-                .HasOne(m => m.MemeBottomtext);
+                .HasMany(m => m.MemeTexts);
 
             modelBuilder.Entity<Vote>()
                 .HasOne(v => v.User)

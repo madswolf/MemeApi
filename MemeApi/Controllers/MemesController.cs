@@ -1,4 +1,5 @@
-﻿using MemeApi.Models;
+﻿using System;
+using MemeApi.Models;
 using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
@@ -28,8 +29,7 @@ namespace MemeApi.Controllers
             return await _context.Memes
                 .Include(m => m.MemeVisual)
                 .Include(m => m.MemeSound)
-                .Include(m => m.MemeTopText)
-                .Include(m => m.MemeBottomtext)
+                .Include(m => m.MemeTexts)
                 .ToListAsync();
         }
 
@@ -40,10 +40,8 @@ namespace MemeApi.Controllers
             var meme = _context.Memes
                 .Include(m => m.MemeVisual)
                 .Include(m => m.MemeSound)
-                .Include(m => m.MemeTopText)
-                .Include(m => m.MemeBottomtext)
-                .Where(m => m.Id == id)
-                .First();
+                .Include(m => m.MemeTexts)
+                .First(m => m.Id == id);
 
             if (meme == null)
             {
@@ -105,18 +103,20 @@ namespace MemeApi.Controllers
                 meme.MemeSound = memeSound;
             }
 
-            if (memeDTO.Toptext != null)
+            if (memeDTO.Texts != null)
             {
-                var memeTopText = new MemeTopText { Memetext = memeDTO.Toptext };
-                _context.Toptexts.Add(memeTopText);
-                meme.MemeTopText = memeTopText;
-            }
-
-            if (memeDTO.BottomText != null)
-            {
-                var memeBottomText = new MemeBottomText { Memetext = memeDTO.BottomText };
-                _context.BottomTexts.Add(memeBottomText);
-                meme.MemeBottomtext = memeBottomText;
+                var memeTexts = memeDTO.Texts.Select(item =>
+                {
+                    var (text, position) = item;
+                    var memeText = new MemeText
+                    {
+                        Memetext = text,
+                        postion = (MemeTextPosition)Enum.Parse(typeof(MemeTextPosition), position)
+                    };
+                    _context.Texts.Add(memeText);
+                    return memeText;
+                });
+                meme.MemeTexts = memeTexts.ToList();
             }
 
             _context.Memes.Add(meme);
@@ -147,3 +147,4 @@ namespace MemeApi.Controllers
         }
     }
 }
+
