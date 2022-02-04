@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.Models.DTO;
@@ -6,10 +7,9 @@ using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System.Threading.Tasks;
 using Xunit;
 
-namespace MemeApi.Test
+namespace MemeApi.Test.Controllers
 {
     public class UserControllerTest
     {
