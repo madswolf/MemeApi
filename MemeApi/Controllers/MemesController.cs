@@ -109,8 +109,8 @@ namespace MemeApi.Controllers
                     var (text, position) = item;
                     var memeText = new MemeText
                     {
-                        Memetext = text,
-                        postion = (MemeTextPosition)Enum.Parse(typeof(MemeTextPosition), position)
+                        Text = text,
+                        Position = (MemeTextPosition)Enum.Parse(typeof(MemeTextPosition), position)
                     };
                     _context.Texts.Add(memeText);
                     return memeText;
