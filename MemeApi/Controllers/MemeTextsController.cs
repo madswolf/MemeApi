@@ -51,10 +51,10 @@ namespace MemeApi.Controllers
             {
                 return NotFound();
             }
-            memeText.Memetext = newMemeBottomText;
+            memeText.Text = newMemeBottomText;
             if (newMemeTextPosition != null)
             {
-                memeText.postion = (MemeTextPosition)newMemeTextPosition;
+                memeText.Position = (MemeTextPosition)newMemeTextPosition;
             }
 
             try
@@ -82,8 +82,8 @@ namespace MemeApi.Controllers
         public async Task<ActionResult<MemeText>> CreateMemeBottomText(string text, MemeTextPosition position)
         {
             var memeText = new MemeText();
-            memeText.Memetext = text;
-            memeText.postion = position;
+            memeText.Text = text;
+            memeText.Position = position;
             _context.Texts.Add(memeText);
             await _context.SaveChangesAsync();
 

@@ -1,13 +1,13 @@
-﻿using FluentAssertions;
+﻿using System.Threading.Tasks;
+using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.Models.Entity;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 using Xunit;
 
-namespace MemeApi.Test
+namespace MemeApi.Test.Controllers
 {
     public class MemeTextsControllerTest
     {
@@ -36,7 +36,7 @@ namespace MemeApi.Test
 
                 (await context.Texts.CountAsync()).Should().Be(1);
 
-                createdMemeText.Memetext.Should().Be(memeText);
+                createdMemeText.Text.Should().Be(memeText);
             }
         }
 
@@ -64,7 +64,7 @@ namespace MemeApi.Test
                 result.Should().BeOfType<OkObjectResult>();
                 var foundMemeBottomText = ((OkObjectResult)result).Value as MemeText;
 
-                foundMemeBottomText.Memetext.Should().Be(memeText);
+                foundMemeBottomText.Text.Should().Be(memeText);
             }
         }
 
@@ -95,7 +95,7 @@ namespace MemeApi.Test
                 result.Should().BeOfType<OkObjectResult>();
                 var foundMemeBottomText = ((OkObjectResult)result).Value as MemeText;
 
-                foundMemeBottomText.Memetext.Should().Be(newMemeText);
+                foundMemeBottomText.Text.Should().Be(newMemeText);
             }
         }
 
