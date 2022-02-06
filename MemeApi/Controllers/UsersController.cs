@@ -142,7 +142,7 @@ namespace MemeApi.Controllers
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
-            return StatusCode(200);
+            return NoContent();
         }
 
         private bool UserExists(long id)
