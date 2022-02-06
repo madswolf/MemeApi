@@ -26,15 +26,12 @@ namespace MemeApi.Test.Controllers
             var file = new FormFile(fileStream, 0, 5, "filestream", "test");
 
             // When
-            var createResult = (await controller.PostMemeVisual(file)).Result;
+            var createTask = controller.PostMemeVisual(file);
 
             // Then
-            createResult.Should().NotBeNull();
-            createResult.Should().BeOfType<CreatedAtActionResult>();
-            var createdMemeVisual = ((CreatedAtActionResult)createResult).Value as MemeVisual;
+            var createdMemeVisual = await ActionResultUtils.ActionResultToValueAndAssertCreated(createTask);
 
             (await context.Visuals.CountAsync()).Should().Be(1);
-
             createdMemeVisual.Filename.Should().Be(file.FileName);
         }
 
@@ -50,16 +47,14 @@ namespace MemeApi.Test.Controllers
             var file2 = new FormFile(fileStream, 0, 5, "filestream", "test");
 
             // When
-            var createResult = (await controller.PostMemeVisual(file)).Result;
-            var createResult2 = (await controller.PostMemeVisual(file2)).Result;
+            var createTask = controller.PostMemeVisual(file);
+            var createTask2 = controller.PostMemeVisual(file2);
 
             // Then
-
-            var createdMemeVisual = ((CreatedAtActionResult)createResult).Value as MemeVisual;
-            var createdMemeVisual2 = ((CreatedAtActionResult)createResult2).Value as MemeVisual;
+            var createdMemeVisual = await ActionResultUtils.ActionResultToValueAndAssertCreated(createTask);
+            var createdMemeVisual2 = await ActionResultUtils.ActionResultToValueAndAssertCreated(createTask2);
 
             (await context.Visuals.CountAsync()).Should().Be(2);
-
             createdMemeVisual.Filename.Should().NotBe(createdMemeVisual2.Filename);
             createdMemeVisual2.Filename.Should().NotBe(file2.FileName);
         }
@@ -97,8 +92,9 @@ namespace MemeApi.Test.Controllers
             var fileStream = new MemoryStream(5);
             var file = new FormFile(fileStream, 0, 5, "filestream", "test");
 
-            var createResult = (await controller.PostMemeVisual(file)).Result;
-            var createdMemeVisual = ((CreatedAtActionResult)createResult).Value as MemeVisual;
+            var createdMemeVisual =
+                await ActionResultUtils.ActionResultToValueAndAssertCreated(controller.PostMemeVisual(file));
+
             // When
             var result = await controller.DeleteMemeVisual(createdMemeVisual.Id);
 

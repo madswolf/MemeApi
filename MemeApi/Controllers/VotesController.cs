@@ -41,37 +41,6 @@ namespace MemeApi.Controllers
             return vote;
         }
 
-        // PUT: api/Votes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutVote(long id, Vote vote)
-        {
-            if (id != vote.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(vote).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!VoteExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
         // POST: api/Votes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
@@ -85,14 +54,41 @@ namespace MemeApi.Controllers
                 return NotFound();
             }
 
-            var vote = new Vote
-            {
-                Upvote = voteDTO.Upvote,
-                Element = user,
-                User = element
-            };
+            Vote vote;
+            var existingVote = _context.Votes
+                .Select(x => x)
+                .Include(x => x.Element)
+                .Include(x => x.User)
+                .SingleOrDefault(x => x.Element.Id == element.Id && x.User.Id == user.Id);
 
-            _context.Votes.Add(vote);
+            if (existingVote != null)
+            {
+                if (voteDTO.UpVote != null)
+                { 
+                    existingVote.Upvote = (bool)voteDTO.UpVote;
+                    vote = existingVote;
+                }
+                else
+                {
+                    return await DeleteVote(existingVote.Id);
+                }
+            }
+            else
+            {
+                if (voteDTO.UpVote == null)
+                {
+                    return StatusCode(400);
+                }
+                vote = new Vote
+                {
+                    Upvote = (bool)voteDTO.UpVote,
+                    Element = user,
+                    User = element
+                };
+
+                _context.Votes.Add(vote);
+            }
+
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetVote", new { id = vote.Id }, vote);
@@ -100,7 +96,7 @@ namespace MemeApi.Controllers
 
         // DELETE: api/Votes/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteVote(long id)
+        public async Task<ActionResult> DeleteVote(long id)
         {
             var vote = await _context.Votes.FindAsync(id);
             if (vote == null)

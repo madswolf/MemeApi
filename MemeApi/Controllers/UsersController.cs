@@ -131,7 +131,7 @@ namespace MemeApi.Controllers
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(long id)
+        public async Task<ActionResult> DeleteUser(long id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null)
@@ -142,7 +142,7 @@ namespace MemeApi.Controllers
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return StatusCode(200);
         }
 
         private bool UserExists(long id)
@@ -185,8 +185,11 @@ namespace MemeApi.Controllers
 
         private User AuthenticateUser(UserLoginDTO login)
         {
-            User user = _context.Users.Single(user => user.Username == login.Username);
-
+            User user = _context.Users.SingleOrDefault(user => user.Username == login.Username);
+            if (user == null)
+            {
+                return null;
+            }
             byte[] hashBytes = Convert.FromBase64String(user.PasswordHash);
             /* Get the salt */
             byte[] salt = new byte[16];
