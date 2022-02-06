@@ -1,8 +1,10 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.Models;
+using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using MemeApi.Test.utils;
@@ -20,30 +22,14 @@ namespace MemeApi.Test.Controllers
         {
             await using var context = ContextUtils.CreateMemeTestContext();
             var voteController = new VotesController(context);
-            var textController = new MemeTextsController(context);
-            var userController = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
             // given
-            var memeText = "Test";
-            var memePosition = MemeTextPosition.BottomText;
-
-            var userDTO = new UserCreationDTO(){
-                Username = "Test",
-                Email = "Test",
-                Password = "Test",
-            };
-
-            var createdMemeText =
-                await ActionResultUtils.ActionResultToValueAndAssertCreated(
-                    textController.CreateMemeBottomText(memeText, memePosition));
-
-            var createdUser = await ActionResultUtils.ActionResultToValueAndAssertCreated(
-                userController.CreateUser(userDTO));
+            var user = CreateUserAndVotable(context, out var memeText);
 
             var voteDTO = new VoteDTO(){
-                    UserID = createdUser.Id,
-                    ElementID = createdMemeText.Id,
-                    UpVote = true
+                UserID = user.Id,
+                ElementID = memeText.Id,
+                UpVote = true
             };
 
             // When
@@ -54,8 +40,8 @@ namespace MemeApi.Test.Controllers
 
             (await context.Texts.CountAsync()).Should().Be(1);
             createdVote.Upvote.Should().Be((bool)voteDTO.UpVote);
-            createdVote.User.Should().Be(createdUser);
-            createdVote.Element.Should().Be(createdMemeText);
+            createdVote.User.Should().Be(user);
+            createdVote.Element.Should().Be(memeText);
         }
 
         [Fact]
@@ -63,31 +49,14 @@ namespace MemeApi.Test.Controllers
         {
             await using var context = ContextUtils.CreateMemeTestContext();
             var voteController = new VotesController(context);
-            var textController = new MemeTextsController(context);
-            var userController = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
             // given
-            var memeText = "Test";
-            var memePosition = MemeTextPosition.BottomText;
-
-            var userDTO = new UserCreationDTO()
-            {
-                Username = "Test",
-                Email = "Test",
-                Password = "Test",
-            };
-
-            var createdMemeText =
-                await ActionResultUtils.ActionResultToValueAndAssertCreated(
-                    textController.CreateMemeBottomText(memeText, memePosition));
-
-            var createdUser = await ActionResultUtils.ActionResultToValueAndAssertCreated(
-                userController.CreateUser(userDTO));
+            var user = CreateUserAndVotable(context, out var memeText);
 
             var voteDTO = new VoteDTO()
             {
-                UserID = createdUser.Id,
-                ElementID = createdMemeText.Id,
+                UserID = user.Id,
+                ElementID = memeText.Id,
                 UpVote = true
             };
             var createVoteTask = voteController.PostVote(voteDTO);
@@ -102,8 +71,8 @@ namespace MemeApi.Test.Controllers
             var createdVote2 = await ActionResultUtils.ActionResultToValueAndAssertCreated(createVoteTask2);
 
             (await context.Texts.CountAsync()).Should().Be(1);
-            createdVote2.User.Should().Be(createdUser);
-            createdVote2.Element.Should().Be(createdMemeText);
+            createdVote2.User.Should().Be(user);
+            createdVote2.Element.Should().Be(memeText);
             createdVote2.Upvote.Should().Be((bool)voteDTO.UpVote);
             createdVote2.Upvote.Should().NotBe(createdVoteUpVote);
             createdVote2.Id.Should().Be(createdVote.Id);
@@ -114,35 +83,18 @@ namespace MemeApi.Test.Controllers
         {
             await using var context = ContextUtils.CreateMemeTestContext();
             var voteController = new VotesController(context);
-            var textController = new MemeTextsController(context);
-            var userController = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
             // given
-            var memeText = "Test";
-            var memePosition = MemeTextPosition.BottomText;
-
-            var userDTO = new UserCreationDTO()
-            {
-                Username = "Test",
-                Email = "Test",
-                Password = "Test",
-            };
-
-            var createdMemeText =
-                await ActionResultUtils.ActionResultToValueAndAssertCreated(
-                    textController.CreateMemeBottomText(memeText, memePosition));
-
-            var createdUser = await ActionResultUtils.ActionResultToValueAndAssertCreated(
-                userController.CreateUser(userDTO));
+            var user = CreateUserAndVotable(context, out var memeText);
 
             var voteDTO = new VoteDTO()
             {
-                UserID = createdUser.Id,
-                ElementID = createdMemeText.Id,
+                UserID = user.Id,
+                ElementID = memeText.Id,
                 UpVote = true
             };
             var createVoteTask = voteController.PostVote(voteDTO);
-            var createdVote = await ActionResultUtils.ActionResultToValueAndAssertCreated(createVoteTask);
+            await ActionResultUtils.ActionResultToValueAndAssertCreated(createVoteTask);
 
             // When
             voteDTO.UpVote = null;
@@ -154,6 +106,24 @@ namespace MemeApi.Test.Controllers
             result.Result.Should().BeOfType<NoContentResult>();
 
             (await context.Votes.CountAsync()).Should().Be(0);
+        }
+        private static User CreateUserAndVotable(MemeContext context, out MemeText memeText)
+        {
+            var user = new User
+            {
+                Username = "Test",
+                Email = "Test",
+                PasswordHash = "Test",
+                Salt = Array.Empty<byte>()
+            };
+            memeText = new MemeText()
+            {
+                Text = "Test",
+                Position = MemeTextPosition.BottomText
+            };
+            context.Users.Add(user);
+            context.Texts.Add(memeText);
+            return user;
         }
     }
 }
