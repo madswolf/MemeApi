@@ -9,6 +9,6 @@ namespace MemeApi.Models.DTO
         [Required]
         public long UserID { get; set; }
         [Required]
-        public bool Upvote { get; set; }
+        public bool? UpVote { get; set; }
     }
 }
