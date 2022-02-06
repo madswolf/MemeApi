@@ -1,10 +1,15 @@
-﻿using MemeApi.Models.Context;
+﻿using System;
+using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using MemeApi.library;
+using Microsoft.AspNetCore.Http;
 
 namespace MemeApi.Controllers
 {
@@ -13,10 +18,15 @@ namespace MemeApi.Controllers
     public class MemeVisualsController : ControllerBase
     {
         private readonly MemeContext _context;
+        private readonly IFileSaver _fileSaver;
+        private readonly IFileRemover _fileRemover;
+        private static readonly Random _random = new();
 
-        public MemeVisualsController(MemeContext context)
+        public MemeVisualsController(MemeContext context, IFileSaver fileSaver, IFileRemover fileRemover)
         {
             _context = context;
+            _fileSaver = fileSaver;
+            _fileRemover = fileRemover;
         }
 
         // GET: api/MemeVisuals
@@ -39,43 +49,28 @@ namespace MemeApi.Controllers
 
             return memeVisual;
         }
-
-        // PUT: api/MemeVisuals/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutMemeVisual(long id, MemeVisual memeVisual)
-        {
-            if (id != memeVisual.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(memeVisual).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!MemeVisualExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
         // POST: api/MemeVisuals
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<MemeVisual>> PostMemeVisual(MemeVisual memeVisual)
+        public async Task<ActionResult<MemeVisual>> PostMemeVisual(IFormFile visual)
         {
+            if (visual.Length > 5000)
+            {
+                return new StatusCodeResult(413);
+            }
+
+            var memeVisual = new MemeVisual()
+            {
+                Filename = visual.FileName
+            };
+
+            if (_context.Visuals.Any(x => x.Filename == visual.FileName))
+            {
+                memeVisual.Filename = RandomString(5) + memeVisual.Filename;
+            }
+
+            _fileSaver.SaveFile(visual, "uploads/");
+            
             _context.Visuals.Add(memeVisual);
             await _context.SaveChangesAsync();
 
@@ -92,6 +87,8 @@ namespace MemeApi.Controllers
                 return NotFound();
             }
 
+            _fileRemover.RemoveFile(Path.Combine("uploads/", memeVisual.Filename));
+
             _context.Visuals.Remove(memeVisual);
             await _context.SaveChangesAsync();
 
@@ -101,6 +98,13 @@ namespace MemeApi.Controllers
         private bool MemeVisualExists(long id)
         {
             return _context.Visuals.Any(e => e.Id == id);
+        }
+
+        public static string RandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[_random.Next(s.Length)]).ToArray());
         }
     }
 }
