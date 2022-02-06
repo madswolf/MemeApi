@@ -56,7 +56,7 @@ namespace MemeApi.Controllers
         {
             if (visual.Length > 5000)
             {
-                return new StatusCodeResult(413);
+                return StatusCode(413);
             }
 
             var memeVisual = new MemeVisual()
