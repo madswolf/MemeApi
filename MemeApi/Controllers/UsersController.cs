@@ -67,7 +67,7 @@ namespace MemeApi.Controllers
             user.Email = updateDto.NewEmail ?? user.Email;
             if (user.PasswordHash != null)
             {
-                var (salt, passwordHash) = generateSaltAndHash(updateDto.NewPassword);
+                var (salt, passwordHash) = GenerateSaltAndHash(updateDto.NewPassword);
                 user.PasswordHash = passwordHash;
                 user.Salt = salt;
             }
@@ -96,7 +96,7 @@ namespace MemeApi.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> CreateUser(UserCreationDTO userDTO)
         {
-            var (salt, passwordHash)  =  generateSaltAndHash(userDTO.Password);
+            var (salt, passwordHash)  =  GenerateSaltAndHash(userDTO.Password);
 
             var user = new User
             {
@@ -113,10 +113,9 @@ namespace MemeApi.Controllers
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
 
-        private static (byte[], string) generateSaltAndHash(string password)
+        private static (byte[], string) GenerateSaltAndHash(string password)
         {
             byte[] salt;
-            string passwordHash;
             new RNGCryptoServiceProvider().GetBytes(salt = new byte[16]);
 
             var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100000);
@@ -125,7 +124,7 @@ namespace MemeApi.Controllers
             byte[] hashBytes = new byte[36];
             Array.Copy(salt, 0, hashBytes, 0, 16);
             Array.Copy(hash, 0, hashBytes, 16, 20);
-            passwordHash = Convert.ToBase64String(hashBytes);
+            var passwordHash = Convert.ToBase64String(hashBytes);
             return (salt, passwordHash);
         }
 

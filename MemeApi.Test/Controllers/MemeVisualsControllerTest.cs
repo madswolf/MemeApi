@@ -89,14 +89,15 @@ namespace MemeApi.Test.Controllers
             var controller = new MemeVisualsController(context, new FileSaver(), new FileRemoverStub());
 
             // given
-            var fileStream = new MemoryStream(5);
-            var file = new FormFile(fileStream, 0, 5, "filestream", "test");
+            var memeVisual = new MemeVisual()
+            {
+                Filename = "Test"
+            };
+            context.Visuals.Add(memeVisual);
 
-            var createdMemeVisual =
-                await ActionResultUtils.ActionResultToValueAndAssertCreated(controller.PostMemeVisual(file));
 
             // When
-            var result = await controller.DeleteMemeVisual(createdMemeVisual.Id);
+            var result = await controller.DeleteMemeVisual(memeVisual.Id);
 
             // Then
             result.Should().NotBeNull();

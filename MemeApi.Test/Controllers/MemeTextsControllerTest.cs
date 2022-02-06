@@ -39,22 +39,23 @@ namespace MemeApi.Test.Controllers
             var controller = new MemeTextsController(context);
 
             // given
-            var memeText = "Test";
-            var memePosition = MemeTextPosition.BottomText;
+            var memeText = new MemeText()
+            {
+                Text = "Test",
+                Position = MemeTextPosition.BottomText
+            };
+            context.Texts.Add(memeText);
 
             // When
-            var createdMemeBottomText =
-                await ActionResultUtils.ActionResultToValueAndAssertCreated(
-                    controller.CreateMemeBottomText(memeText, memePosition));
+            var result = (await controller.GetMemeBottomText(memeText.Id)).Result;
 
             // Then
-            var result = (await controller.GetMemeBottomText(createdMemeBottomText.Id)).Result;
 
             result.Should().NotBeNull();
             result.Should().BeOfType<OkObjectResult>();
             var foundMemeBottomText = ((OkObjectResult)result).Value as MemeText;
 
-            foundMemeBottomText.Text.Should().Be(memeText);
+            foundMemeBottomText.Should().Be(memeText);
         }
 
         [Theory]
@@ -62,30 +63,28 @@ namespace MemeApi.Test.Controllers
         [InlineData(MemeTextPosition.BottomText, MemeTextPosition.TopText)]
         public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_Updating_THEN_MemeBottomTextIsUpdatedWithGivenValues(MemeTextPosition memePosition, MemeTextPosition newMemePosition)
         {
-            using (var context = ContextUtils.CreateMemeTestContext())
+            await using var context = ContextUtils.CreateMemeTestContext();
+            var controller = new MemeTextsController(context);
+
+            // given
+            var newMemeText = "Test2";
+
+            var memeText = new MemeText()
             {
-                var controller = new MemeTextsController(context);
+                Text = "Test",
+                Position = memePosition
+            };
+            context.Texts.Add(memeText);
 
-                // given
+            // When
+            await controller.UpdateMemeText(memeText.Id, newMemeText, newMemePosition);
 
-                var memeText = "Test";
-                var newMemeText = "Test2";
+            // Then
+            var foundMemeBottomText = await
+                ActionResultUtils.ActionResultToValueAndAssertOk(
+                    controller.GetMemeBottomText(memeText.Id));
 
-                var createdMemeBottomText =
-                    await ActionResultUtils.ActionResultToValueAndAssertCreated(
-                        controller.CreateMemeBottomText(memeText, memePosition));
-
-                // When
-                await controller.UpdateMemeText(createdMemeBottomText.Id, newMemeText, newMemePosition);
-
-                // Then
-                
-                var foundMemeBottomText = await
-                    ActionResultUtils.ActionResultToValueAndAssertOk(
-                        controller.GetMemeBottomText(createdMemeBottomText.Id));
-
-                foundMemeBottomText.Text.Should().Be(newMemeText);
-            }
+            foundMemeBottomText.Text.Should().Be(newMemeText);
         }
 
         [Fact]
@@ -96,16 +95,15 @@ namespace MemeApi.Test.Controllers
 
             // given
 
-            var memeText = "Test";
-            var memePosition = MemeTextPosition.BottomText;
-
-
-            var createdMemeBottomText =
-                await ActionResultUtils.ActionResultToValueAndAssertCreated(
-                    controller.CreateMemeBottomText(memeText, memePosition));
+            var memeText = new MemeText()
+            {
+                Text = "Test",
+                Position = MemeTextPosition.BottomText
+            };
+            context.Texts.Add(memeText);
 
             // When
-            var result = await controller.DeleteMemeBottomText(createdMemeBottomText.Id);
+            var result = await controller.DeleteMemeBottomText(memeText.Id);
 
             // Then
 

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MemeApi.Controllers;
@@ -48,25 +49,22 @@ namespace MemeApi.Test.Controllers
             var controller = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
             // given
-            var userDTO = new UserCreationDTO
+            var user = new User
             {
                 Username = "Test",
                 Email = "Test",
-                Password = "Test"
+                PasswordHash = "Test",
+                Salt = Array.Empty<byte>()
             };
-
-            var createdUser =
-                await ActionResultUtils.ActionResultToValueAndAssertCreated(controller.CreateUser(userDTO));
+            context.Users.Add(user);
 
             // When
-            var getTask = controller.GetUser(createdUser.Id);
+            var getTask = controller.GetUser(user.Id);
 
             // Then
             var foundUser = await ActionResultUtils.ActionResultToValueAndAssertOk(getTask);
 
-            foundUser.Username.Should().Be(userDTO.Username);
-            foundUser.Email.Should().Be(userDTO.Email);
-            foundUser.PasswordHash.Should().NotBe(userDTO.Password);
+            foundUser.Should().Be(user);
         }
 
         [Fact]
@@ -76,12 +74,14 @@ namespace MemeApi.Test.Controllers
             var controller = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
             // given
-            var userDTO = new UserCreationDTO
+            var user = new User
             {
                 Username = "Test",
                 Email = "Test",
-                Password = "Test"
+                PasswordHash = "Test",
+                Salt = Array.Empty<byte>()
             };
+            context.Users.Add(user);
 
             var updateDto = new UserUpdateDTO
             {
@@ -90,16 +90,11 @@ namespace MemeApi.Test.Controllers
                 NewPassword = "Test2",
             };
 
-            
-            var createdUser = ActionResultUtils.ActionResultToValueAndAssertCreated(controller.CreateUser(userDTO));
-
             // When
-            await controller.UpdateUser(createdUser.Id, updateDto);
-            var getTask = controller.GetUser(createdUser.Id);
+            await controller.UpdateUser(user.Id, updateDto);
 
             // Then
-            var foundUser = await ActionResultUtils.ActionResultToValueAndAssertOk(getTask);
-
+            var foundUser = await context.Users.FindAsync(user.Id);
             foundUser.Username.Should().Be(updateDto.NewUsername);
             foundUser.Email.Should().Be(updateDto.NewEmail);
             foundUser.PasswordHash.Should().NotBe(updateDto.NewPassword);
@@ -112,18 +107,17 @@ namespace MemeApi.Test.Controllers
             var controller = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
             // given
-            var userDTO = new UserCreationDTO
+            var user = new User
             {
                 Username = "Test",
                 Email = "Test",
-                Password = "Test"
+                PasswordHash = "Test",
+                Salt = Array.Empty<byte>()
             };
-            
-            var createdUser =
-                await ActionResultUtils.ActionResultToValueAndAssertCreated(controller.CreateUser(userDTO));
+            context.Users.Add(user);
 
             // When
-            var deleteTask = controller.DeleteUser(createdUser.Id);
+            var deleteTask = controller.DeleteUser(user.Id);
 
             // Then
             await ActionResultUtils.ActionResultAssertNoContent(deleteTask);
@@ -136,21 +130,19 @@ namespace MemeApi.Test.Controllers
             await using var context = ContextUtils.CreateMemeTestContext();
             var controller = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
-            // given
             var userDTO = new UserCreationDTO
             {
                 Username = "Test",
                 Email = "Test",
                 Password = "Test"
             };
+            await controller.CreateUser(userDTO);
 
             var loginDTO = new UserLoginDTO
             {
                 Username = "Test",
                 password = "Test"
             };
-
-            await controller.CreateUser(userDTO);
 
             // When
             var result = controller.Login(loginDTO);
@@ -167,20 +159,20 @@ namespace MemeApi.Test.Controllers
             var controller = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
             // given
-            var userDTO = new UserCreationDTO
+            var user = new User
             {
                 Username = "Test",
                 Email = "Test",
-                Password = "Test"
+                PasswordHash = "Test",
+                Salt = Array.Empty<byte>()
             };
+            context.Users.Add(user);
 
             var loginDTO = new UserLoginDTO
             {
                 Username = "Test",
                 password = "WrongPassword"
             };
-
-            await controller.CreateUser(userDTO);
 
             // When
             var result = controller.Login(loginDTO);
