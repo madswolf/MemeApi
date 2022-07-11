@@ -15,24 +15,20 @@ namespace MemeApi.Controllers
     [ApiController]
     public class MemesController : ControllerBase
     {
-        private readonly MemeContext _context;
         private readonly MemeRepository _memeRepository;
 
-        public MemesController(MemeContext context, MemeRepository memeRepository)
+        public MemesController(MemeRepository memeRepository)
         {
-            _context = context;
             _memeRepository = memeRepository;
         }
 
-        // GET: api/Memes
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Meme>>> GetMemes()
         {
             return await _memeRepository.GetMemes();
         }
 
-
-        // GET: api/Memes/5
+        
         [HttpGet("{id}")]
         public async Task<ActionResult<Meme>> GetMeme(long id)
         {
@@ -45,9 +41,7 @@ namespace MemeApi.Controllers
 
             return meme;
         }
-
-        // PUT: api/Memes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        
         [HttpPut("{id}")]
         public async Task<IActionResult> PutMeme(long id, Meme meme)
         {
@@ -61,8 +55,6 @@ namespace MemeApi.Controllers
             return NoContent();
         }
 
-        // POST: api/Memes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Meme>> PostMeme(MemeCreationDTO memeDTO)
         {
@@ -70,7 +62,6 @@ namespace MemeApi.Controllers
             return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme);
         }
 
-        // DELETE: api/Memes/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMeme(long id)
         {

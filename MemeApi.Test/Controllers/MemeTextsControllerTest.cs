@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using FluentAssertions;
 using MemeApi.Controllers;
+using MemeApi.library.repositories;
 using MemeApi.Models.Entity;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +18,8 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_DummyMemeText_WHEN_CreatingMemeBottomText_THEN_MemeBottomTextIsCreatedWithProperValues(MemeTextPosition memePosition)
         {
             await using var context = ContextUtils.CreateMemeTestContext();
-            var controller = new MemeTextsController(context);
+            var repository = new TextRepository(context);
+            var controller = new MemeTextsController(repository);
 
             // given
             var memeText = "Test";
@@ -36,7 +38,9 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_GettingMemeBottomText_THEN_MemeBottomTextHasProperValues()
         {
             await using var context = ContextUtils.CreateMemeTestContext();
-            var controller = new MemeTextsController(context);
+            var repository = new TextRepository(context);
+            var controller = new MemeTextsController(repository);
+
 
             // given
             var memeText = new MemeText()
@@ -64,7 +68,8 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_Updating_THEN_MemeBottomTextIsUpdatedWithGivenValues(MemeTextPosition memePosition, MemeTextPosition newMemePosition)
         {
             await using var context = ContextUtils.CreateMemeTestContext();
-            var controller = new MemeTextsController(context);
+            var repository = new TextRepository(context);
+            var controller = new MemeTextsController(repository);
 
             // given
             var newMemeText = "Test2";
@@ -91,7 +96,8 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_Deleting_THEN_MemeBottomTextIsDeleted()
         {
             await using var context = ContextUtils.CreateMemeTestContext();
-            var controller = new MemeTextsController(context);
+            var repository = new TextRepository(context);
+            var controller = new MemeTextsController(repository);
 
             // given
 

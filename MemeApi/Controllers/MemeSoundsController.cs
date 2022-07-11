@@ -19,14 +19,12 @@ namespace MemeApi.Controllers
             _context = context;
         }
 
-        // GET: api/MemeSounds
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MemeSound>>> GetSounds()
         {
             return await _context.Sounds.ToListAsync();
         }
 
-        // GET: api/MemeSounds/5
         [HttpGet("{id}")]
         public async Task<ActionResult<MemeSound>> GetMemeSound(long id)
         {
@@ -40,8 +38,6 @@ namespace MemeApi.Controllers
             return memeSound;
         }
 
-        // PUT: api/MemeSounds/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutMemeSound(long id, MemeSound memeSound)
         {
@@ -71,8 +67,6 @@ namespace MemeApi.Controllers
             return NoContent();
         }
 
-        // POST: api/MemeSounds
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<MemeSound>> PostMemeSound(MemeSound memeSound)
         {
@@ -82,7 +76,6 @@ namespace MemeApi.Controllers
             return CreatedAtAction("GetMemeSound", new { id = memeSound.Id }, memeSound);
         }
 
-        // DELETE: api/MemeSounds/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMemeSound(long id)
         {
