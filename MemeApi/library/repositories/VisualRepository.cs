@@ -15,7 +15,7 @@ namespace MemeApi.library.repositories
         private readonly MemeContext _context;
         private readonly IFileSaver _fileSaver;
         private readonly IFileRemover _fileRemover;
-        private static readonly Random _random = new();
+        private static readonly Random Random = new();
         public VisualRepository(MemeContext context, IFileSaver fileSaver, IFileRemover fileRemover)
         {
             _context = context;
@@ -44,7 +44,7 @@ namespace MemeApi.library.repositories
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[_random.Next(s.Length)]).ToArray());
+                .Select(s => s[Random.Next(s.Length)]).ToArray());
         }
 
         public async Task<MemeVisual> CreateMemeVisual(IFormFile visual)
