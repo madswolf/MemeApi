@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.library;
+using MemeApi.library.repositories;
 using MemeApi.Models.Entity;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
@@ -19,7 +20,8 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_DummyFile_WHEN_CreatingMemeVisual_THEN_MemeVisualIsCreatedWithProperValues()
         {
             await using var context = ContextUtils.CreateMemeTestContext();
-            var controller = new MemeVisualsController(context, new FileSaverStub(), new FileRemover());
+            var visualRepository = new VisualRepository(context, new FileSaverStub(), new FileRemover());
+            var controller = new MemeVisualsController(visualRepository);
 
             // given
             var fileStream = new MemoryStream(5);
@@ -39,7 +41,8 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_TwoDummyFilesWithSameName_WHEN_CreatingMemeVisuals_THEN_SecondMemeVisualIsHasDifferentName()
         {
             await using var context = ContextUtils.CreateMemeTestContext();
-            var controller = new MemeVisualsController(context, new FileSaverStub(), new FileRemover());
+            var visualRepository = new VisualRepository(context, new FileSaverStub(), new FileRemover());
+            var controller = new MemeVisualsController(visualRepository);
 
             // given
             var fileStream = new MemoryStream(5);
@@ -63,7 +66,8 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_LargeDummyFile_WHEN_CreatingMemeVisual_THEN_MemeVisualIsNotCreated()
         {
             await using var context = ContextUtils.CreateMemeTestContext();
-            var controller = new MemeVisualsController(context, new FileSaverStub(), new FileRemover());
+            var visualRepository = new VisualRepository(context, new FileSaverStub(), new FileRemover());
+            var controller = new MemeVisualsController(visualRepository);
 
             // given
             var fileStream = new MemoryStream(5001);
@@ -86,7 +90,8 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_Deleting_THEN_MemeVisualIsDeleted()
         {
             await using var context = ContextUtils.CreateMemeTestContext();
-            var controller = new MemeVisualsController(context, new FileSaver(), new FileRemoverStub());
+            var visualRepository = new VisualRepository(context, new FileSaverStub(), new FileRemoverStub());
+            var controller = new MemeVisualsController(visualRepository);
 
             // given
             var memeVisual = new MemeVisual()
