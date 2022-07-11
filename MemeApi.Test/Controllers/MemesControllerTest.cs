@@ -45,7 +45,7 @@ namespace MemeApi.Test.Controllers
         //    (await context.Memes.CountAsync()).Should().Be(1);
         //    (await context.Visuals.CountAsync()).Should().Be(1);
 
-        //    createdMeme.MemeVisual.Filename.Should().Be(filename);
+        //    createdMeme.CreateMemeVisual.Filename.Should().Be(filename);
         //}
 
         public static IFormFile CreateFormFile(int size, string filename)
