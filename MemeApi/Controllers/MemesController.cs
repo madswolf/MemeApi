@@ -1,13 +1,9 @@
-﻿using MemeApi.Models.Context;
+﻿using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using MemeApi.library.repositories;
 
 namespace MemeApi.Controllers
 {

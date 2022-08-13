@@ -24,13 +24,13 @@ namespace MemeApi.library.repositories
             return await _memeContext.Users.ToListAsync();
         }
 
-        public async Task<User> GetUser(long id)
+        public async Task<User> GetUser(int id)
         {
             return await _memeContext.Users.FindAsync(id);
         }
 
 
-        public async Task<bool> UpdateUser(long id, UserUpdateDTO updateDto)
+        public async Task<bool> UpdateUser(int id, UserUpdateDTO updateDto)
         {
             var user = await GetUser(id);
 
@@ -56,7 +56,7 @@ namespace MemeApi.library.repositories
             return true;
         }
 
-        public async Task<bool> DeleteUser(long id)
+        public async Task<bool> DeleteUser(int id)
         {
             var user = await GetUser(id);
             if (user == null)
