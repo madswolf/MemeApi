@@ -1,20 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
 namespace MemeApi.Models.Entity
 {
-    public class User
+    public class User : IdentityUser<int>
     {
-        public long Id { get; set; }
-        public string Username { get; set; }
-        public string Email { get; set; }
         public string ProfilePicFile { get; set; }
-        public string PasswordHash { get; set; }
-        public byte[] Salt { get; set; }
-        public string Role { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-
         public List<Vote> Votes { get; set; }
     }
 }
