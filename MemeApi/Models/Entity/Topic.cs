@@ -5,7 +5,7 @@ namespace MemeApi.Models.Entity
 {
     public class Topic
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public User Owner { get; set; }

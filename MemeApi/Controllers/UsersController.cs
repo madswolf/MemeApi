@@ -115,7 +115,7 @@ namespace MemeApi.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("[controller]/logout")]
-        public async Task<IActionResult> Lougout(UserLoginDTO loginDTO)
+        public async Task<IActionResult> Lougout()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if(userId == null) return NotFound();
