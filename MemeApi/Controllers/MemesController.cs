@@ -26,7 +26,7 @@ namespace MemeApi.Controllers
 
         
         [HttpGet("{id}")]
-        public async Task<ActionResult<Meme>> GetMeme(long id)
+        public async Task<ActionResult<Meme>> GetMeme(int id)
         {
             var meme = _memeRepository.GetMeme(id);
 
@@ -39,7 +39,7 @@ namespace MemeApi.Controllers
         }
         
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMeme(long id, Meme meme)
+        public async Task<IActionResult> PutMeme(int id, Meme meme)
         {
             if (id != meme.Id)
             {
@@ -59,7 +59,7 @@ namespace MemeApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMeme(long id)
+        public async Task<IActionResult> DeleteMeme(int id)
         {
             if (await _memeRepository.DeleteMeme(id)) return NotFound();
 

@@ -28,7 +28,7 @@ namespace MemeApi.Controllers
         public async Task<ActionResult<IEnumerable<MemeVisual>>> GetVisuals() => await _visualRepository.GetVisuals();
 
             [HttpGet("{id}")]
-        public async Task<ActionResult<MemeVisual>> GetMemeVisual(long id)
+        public async Task<ActionResult<MemeVisual>> GetMemeVisual(int id)
         {
             var memeVisual = await _visualRepository.GetVisual(id);
 
@@ -46,7 +46,7 @@ namespace MemeApi.Controllers
         }
         
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMemeVisual(long id)
+        public async Task<IActionResult> DeleteMemeVisual(int id)
         {
             var deleted = await _visualRepository.RemoveMemeVisual(id);
             if (deleted == false)

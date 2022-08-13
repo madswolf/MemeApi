@@ -26,7 +26,7 @@ namespace MemeApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<MemeSound>> GetMemeSound(long id)
+        public async Task<ActionResult<MemeSound>> GetMemeSound(int id)
         {
             var memeSound = await _context.Sounds.FindAsync(id);
 
@@ -39,7 +39,7 @@ namespace MemeApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMemeSound(long id, MemeSound memeSound)
+        public async Task<IActionResult> PutMemeSound(int id, MemeSound memeSound)
         {
             if (id != memeSound.Id)
             {
@@ -77,7 +77,7 @@ namespace MemeApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMemeSound(long id)
+        public async Task<IActionResult> DeleteMemeSound(int id)
         {
             var memeSound = await _context.Sounds.FindAsync(id);
             if (memeSound == null)
@@ -91,7 +91,7 @@ namespace MemeApi.Controllers
             return NoContent();
         }
 
-        private bool MemeSoundExists(long id)
+        private bool MemeSoundExists(int id)
         {
             return _context.Sounds.Any(e => e.Id == id);
         }

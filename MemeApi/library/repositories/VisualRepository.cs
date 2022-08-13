@@ -28,13 +28,13 @@ namespace MemeApi.library.repositories
             return await _context.Visuals.ToListAsync();
         }
 
-        public async Task<MemeVisual?> GetVisual(long id)
+        public async Task<MemeVisual?> GetVisual(int id)
         {
             return await _context.Visuals.FindAsync(id);
         }
 
 
-        private bool MemeVisualExists(long id)
+        private bool MemeVisualExists(int id)
         {
             return _context.Visuals.Any(e => e.Id == id);
         }
@@ -66,7 +66,7 @@ namespace MemeApi.library.repositories
             return memeVisual;
         }
 
-        public async Task<bool> RemoveMemeVisual(long id)
+        public async Task<bool> RemoveMemeVisual(int id)
         {
             var memeVisual = await _context.Visuals.FindAsync(id);
             if (memeVisual == null)

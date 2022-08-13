@@ -23,12 +23,12 @@ namespace MemeApi.library.repositories
             return await _context.Texts.ToListAsync();
         }
 
-        public async Task<MemeText> GetBottomText(long id)
+        public async Task<MemeText> GetBottomText(int id)
         {
             return await _context.Texts.FindAsync(id);
         }
 
-        public async Task<bool> UpdateText(long id, string newMemeBottomText, MemeTextPosition? newMemeTextPosition = null)
+        public async Task<bool> UpdateText(int id, string newMemeBottomText, MemeTextPosition? newMemeTextPosition = null)
         {
             var memeText = await _context.Texts.FindAsync(id);
 
@@ -74,7 +74,7 @@ namespace MemeApi.library.repositories
             return memeText;
         }
 
-        public async Task<bool> RemoveText(long id)
+        public async Task<bool> RemoveText(int id)
         {
             var memeBottomText = await _context.Texts.FindAsync(id);
             if (memeBottomText == null) return false;
@@ -86,7 +86,7 @@ namespace MemeApi.library.repositories
             return true;
         }
 
-        private bool MemeBottomTextExists(long id)
+        private bool MemeBottomTextExists(int id)
         {
             return _context.Texts.Any(e => e.Id == id);
         }
