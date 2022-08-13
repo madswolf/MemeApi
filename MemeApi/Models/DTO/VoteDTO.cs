@@ -7,7 +7,7 @@ namespace MemeApi.Models.DTO
         [Required]
         public long ElementID { get; set; }
         [Required]
-        public long UserID { get; set; }
+        public int UserID { get; set; }
         [Required]
         public bool? UpVote { get; set; }
     }

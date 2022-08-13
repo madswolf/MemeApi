@@ -1,27 +1,30 @@
 ﻿using MemeApi.Models.Entity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace MemeApi.Models.Context
 {
-    public class MemeContext : DbContext
+    public class MemeContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
+
+        public MemeContext(DbContextOptions<MemeContext> options) : base(options)
+        {
+        }
         public DbSet<Meme> Memes { get; set; }
         public DbSet<MemeVisual> Visuals { get; set; }
         public DbSet<MemeSound> Sounds { get; set; }
         public DbSet<MemeText> Texts { get; set; }
         public DbSet<Vote> Votes { get; set; }
         public DbSet<Votable> Votables { get; set; }
-        public DbSet<User> Users { get; set; }
         public DbSet<Topic> Topics { get; set; }
-
-
-        public MemeContext(DbContextOptions<MemeContext> options) : base(options)
-        {
-
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<User>().HasIndex(u => u.UserName).IsUnique();
+
             modelBuilder.Entity<User>()
                 .HasMany(m => m.Votes)
                 .WithOne(v => v.User)

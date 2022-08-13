@@ -111,10 +111,9 @@ namespace MemeApi.Test.Controllers
         {
             var user = new User
             {
-                Username = "Test",
+                UserName = "Test",
                 Email = "Test",
-                PasswordHash = "Test",
-                Salt = Array.Empty<byte>()
+                PasswordHash = "Test"
             };
             memeText = new MemeText()
             {

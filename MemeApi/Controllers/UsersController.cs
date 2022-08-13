@@ -20,18 +20,15 @@ using Microsoft.AspNetCore.Identity;
 
 namespace MemeApi.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
     {
         private readonly UserRepository _userRepository;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
-        private readonly IConfiguration _config;
 
-        public UsersController(IConfiguration config, SignInManager<User> signInManager, UserManager<User> userManager, UserRepository userRepository)
+        public UsersController(SignInManager<User> signInManager, UserManager<User> userManager, UserRepository userRepository)
         {
-            _config = config;
             _signInManager = signInManager;
             _userManager = userManager;
             _userRepository = userRepository;
@@ -39,14 +36,16 @@ namespace MemeApi.Controllers
 
         // GET: api/Users
         [HttpGet]
+        [Route("[controller]")]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
             return await _userRepository.GetUsers();
         }
 
         // GET: api/Users/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(long id)
+        [HttpGet]
+        [Route("[controller]/{id}")]
+        public async Task<ActionResult<User>> GetUser(int id)
         {
             var user = await _userRepository.GetUser(id);
 
@@ -58,8 +57,9 @@ namespace MemeApi.Controllers
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(long id, UserUpdateDTO updateDto)
+        [HttpPut]
+        [Route("[controller]/{id}")]
+        public async Task<IActionResult> UpdateUser(int id, UserUpdateDTO updateDto)
         {
             if (!(await _userRepository.UpdateUser(id, updateDto))) return NotFound();
 
@@ -71,7 +71,6 @@ namespace MemeApi.Controllers
         [HttpPost]
         [Route("[controller]/register")]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
         public async Task<ActionResult<User>> Register(UserCreationDTO userDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.Values);
@@ -91,8 +90,9 @@ namespace MemeApi.Controllers
         }
 
         // DELETE: api/Users/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteUser(long id)
+        [HttpDelete]
+        [Route("[controller]/{id}")]
+        public async Task<ActionResult> DeleteUser(int id)
         {
             if (await _userRepository.DeleteUser(id)) return NotFound();
 
@@ -101,14 +101,25 @@ namespace MemeApi.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        [Route("login/")]
-        public IActionResult Login(UserLoginDTO login)
+        [Route("[controller]/login")]
+        public async Task<IActionResult> Login(UserLoginDTO loginDTO)
         {
-            var user = _userManager.FindByNameAsync(login.Username);
-
-            if (user == null)
+            var user = await _userManager.FindByNameAsync(loginDTO.Username);
+            var result = await _signInManager.PasswordSignInAsync(user, loginDTO.Password, false, false);
+            if (!result.Succeeded)
                 return Unauthorized();
 
+            return Ok();
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("[controller]/logout")]
+        public async Task<IActionResult> Lougout(UserLoginDTO loginDTO)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if(userId == null) return NotFound();
+            await _signInManager.SignOutAsync();
             return Ok();
         }
     }
