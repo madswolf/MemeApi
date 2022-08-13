@@ -29,7 +29,7 @@ namespace MemeApi.Controllers
 
         // GET: api/Votes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Vote>> GetVote(long id)
+        public async Task<ActionResult<Vote>> GetVote(int id)
         {
             var vote = await _context.Votes.FindAsync(id);
 
@@ -96,7 +96,7 @@ namespace MemeApi.Controllers
 
         // DELETE: api/Votes/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteVote(long id)
+        public async Task<ActionResult> DeleteVote(int id)
         {
             var vote = await _context.Votes.FindAsync(id);
             if (vote == null)
@@ -110,7 +110,7 @@ namespace MemeApi.Controllers
             return NoContent();
         }
 
-        private bool VoteExists(long id)
+        private bool VoteExists(int id)
         {
             return _context.Votes.Any(e => e.Id == id);
         }

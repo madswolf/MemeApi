@@ -145,7 +145,7 @@ namespace MemeApi.Controllers
             return Ok();
         }
 
-        private bool TopicExists(long id)
+        private bool TopicExists(int id)
         {
             return _context.Topics.Any(e => e.Id == id);
         }
