@@ -1,5 +1,4 @@
-using MemeApi.Models.Context;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using MemeApi.Models.Context;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +8,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using MemeApi.library;
+using MemeApi.library.repositories;
+using MemeApi.Models.Entity;
+using Microsoft.AspNetCore.Identity;
 
 namespace MemeApi
 {
@@ -33,23 +35,29 @@ namespace MemeApi
             services.AddControllers().AddNewtonsoftJson(options =>
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(opt =>
-                {
-                    opt.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = Configuration["Jwt:Issuer"],
-                        ValidAudience = Configuration["Jwt:Issuer"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
-                    };
-                });
+
+            services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = false)
+                .AddEntityFrameworkStores<MemeContext>();
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Lockout.MaxFailedAccessAttempts = 1000;
+                options.Password.RequireDigit = false;
+                options.Password.RequiredLength = 1;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.User.AllowedUserNameCharacters =
+                    "abcdefghijklmnopqrstuvwxyz���ABCDEFGHIJKLMNOPQRSTUVWXYZ���0123456789-._@+ ";
+            });
 
             services.AddScoped<IFileSaver, FileSaver>();
             services.AddScoped<IFileRemover, FileRemover>();
+
+            services.AddScoped<UserRepository>();
+            services.AddScoped<MemeRepository>();
+            services.AddScoped<VisualRepository>();
+            services.AddScoped<TextRepository>();
 
             //services.AddSwaggerGen(c =>
             //{
@@ -68,13 +76,11 @@ namespace MemeApi
             }
 
             app.UseAuthentication();
-
+            app.UseAuthorization();
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
-            app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
