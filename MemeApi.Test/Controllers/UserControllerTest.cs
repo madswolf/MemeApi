@@ -2,9 +2,11 @@ using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MemeApi.Controllers;
+using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using MemeApi.Test.utils;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +21,9 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_DummyUser_WHEN_CreatingUser_THEN_UserIsCreatedWithProperValues()
         {
             await using var context = ContextUtils.CreateMemeTestContext();
-            var controller = new UsersController(context, new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
+            var repository = new UserRepository(context);
+            var controller = new UsersController(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build(),
+                new SignInManager<User>(), new UserManager<User>(), repository);
 
             // given
             var userDTO = new UserCreationDTO
@@ -30,7 +34,7 @@ namespace MemeApi.Test.Controllers
             };
 
             // When
-            var createTask = controller.CreateUser(userDTO);
+            var createTask = controller.Register(userDTO);
 
 
             // Then
@@ -136,7 +140,7 @@ namespace MemeApi.Test.Controllers
                 Email = "Test",
                 Password = "Test"
             };
-            await controller.CreateUser(userDTO);
+            await controller.Register(userDTO);
 
             var loginDTO = new UserLoginDTO
             {

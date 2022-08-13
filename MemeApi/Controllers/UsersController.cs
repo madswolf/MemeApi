@@ -14,7 +14,9 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
+using Microsoft.AspNetCore.Identity;
 
 namespace MemeApi.Controllers
 {
@@ -22,32 +24,34 @@ namespace MemeApi.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly MemeContext _context;
-        private IConfiguration _config;
+        private readonly UserRepository _userRepository;
+        private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<User> _userManager;
+        private readonly IConfiguration _config;
 
-        public UsersController(MemeContext context, IConfiguration config)
+        public UsersController(IConfiguration config, SignInManager<User> signInManager, UserManager<User> userManager, UserRepository userRepository)
         {
-            _context = context;
             _config = config;
+            _signInManager = signInManager;
+            _userManager = userManager;
+            _userRepository = userRepository;
         }
 
         // GET: api/Users
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            return await _userRepository.GetUsers();
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(long id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _userRepository.GetUser(id);
 
             if (user == null)
-            {
                 return NotFound();
-            }
 
             return Ok(user);
         }
@@ -57,36 +61,7 @@ namespace MemeApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(long id, UserUpdateDTO updateDto)
         {
-            var user = await _context.Users.FindAsync(id);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-            user.Username = updateDto.NewUsername;
-            user.Email = updateDto.NewEmail ?? user.Email;
-            if (user.PasswordHash != null)
-            {
-                var (salt, passwordHash) = GenerateSaltAndHash(updateDto.NewPassword);
-                user.PasswordHash = passwordHash;
-                user.Salt = salt;
-            }
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            if (!(await _userRepository.UpdateUser(id, updateDto))) return NotFound();
 
             return NoContent();
         }
@@ -94,59 +69,34 @@ namespace MemeApi.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> CreateUser(UserCreationDTO userDTO)
+        [Route("[controller]/register")]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult<User>> Register(UserCreationDTO userDTO)
         {
-            var (salt, passwordHash)  =  GenerateSaltAndHash(userDTO.Password);
+            if (!ModelState.IsValid) return BadRequest(ModelState.Values);
 
             var user = new User
             {
-                Username = userDTO.Username,
-                Email = userDTO.Email,
-                PasswordHash = passwordHash,
-                Salt = salt,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                UserName = userDTO.Username,
+                Email = userDTO.Email
             };
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            var result = await _userManager.CreateAsync(user, userDTO.Password);
+            if (!result.Succeeded)
+                return BadRequest(userDTO);
+
+            await _signInManager.SignInAsync(user, false);
 
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
-        }
-
-        private static (byte[], string) GenerateSaltAndHash(string password)
-        {
-            byte[] salt;
-            new RNGCryptoServiceProvider().GetBytes(salt = new byte[16]);
-
-            var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100000);
-            byte[] hash = pbkdf2.GetBytes(20);
-
-            byte[] hashBytes = new byte[36];
-            Array.Copy(salt, 0, hashBytes, 0, 16);
-            Array.Copy(hash, 0, hashBytes, 16, 20);
-            var passwordHash = Convert.ToBase64String(hashBytes);
-            return (salt, passwordHash);
         }
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteUser(long id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            if (await _userRepository.DeleteUser(id)) return NotFound();
 
             return NoContent();
-        }
-
-        private bool UserExists(long id)
-        {
-            return _context.Users.Any(e => e.Id == id);
         }
 
         [AllowAnonymous]
@@ -154,55 +104,12 @@ namespace MemeApi.Controllers
         [Route("login/")]
         public IActionResult Login(UserLoginDTO login)
         {
-            IActionResult response = Unauthorized();
-            var user = AuthenticateUser(login);
+            var user = _userManager.FindByNameAsync(login.Username);
 
-            if (user != null)
-            {
-                var tokenString = GenerateJSONWebToken(user);
-                response = Ok(new { token = tokenString });
-            }
-
-            return response;
-        }
-
-        //TODO: test
-        private string GenerateJSONWebToken(User user)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
-              _config["Jwt:Issuer"],
-              
-              claims: new[] { new Claim("id", user.Id.ToString()) }, // TODO: Add roles from user
-              expires: DateTime.Now.AddMinutes(120),
-              signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        private User AuthenticateUser(UserLoginDTO login)
-        {
-            User user = _context.Users.SingleOrDefault(user => user.Username == login.Username);
             if (user == null)
-            {
-                return null;
-            }
-            byte[] hashBytes = Convert.FromBase64String(user.PasswordHash);
-            /* Get the salt */
-            byte[] salt = new byte[16];
-            Array.Copy(hashBytes, 0, salt, 0, 16);
-            /* Compute the hash on the password the user entered */
-            var pbkdf2 = new Rfc2898DeriveBytes(login.password, salt, 100000);
-            byte[] hash = pbkdf2.GetBytes(20);
-            /* Compare the results */
-            for (int i = 0; i < 20; i++)
-                if (hashBytes[i + 16] != hash[i])
-                    return null;
-            return user;
+                return Unauthorized();
+
+            return Ok();
         }
-
-
     }
 }
