@@ -69,7 +69,7 @@ namespace MemeApi.library.repositories
             return false;
         }
 
-        private bool UserExists(long id)
+        private bool UserExists(int id)
         {
             return _memeContext.Users.Any(e => e.Id == id);
         }

@@ -56,7 +56,7 @@ namespace MemeApi.library.repositories
             await _context.SaveChangesAsync();
             return meme;
         }
-        public async Task<bool> DeleteMeme(long id)
+        public async Task<bool> DeleteMeme(int id)
         {
             var meme = await _context.Memes.FindAsync(id);
             if (meme == null)
@@ -69,7 +69,7 @@ namespace MemeApi.library.repositories
             return false;
         }
 
-        public async Task<bool> ModifyMeme(long id, Meme meme)
+        public async Task<bool> ModifyMeme(int id, Meme meme)
         {
             _context.Entry(meme).State = EntityState.Modified;
 
@@ -96,7 +96,7 @@ namespace MemeApi.library.repositories
                 .ToListAsync();
         }
 
-        public Meme GetMeme(long id)
+        public Meme GetMeme(int id)
         {
             return IncludeParts()
                 .First(m => m.Id == id);
@@ -110,7 +110,7 @@ namespace MemeApi.library.repositories
                 .Include(m => m.MemeTexts);
         }
 
-        private bool MemeExists(long id)
+        private bool MemeExists(int id)
         {
             return _context.Memes.Any(e => e.Id == id);
         }

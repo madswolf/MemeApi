@@ -24,7 +24,7 @@ namespace MemeApi.Controllers
         public async Task<ActionResult<IEnumerable<MemeText>>> GetBottomTexts() => await _textRepository.GetBottomTexts();
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<MemeText>> GetMemeBottomText(long id)
+        public async Task<ActionResult<MemeText>> GetMemeBottomText(int id)
         {
             var memeBottomText = await _textRepository.GetBottomText(id);
 
@@ -37,7 +37,7 @@ namespace MemeApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateMemeText(long id, string newMemeBottomText, MemeTextPosition? newMemeTextPosition = null)
+        public async Task<IActionResult> UpdateMemeText(int id, string newMemeBottomText, MemeTextPosition? newMemeTextPosition = null)
         {
             var memeText = await _textRepository.UpdateText(id, newMemeBottomText, newMemeTextPosition);
 
@@ -53,7 +53,7 @@ namespace MemeApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMemeBottomText(long id)
+        public async Task<IActionResult> DeleteMemeBottomText(int id)
         {
             var removed = await _textRepository.RemoveText(id);
 
