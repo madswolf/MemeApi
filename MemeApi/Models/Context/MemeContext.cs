@@ -38,7 +38,10 @@ namespace MemeApi.Models.Context
                 .HasOne(m => m.MemeSound);
 
             modelBuilder.Entity<Meme>()
-                .HasMany(m => m.MemeTexts);
+                .HasOne(m => m.Toptext);
+
+            modelBuilder.Entity<Meme>()
+                .HasOne(m => m.BottomText);
 
             modelBuilder.Entity<Vote>()
                 .HasOne(v => v.User)

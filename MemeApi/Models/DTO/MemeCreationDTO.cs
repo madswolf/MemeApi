@@ -1,13 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace MemeApi.Models.DTO
 {
     public class MemeCreationDTO
     {
         [Required]
-        public string VisualFile { get; set; }
-        public string SoundFile { get; set; }
-        public List<(string, string)> Texts { get; set; }
+        public IFormFile VisualFile { get; set; }
+        public IFormFile SoundFile { get; set; }
+
+        public string Toptext { get; set; }
+        public string Bottomtext { get; set; }
     }
 }

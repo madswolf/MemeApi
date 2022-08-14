@@ -6,6 +6,7 @@ namespace MemeApi.Models.Entity
     {
         public MemeVisual MemeVisual { get; set; }
         public MemeSound MemeSound { get; set; }
-        public List<MemeText> MemeTexts { get; set; }
+        public MemeText Toptext { get; set; }
+        public MemeText BottomText { get; set; }
     }
 }
