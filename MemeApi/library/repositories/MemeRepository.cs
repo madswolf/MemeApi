@@ -13,43 +13,39 @@ namespace MemeApi.library.repositories
     public class MemeRepository
     {
         private readonly MemeContext _context;
-        public MemeRepository(MemeContext context)
+        private readonly VisualRepository _visualRepository;
+        private readonly TextRepository _textRepository;
+        public MemeRepository(MemeContext context, VisualRepository visualRepository, TextRepository textRepository)
         {
             _context = context;
+            _visualRepository = visualRepository;
+            _textRepository = textRepository;
         }
 
         public async Task<Meme> CreateMeme(MemeCreationDTO memeDTO)
         {
-            var memeVisual = new MemeVisual { Filename = memeDTO.VisualFile };
-
-            _context.Visuals.Add(memeVisual);
+            var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile);
 
             var meme = new Meme
             {
                 MemeVisual = memeVisual,
             };
 
-            if (memeDTO.SoundFile != null)
+            //if (memeDTO.SoundFile != null)
+            //{
+            //    var memeSound = new MemeSound { Filename = memeDTO.SoundFile };
+            //    _context.Sounds.Add(memeSound);
+            //    meme.MemeSound = memeSound;
+            //}
+
+            if (memeDTO.Toptext != null)
             {
-                var memeSound = new MemeSound { Filename = memeDTO.SoundFile };
-                _context.Sounds.Add(memeSound);
-                meme.MemeSound = memeSound;
+                meme.Toptext = await _textRepository.CreateText(memeDTO.Toptext, MemeTextPosition.TopText);
             }
 
-            if (memeDTO.Texts != null)
+            if (memeDTO.Bottomtext != null)
             {
-                var memeTexts = memeDTO.Texts.Select(item =>
-                {
-                    var (text, position) = item;
-                    var memeText = new MemeText
-                    {
-                        Text = text,
-                        Position = (MemeTextPosition)Enum.Parse(typeof(MemeTextPosition), position)
-                    };
-                    _context.Texts.Add(memeText);
-                    return memeText;
-                });
-                meme.MemeTexts = memeTexts.ToList();
+                meme.BottomText = await _textRepository.CreateText(memeDTO.Bottomtext, MemeTextPosition.BottomText);
             }
 
             _context.Memes.Add(meme);
@@ -102,12 +98,13 @@ namespace MemeApi.library.repositories
                 .First(m => m.Id == id);
         }
 
-        private IIncludableQueryable<Meme, List<MemeText>> IncludeParts()
+        private IIncludableQueryable<Meme, MemeText> IncludeParts()
         {
             return _context.Memes
                 .Include(m => m.MemeVisual)
                 .Include(m => m.MemeSound)
-                .Include(m => m.MemeTexts);
+                .Include(m => m.Toptext)
+                .Include(m => m.BottomText);
         }
 
         private bool MemeExists(int id)
