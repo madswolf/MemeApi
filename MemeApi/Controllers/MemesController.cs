@@ -4,10 +4,11 @@ using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace MemeApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class MemesController : ControllerBase
     {
@@ -52,9 +53,9 @@ namespace MemeApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Meme>> PostMeme(MemeCreationDTO memeDTO)
+        public async Task<ActionResult<Meme>> PostMeme([FromForm]MemeCreationDTO memeCreationDto)
         {
-            var meme = _memeRepository.CreateMeme(memeDTO);
+            var meme = _memeRepository.CreateMeme(memeCreationDto);
             return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme);
         }
 
