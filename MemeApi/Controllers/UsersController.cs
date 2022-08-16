@@ -71,7 +71,7 @@ namespace MemeApi.Controllers
         [HttpPost]
         [Route("[controller]/register")]
         [AllowAnonymous]
-        public async Task<ActionResult<User>> Register(UserCreationDTO userDTO)
+        public async Task<ActionResult<User>> Register([FromForm]UserCreationDTO userDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.Values);
 
@@ -81,6 +81,7 @@ namespace MemeApi.Controllers
                 Email = userDTO.Email
             };
             var result = await _userManager.CreateAsync(user, userDTO.Password);
+            //todo add better handling of already used email or username
             if (!result.Succeeded)
                 return BadRequest(userDTO);
 
@@ -102,12 +103,14 @@ namespace MemeApi.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("[controller]/login")]
-        public async Task<IActionResult> Login(UserLoginDTO loginDTO)
+        public async Task<IActionResult> Login([FromForm]UserLoginDTO loginDTO)
         {
             var user = await _userManager.FindByNameAsync(loginDTO.Username);
+            if(user == null) return Unauthorized("The entered information was not correct");
+
             var result = await _signInManager.PasswordSignInAsync(user, loginDTO.Password, false, false);
             if (!result.Succeeded)
-                return Unauthorized();
+                return Unauthorized("The entered information was not correct");
 
             return Ok();
         }

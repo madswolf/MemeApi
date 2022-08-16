@@ -17,96 +17,96 @@ namespace MemeApi.Test.Controllers
 {
     public class VoteControllerTest
     {
-        [Fact]
-        public async Task GIVEN_UserAndBottomText_WHEN_CreatingVote_THEN_VoteIsCreatedWithProperValues()
-        {
-            await using var context = ContextUtils.CreateMemeTestContext();
-            var voteController = new VotesController(context);
+        //[Fact]
+        //public async Task GIVEN_UserAndBottomText_WHEN_CreatingVote_THEN_VoteIsCreatedWithProperValues()
+        //{
+        //    await using var context = ContextUtils.CreateMemeTestContext();
+        //    var voteController = new VotesController(context);
 
-            // given
-            var user = CreateUserAndVotable(context, out var memeText);
+        //    // given
+        //    var user = CreateUserAndVotable(context, out var memeText);
 
-            var voteDTO = new VoteDTO(){
-                UserID = user.Id,
-                ElementID = memeText.Id,
-                UpVote = true
-            };
+        //    var voteDTO = new VoteDTO(){
+        //        UserID = user.Id,
+        //        ElementID = memeText.Id,
+        //        UpVote = true
+        //    };
 
-            // When
-            var createVoteTask =  voteController.PostVote(voteDTO);
+        //    // When
+        //    var createVoteTask =  voteController.PostVote(voteDTO);
 
-            // Then
-            var createdVote = await ActionResultUtils.ActionResultToValueAndAssertCreated(createVoteTask);
+        //    // Then
+        //    var createdVote = await ActionResultUtils.ActionResultToValueAndAssertCreated(createVoteTask);
 
-            (await context.Texts.CountAsync()).Should().Be(1);
-            createdVote.Upvote.Should().Be((bool)voteDTO.UpVote);
-            createdVote.User.Should().Be(user);
-            createdVote.Element.Should().Be(memeText);
-        }
+        //    (await context.Texts.CountAsync()).Should().Be(1);
+        //    createdVote.Upvote.Should().Be((bool)voteDTO.UpVote);
+        //    createdVote.User.Should().Be(user);
+        //    createdVote.Element.Should().Be(memeText);
+        //}
 
-        [Fact]
-        public async Task GIVEN_ExistingVote_WHEN_CreatingVote_THEN_VoteIsUpdated()
-        {
-            await using var context = ContextUtils.CreateMemeTestContext();
-            var voteController = new VotesController(context);
+        //[Fact]
+        //public async Task GIVEN_ExistingVote_WHEN_CreatingVote_THEN_VoteIsUpdated()
+        //{
+        //    await using var context = ContextUtils.CreateMemeTestContext();
+        //    var voteController = new VotesController(context);
 
-            // given
-            var user = CreateUserAndVotable(context, out var memeText);
+        //    // given
+        //    var user = CreateUserAndVotable(context, out var memeText);
 
-            var voteDTO = new VoteDTO()
-            {
-                UserID = user.Id,
-                ElementID = memeText.Id,
-                UpVote = true
-            };
-            var createVoteTask = voteController.PostVote(voteDTO);
-            var createdVote = await ActionResultUtils.ActionResultToValueAndAssertCreated(createVoteTask);
-            var createdVoteUpVote = createdVote.Upvote;
+        //    var voteDTO = new VoteDTO()
+        //    {
+        //        UserID = user.Id,
+        //        ElementID = memeText.Id,
+        //        UpVote = true
+        //    };
+        //    var createVoteTask = voteController.PostVote(voteDTO);
+        //    var createdVote = await ActionResultUtils.ActionResultToValueAndAssertCreated(createVoteTask);
+        //    var createdVoteUpVote = createdVote.Upvote;
 
-            // When
-            voteDTO.UpVote = false;
-            var createVoteTask2 = voteController.PostVote(voteDTO);
+        //    // When
+        //    voteDTO.UpVote = false;
+        //    var createVoteTask2 = voteController.PostVote(voteDTO);
 
-            // Then
-            var createdVote2 = await ActionResultUtils.ActionResultToValueAndAssertCreated(createVoteTask2);
+        //    // Then
+        //    var createdVote2 = await ActionResultUtils.ActionResultToValueAndAssertCreated(createVoteTask2);
 
-            (await context.Texts.CountAsync()).Should().Be(1);
-            createdVote2.User.Should().Be(user);
-            createdVote2.Element.Should().Be(memeText);
-            createdVote2.Upvote.Should().Be((bool)voteDTO.UpVote);
-            createdVote2.Upvote.Should().NotBe(createdVoteUpVote);
-            createdVote2.Id.Should().Be(createdVote.Id);
-        }
+        //    (await context.Texts.CountAsync()).Should().Be(1);
+        //    createdVote2.User.Should().Be(user);
+        //    createdVote2.Element.Should().Be(memeText);
+        //    createdVote2.Upvote.Should().Be((bool)voteDTO.UpVote);
+        //    createdVote2.Upvote.Should().NotBe(createdVoteUpVote);
+        //    createdVote2.Id.Should().Be(createdVote.Id);
+        //}
 
-        [Fact]
-        public async Task GIVEN_ExistingVote_WHEN_CreatingVoteWithNullUpVote_THEN_VoteIsDeleted()
-        {
-            await using var context = ContextUtils.CreateMemeTestContext();
-            var voteController = new VotesController(context);
+        //[Fact]
+        //public async Task GIVEN_ExistingVote_WHEN_CreatingVoteWithNullUpVote_THEN_VoteIsDeleted()
+        //{
+        //    await using var context = ContextUtils.CreateMemeTestContext();
+        //    var voteController = new VotesController(context);
 
-            // given
-            var user = CreateUserAndVotable(context, out var memeText);
+        //    // given
+        //    var user = CreateUserAndVotable(context, out var memeText);
 
-            var voteDTO = new VoteDTO()
-            {
-                UserID = user.Id,
-                ElementID = memeText.Id,
-                UpVote = true
-            };
-            var createVoteTask = voteController.PostVote(voteDTO);
-            await ActionResultUtils.ActionResultToValueAndAssertCreated(createVoteTask);
+        //    var voteDTO = new VoteDTO()
+        //    {
+        //        UserID = user.Id,
+        //        ElementID = memeText.Id,
+        //        UpVote = true
+        //    };
+        //    var createVoteTask = voteController.PostVote(voteDTO);
+        //    await ActionResultUtils.ActionResultToValueAndAssertCreated(createVoteTask);
 
-            // When
-            voteDTO.UpVote = null;
-            var createVoteTask2 = voteController.PostVote(voteDTO);
+        //    // When
+        //    voteDTO.UpVote = null;
+        //    var createVoteTask2 = voteController.PostVote(voteDTO);
 
-            // Then
-            var result = (await createVoteTask2);
-            result.Should().NotBeNull();
-            result.Result.Should().BeOfType<NoContentResult>();
+        //    // Then
+        //    var result = (await createVoteTask2);
+        //    result.Should().NotBeNull();
+        //    result.Result.Should().BeOfType<NoContentResult>();
 
-            (await context.Votes.CountAsync()).Should().Be(0);
-        }
+        //    (await context.Votes.CountAsync()).Should().Be(0);
+        //}
         private static User CreateUserAndVotable(MemeContext context, out MemeText memeText)
         {
             var user = new User

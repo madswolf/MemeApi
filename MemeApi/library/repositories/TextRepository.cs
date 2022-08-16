@@ -18,12 +18,17 @@ namespace MemeApi.library.repositories
             _context = context;
         }
 
-        public async Task<List<MemeText>> GetBottomTexts()
+        public async Task<List<MemeText>> GetTexts(MemeTextPosition? type = null)
         {
+            if (type != null)
+            {
+                return await _context.Texts.Where(x => x.Position == type).ToListAsync();
+            }
+            
             return await _context.Texts.ToListAsync();
         }
 
-        public async Task<MemeText> GetBottomText(int id)
+        public async Task<MemeText> GetText(int id)
         {
             return await _context.Texts.FindAsync(id);
         }

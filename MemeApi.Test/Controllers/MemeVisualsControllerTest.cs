@@ -21,7 +21,7 @@ namespace MemeApi.Test.Controllers
         {
             await using var context = ContextUtils.CreateMemeTestContext();
             var visualRepository = new VisualRepository(context, new FileSaverStub(), new FileRemover());
-            var controller = new MemeVisualsController(visualRepository);
+            var controller = new VisualsController(visualRepository);
 
             // given
             var fileStream = new MemoryStream(5);
@@ -42,7 +42,7 @@ namespace MemeApi.Test.Controllers
         {
             await using var context = ContextUtils.CreateMemeTestContext();
             var visualRepository = new VisualRepository(context, new FileSaverStub(), new FileRemover());
-            var controller = new MemeVisualsController(visualRepository);
+            var controller = new VisualsController(visualRepository);
 
             // given
             var fileStream = new MemoryStream(5);
@@ -67,7 +67,7 @@ namespace MemeApi.Test.Controllers
         {
             await using var context = ContextUtils.CreateMemeTestContext();
             var visualRepository = new VisualRepository(context, new FileSaverStub(), new FileRemover());
-            var controller = new MemeVisualsController(visualRepository);
+            var controller = new VisualsController(visualRepository);
 
             // given
             var fileStream = new MemoryStream(5001);
@@ -91,7 +91,7 @@ namespace MemeApi.Test.Controllers
         {
             await using var context = ContextUtils.CreateMemeTestContext();
             var visualRepository = new VisualRepository(context, new FileSaverStub(), new FileRemoverStub());
-            var controller = new MemeVisualsController(visualRepository);
+            var controller = new VisualsController(visualRepository);
 
             // given
             var memeVisual = new MemeVisual()

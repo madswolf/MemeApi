@@ -25,20 +25,13 @@ namespace MemeApi.library.repositories
 
         public async Task<List<MemeVisual>> GetVisuals()
         {
-            return await _context.Visuals.ToListAsync();
+            return await _context.Visuals.Include(x => x.Votes).ToListAsync();
         }
 
         public async Task<MemeVisual?> GetVisual(int id)
         {
-            return await _context.Visuals.FindAsync(id);
+            return await _context.Visuals.Include(x => x.Votes).FirstOrDefaultAsync(x => x.Id == id);
         }
-
-
-        private bool MemeVisualExists(int id)
-        {
-            return _context.Visuals.Any(e => e.Id == id);
-        }
-
 
         public static string RandomString(int length)
         {
