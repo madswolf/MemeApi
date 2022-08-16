@@ -5,33 +5,44 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using MemeApi.library.repositories;
+using MemeApi.Models.Entity;
 
 namespace MemeApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class VotesController : ControllerBase
     {
-        private readonly MemeContext _context;
+        private readonly VotableRepository _votableRepository;
+        private readonly TextRepository _textRepository;
+        private readonly VisualRepository _visualRepository;
+        private readonly MemeRepository _memeRepository;
+        private readonly UserRepository _userRepository;
 
-        public VotesController(MemeContext context)
+        public VotesController(VotableRepository votableRepository, TextRepository textRepository, VisualRepository visualRepository, MemeRepository memeRepository, UserRepository userRepository)
         {
-            _context = context;
+            _votableRepository = votableRepository;
+            _textRepository = textRepository;
+            _visualRepository = visualRepository;
+            _memeRepository = memeRepository;
+            _userRepository = userRepository;
         }
 
         // GET: api/Votes
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Vote>>> GetVotes()
         {
-            return await _context.Votes.ToListAsync();
+            return await _votableRepository.GetVotes();
         }
 
         // GET: api/Votes/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Vote>> GetVote(int id)
         {
-            var vote = await _context.Votes.FindAsync(id);
+            var vote = await _votableRepository.GetVote(id);
 
             if (vote == null)
             {
@@ -44,28 +55,60 @@ namespace MemeApi.Controllers
         // POST: api/Votes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Vote>> PostVote(VoteDTO voteDTO)
+        public async Task<ActionResult<Vote>> PostVote([FromForm]VoteDTO voteDTO)
         {
-            var user = await _context.Votables.FindAsync(voteDTO.ElementID);
-            var element = await _context.Users.FindAsync(voteDTO.UserID);
+            var components = await _votableRepository.FindMany(voteDTO.ElementIDs);
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if(user == null || element == null)
+            if (userIdString == null || components.Count == 0)
             {
                 return NotFound();
             }
 
+            var userId = int.Parse(userIdString);
+            Votable element;
+            var visual = await _visualRepository.GetVisual(components.SingleOrDefault(item => item is MemeVisual).Id);
+
+            if (components.Count > 1)
+            {
+                var texts = await Task.WhenAll(
+                    components.Where(item => item is MemeText)
+                        .Select(async text => await _textRepository.GetText(text.Id))
+                );
+
+                if (texts.Length == 0) return NotFound();
+                var toptext = texts.Length > 0 ? texts[0] : null;
+                var bottomtext = texts.Length > 1 ? texts[1] : null; 
+                
+                var meme = await _memeRepository.FindByComponents(visual, toptext, bottomtext);
+                if (meme == null)
+                {
+                    meme = new Meme
+                    {
+                        MemeVisual = visual,
+                        //TODO handle which position they are in in the rendered meme when
+                        Toptext = toptext,
+                        BottomText = bottomtext
+                    };
+
+                    await _memeRepository.CreateMemeRaw(meme);
+                }
+
+                element = meme;
+            }
+            else
+            {
+                element = components[0];
+            }
+
             Vote vote;
-            var existingVote = _context.Votes
-                .Select(x => x)
-                .Include(x => x.Element)
-                .Include(x => x.User)
-                .SingleOrDefault(x => x.Element.Id == element.Id && x.User.Id == user.Id);
+            var existingVote = _votableRepository.FindByElementAndUser(element, userId);
 
             if (existingVote != null)
             {
-                if (voteDTO.UpVote != null)
+                if (voteDTO.UpVote != Upvote.Unvote)
                 { 
-                    existingVote.Upvote = (bool)voteDTO.UpVote;
+                    existingVote.Upvote = voteDTO.UpVote == Upvote.Upvote;
                     vote = existingVote;
                 }
                 else
@@ -75,21 +118,19 @@ namespace MemeApi.Controllers
             }
             else
             {
-                if (voteDTO.UpVote == null)
+                if (voteDTO.UpVote == Upvote.Unvote)
                 {
-                    return StatusCode(400);
+                    return BadRequest("Can't unvote because no vote exists");
                 }
                 vote = new Vote
                 {
-                    Upvote = (bool)voteDTO.UpVote,
-                    Element = user,
-                    User = element
+                    Upvote = voteDTO.UpVote == Upvote.Upvote,
+                    Element = element,
+                    User = await _userRepository.GetUser(userId)
                 };
 
-                _context.Votes.Add(vote);
+                await _votableRepository.CreateVote(vote);
             }
-
-            await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetVote", new { id = vote.Id }, vote);
         }
@@ -98,21 +139,10 @@ namespace MemeApi.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteVote(int id)
         {
-            var vote = await _context.Votes.FindAsync(id);
-            if (vote == null)
-            {
+            var deleted = await _votableRepository.DeleteVote(id);
+            if (!deleted)
                 return NotFound();
-            }
-
-            _context.Votes.Remove(vote);
-            await _context.SaveChangesAsync();
-
             return NoContent();
-        }
-
-        private bool VoteExists(int id)
-        {
-            return _context.Votes.Any(e => e.Id == id);
         }
     }
 }

@@ -10,11 +10,11 @@ namespace MemeApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MemeSoundsController : ControllerBase
+    public class SoundsController : ControllerBase
     {
         private readonly MemeContext _context;
 
-        public MemeSoundsController(MemeContext context)
+        public SoundsController(MemeContext context)
         {
             _context = context;
         }
