@@ -8,20 +8,25 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using AutoMapper;
 using MemeApi.library;
+using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
+using MemeApi.Models.DTO;
 using Microsoft.AspNetCore.Http;
 
 namespace MemeApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
-    public class MemeVisualsController : ControllerBase
+    public class VisualsController : ControllerBase
     {
         private readonly VisualRepository _visualRepository;
-        public MemeVisualsController(VisualRepository visualRepository)
+        private readonly IMapper _mapper;
+        public VisualsController(VisualRepository visualRepository, IMapper mapper)
         {
             _visualRepository = visualRepository;
+            _mapper = mapper;
         }
         
         [HttpGet]
@@ -55,6 +60,14 @@ namespace MemeApi.Controllers
             }
 
             return NoContent();
+        }
+
+        [HttpGet]
+        [Route("random")]
+        public async Task<ActionResult<Meme>> RandomMeme()
+        {
+            var visual = this.RandomItem(await _visualRepository.GetVisuals());
+            return Ok(_mapper.Map<MemeVisual, RandomComponentDTO>(visual));
         }
     }
 }

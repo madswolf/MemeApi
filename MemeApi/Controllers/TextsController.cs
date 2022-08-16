@@ -5,28 +5,34 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
+using MemeApi.Models;
+using MemeApi.Models.DTO;
 
 namespace MemeApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
-    public class MemeTextsController : ControllerBase
+    public class TextsController : ControllerBase
     {
         private readonly TextRepository _textRepository;
+        private readonly IMapper _mapper;
 
-        public MemeTextsController( TextRepository textRepository)
+        public TextsController( TextRepository textRepository, IMapper mapper)
         {
             _textRepository = textRepository;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MemeText>>> GetBottomTexts() => await _textRepository.GetBottomTexts();
+        public async Task<ActionResult<IEnumerable<MemeText>>> GetBottomTexts() => await _textRepository.GetTexts();
 
         [HttpGet("{id}")]
         public async Task<ActionResult<MemeText>> GetMemeBottomText(int id)
         {
-            var memeBottomText = await _textRepository.GetBottomText(id);
+            var memeBottomText = await _textRepository.GetText(id);
 
             if (memeBottomText == null)
             {
@@ -60,5 +66,14 @@ namespace MemeApi.Controllers
             if (!removed) return NotFound();
             return NoContent();
         }
+
+        [HttpGet]
+        [Route("random/{type}")]
+        public async Task<ActionResult<RandomComponentDTO>> RandomText(MemeTextPosition type)
+        {
+            var text = this.RandomItem(await _textRepository.GetTexts(type));
+            return Ok(_mapper.Map<MemeText, RandomComponentDTO>(text));
+        }
+
     }
 }

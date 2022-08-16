@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MemeApi.Models;
 using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
@@ -52,6 +53,13 @@ namespace MemeApi.library.repositories
             await _context.SaveChangesAsync();
             return meme;
         }
+
+        public async Task<Meme> CreateMemeRaw(Meme meme)
+        {
+            await _context.Memes.AddAsync(meme);
+            await _context.SaveChangesAsync();
+            return meme;
+        }
         public async Task<bool> DeleteMeme(int id)
         {
             var meme = await _context.Memes.FindAsync(id);
@@ -92,10 +100,10 @@ namespace MemeApi.library.repositories
                 .ToListAsync();
         }
 
-        public Meme GetMeme(int id)
+        public async Task<Meme> GetMeme(int id)
         {
-            return IncludeParts()
-                .First(m => m.Id == id);
+            return await IncludeParts()
+                .FirstAsync(m => m.Id == id);
         }
 
         private IIncludableQueryable<Meme, MemeText> IncludeParts()
@@ -110,6 +118,25 @@ namespace MemeApi.library.repositories
         private bool MemeExists(int id)
         {
             return _context.Memes.Any(e => e.Id == id);
+        }
+
+        public async Task<Meme?> FindByComponents(Votable visual, MemeText? toptext = null, MemeText? bottomtext = null)
+        {
+            var memes = _context.Memes
+                .Include(meme => meme.MemeVisual)
+                .Include(meme => meme.Toptext)
+                .Include(meme => meme.BottomText)
+                .Where(meme => meme.MemeVisual.Id == visual.Id);
+
+            memes = (toptext, bottomtext) switch
+            {
+                (null, null) => memes.Where(meme => meme.Toptext == null && meme.BottomText == null),
+                ({ }, null) => memes.Where(meme => meme.Toptext.Id == toptext.Id && meme.BottomText == null),
+                (null, { }) => memes.Where(meme => meme.BottomText.Id == bottomtext.Id && meme.Toptext == null),
+                ({ }, { }) => memes.Where(meme => meme.Toptext.Id == toptext.Id && meme.BottomText.Id == bottomtext.Id)
+            };
+            
+            return await memes.FirstOrDefaultAsync();
         }
     }
 }

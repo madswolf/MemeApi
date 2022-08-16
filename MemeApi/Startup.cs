@@ -7,7 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using AutoMapper;
 using MemeApi.library;
+using MemeApi.library.Mappings;
 using MemeApi.library.repositories;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Identity;
@@ -51,6 +53,10 @@ namespace MemeApi
                     "abcdefghijklmnopqrstuvwxyz���ABCDEFGHIJKLMNOPQRSTUVWXYZ���0123456789-._@+ ";
             });
 
+            services.AddAutoMapper(typeof(Startup));
+
+            services.AddCors();
+
             services.AddScoped<IFileSaver, FileSaver>();
             services.AddScoped<IFileRemover, FileRemover>();
 
@@ -58,6 +64,7 @@ namespace MemeApi
             services.AddScoped<MemeRepository>();
             services.AddScoped<VisualRepository>();
             services.AddScoped<TextRepository>();
+            services.AddScoped<VotableRepository>();
 
             //services.AddSwaggerGen(c =>
             //{
@@ -74,13 +81,21 @@ namespace MemeApi
                 //app.UseSwagger();
                 //app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MemeApi v1"));
             }
+            app.UseRouting();
 
             app.UseAuthentication();
+            app.UseCors(builder =>
+            {
+                builder
+                    .SetIsOriginAllowed(_ => true)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            });
             app.UseAuthorization();
 
             app.UseHttpsRedirection();
 
-            app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

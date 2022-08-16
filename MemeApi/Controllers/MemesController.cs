@@ -1,11 +1,12 @@
-﻿using MemeApi.library.repositories;
+﻿using System;
+using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-
+using MemeApi.library.Extensions;
+using Microsoft.AspNetCore.Authorization;
 namespace MemeApi.Controllers
 {
     [Route("[controller]")]
@@ -13,7 +14,6 @@ namespace MemeApi.Controllers
     public class MemesController : ControllerBase
     {
         private readonly MemeRepository _memeRepository;
-
         public MemesController(MemeRepository memeRepository)
         {
             _memeRepository = memeRepository;
@@ -29,7 +29,7 @@ namespace MemeApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Meme>> GetMeme(int id)
         {
-            var meme = _memeRepository.GetMeme(id);
+            var meme = await _memeRepository.GetMeme(id);
 
             if (meme == null)
             {
@@ -53,9 +53,10 @@ namespace MemeApi.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult<Meme>> PostMeme([FromForm]MemeCreationDTO memeCreationDto)
         {
-            var meme = _memeRepository.CreateMeme(memeCreationDto);
+            var meme = await _memeRepository.CreateMeme(memeCreationDto);
             return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme);
         }
 
@@ -65,6 +66,13 @@ namespace MemeApi.Controllers
             if (await _memeRepository.DeleteMeme(id)) return NotFound();
 
             return NoContent();
+        }
+
+        [HttpGet]
+        [Route("random")]
+        public async Task<ActionResult<Meme>> RandomMeme()
+        {
+            return Ok(this.RandomItem(await _memeRepository.GetMemes()));
         }
     }
 }

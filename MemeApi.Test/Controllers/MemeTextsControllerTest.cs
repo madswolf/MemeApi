@@ -19,7 +19,7 @@ namespace MemeApi.Test.Controllers
         {
             await using var context = ContextUtils.CreateMemeTestContext();
             var repository = new TextRepository(context);
-            var controller = new MemeTextsController(repository);
+            var controller = new TextsController(repository);
 
             // given
             var memeText = "Test";
@@ -39,7 +39,7 @@ namespace MemeApi.Test.Controllers
         {
             await using var context = ContextUtils.CreateMemeTestContext();
             var repository = new TextRepository(context);
-            var controller = new MemeTextsController(repository);
+            var controller = new TextsController(repository);
 
 
             // given
@@ -69,7 +69,7 @@ namespace MemeApi.Test.Controllers
         {
             await using var context = ContextUtils.CreateMemeTestContext();
             var repository = new TextRepository(context);
-            var controller = new MemeTextsController(repository);
+            var controller = new TextsController(repository);
 
             // given
             var newMemeText = "Test2";
@@ -97,7 +97,7 @@ namespace MemeApi.Test.Controllers
         {
             await using var context = ContextUtils.CreateMemeTestContext();
             var repository = new TextRepository(context);
-            var controller = new MemeTextsController(repository);
+            var controller = new TextsController(repository);
 
             // given
 
