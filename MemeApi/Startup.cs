@@ -18,9 +18,10 @@ namespace MemeApi
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup()
         {
-            Configuration = configuration;
+            var builder = new ConfigurationBuilder();
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
