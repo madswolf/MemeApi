@@ -14,14 +14,12 @@ using Xunit;
 
 namespace MemeApi.Test.Controllers
 {
-    public class MemeVisualsControllerTest
+    public class MemeVisualsControllerTest : ControllerTestBase
     {
         [Fact]
         public async Task GIVEN_DummyFile_WHEN_CreatingMemeVisual_THEN_MemeVisualIsCreatedWithProperValues()
         {
-            await using var context = ContextUtils.CreateMemeTestContext();
-            var visualRepository = new VisualRepository(context, new FileSaverStub(), new FileRemover());
-            var controller = new VisualsController(visualRepository);
+            var controller = new VisualsController(_visualRepository, _mapper);
 
             // given
             var fileStream = new MemoryStream(5);
@@ -33,16 +31,14 @@ namespace MemeApi.Test.Controllers
             // Then
             var createdMemeVisual = await ActionResultUtils.ActionResultToValueAndAssertCreated(createTask);
 
-            (await context.Visuals.CountAsync()).Should().Be(1);
+            (await _context.Visuals.CountAsync()).Should().Be(1);
             createdMemeVisual.Filename.Should().Be(file.FileName);
         }
 
         [Fact]
         public async Task GIVEN_TwoDummyFilesWithSameName_WHEN_CreatingMemeVisuals_THEN_SecondMemeVisualIsHasDifferentName()
         {
-            await using var context = ContextUtils.CreateMemeTestContext();
-            var visualRepository = new VisualRepository(context, new FileSaverStub(), new FileRemover());
-            var controller = new VisualsController(visualRepository);
+            var controller = new VisualsController(_visualRepository, _mapper);
 
             // given
             var fileStream = new MemoryStream(5);
@@ -57,7 +53,7 @@ namespace MemeApi.Test.Controllers
             var createdMemeVisual = await ActionResultUtils.ActionResultToValueAndAssertCreated(createTask);
             var createdMemeVisual2 = await ActionResultUtils.ActionResultToValueAndAssertCreated(createTask2);
 
-            (await context.Visuals.CountAsync()).Should().Be(2);
+            (await _context.Visuals.CountAsync()).Should().Be(2);
             createdMemeVisual.Filename.Should().NotBe(createdMemeVisual2.Filename);
             createdMemeVisual2.Filename.Should().NotBe(file2.FileName);
         }
@@ -65,9 +61,7 @@ namespace MemeApi.Test.Controllers
         [Fact]
         public async Task GIVEN_LargeDummyFile_WHEN_CreatingMemeVisual_THEN_MemeVisualIsNotCreated()
         {
-            await using var context = ContextUtils.CreateMemeTestContext();
-            var visualRepository = new VisualRepository(context, new FileSaverStub(), new FileRemover());
-            var controller = new VisualsController(visualRepository);
+            var controller = new VisualsController(_visualRepository, _mapper);
 
             // given
             var fileStream = new MemoryStream(5001);
@@ -81,7 +75,7 @@ namespace MemeApi.Test.Controllers
             createResult.Should().BeOfType<StatusCodeResult>();
             ((StatusCodeResult)createResult).StatusCode.Should().Be(413);
 
-            (await context.Visuals.CountAsync()).Should().Be(0);
+            (await _context.Visuals.CountAsync()).Should().Be(0);
         }
 
 
@@ -89,16 +83,14 @@ namespace MemeApi.Test.Controllers
         [Fact]
         public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_Deleting_THEN_MemeVisualIsDeleted()
         {
-            await using var context = ContextUtils.CreateMemeTestContext();
-            var visualRepository = new VisualRepository(context, new FileSaverStub(), new FileRemoverStub());
-            var controller = new VisualsController(visualRepository);
+            var controller = new VisualsController(_visualRepository, _mapper);
 
             // given
             var memeVisual = new MemeVisual()
             {
                 Filename = "Test"
             };
-            context.Visuals.Add(memeVisual);
+            _context.Visuals.Add(memeVisual);
 
 
             // When
@@ -107,7 +99,7 @@ namespace MemeApi.Test.Controllers
             // Then
             result.Should().NotBeNull();
             result.Should().BeOfType<NoContentResult>();
-            (await context.Users.CountAsync()).Should().Be(0);
+            (await _context.Users.CountAsync()).Should().Be(0);
         }
     }
 }
