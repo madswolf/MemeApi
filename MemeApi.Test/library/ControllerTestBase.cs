@@ -17,13 +17,14 @@ namespace MemeApi.Test.library
         protected readonly MemeContext _context;
         protected readonly VisualRepository _visualRepository;
         protected readonly TextRepository _textRepository;
+        protected readonly MemeRepository _memeRepository;
         protected IMapper _mapper;
         public ControllerTestBase()
         {
             _context = ContextUtils.CreateMemeTestContext();
             _visualRepository = new VisualRepository(_context, new FileSaverStub(), new FileRemoverStub());
             _textRepository = new TextRepository(_context);
-
+            _memeRepository = new MemeRepository(_context, _visualRepository, _textRepository);
             var mappingConfig = new MapperConfiguration(mc =>
             { 
                 mc.AddProfile(new VotableProfile());

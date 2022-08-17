@@ -19,34 +19,32 @@ using Xunit;
 
 namespace MemeApi.Test.Controllers
 {
-    public class MemesControllerTest
+    public class MemesControllerTest : ControllerTestBase
     {
-        //[Fact]
-        //public async Task GIVEN_Visual_WHEN_CreatingMeme_THEN_MemeIsCreated()
-        //{
-        //    var context = ContextUtils.CreateMemeTestContext();
-        //    var controller = CreateMemesController(context);
+        [Fact]
+        public async Task GIVEN_Visual_WHEN_CreatingMeme_THEN_MemeIsCreated()
+        {
+            var controller = new MemesController(_memeRepository);
 
-        //    // given
-        //    var filename = "test.png";
+            // given
+            var filename = "test.png";
 
-        //    var memeCreationDTO = new MemeCreationDTO()
-        //    {
-        //        VisualFile = CreateFormFile(5, filename),
-        //    };
-            
+            var memeCreationDTO = new MemeCreationDTO()
+            {
+                VisualFile = CreateFormFile(5, filename),
+            };
 
-        //    // When
-        //    var creationTask = controller.PostMeme(memeCreationDTO);
+            // When
+            var creationTask = controller.PostMeme(memeCreationDTO);
 
-        //    // Then
-        //    var createdMeme = await ActionResultUtils.ActionResultToValueAndAssertCreated(creationTask);
+            // Then
+            var createdMeme = await ActionResultUtils.ActionResultToValueAndAssertCreated(creationTask);
 
-        //    (await context.Memes.CountAsync()).Should().Be(1);
-        //    (await context.Visuals.CountAsync()).Should().Be(1);
+            (await _context.Memes.CountAsync()).Should().Be(1);
+            (await _context.Visuals.CountAsync()).Should().Be(1);
 
-        //    createdMeme.CreateMemeVisual.Filename.Should().Be(filename);
-        //}
+            createdMeme.MemeVisual.Filename.Should().Be(filename);
+        }
 
         public static IFormFile CreateFormFile(int size, string filename)
         {
@@ -54,14 +52,5 @@ namespace MemeApi.Test.Controllers
             var file = new FormFile(fileStream, 0, size, "filestream", filename);
             return file;
         }
-
-        //public static MemesController CreateMemesController(MemeContext context)
-        //{
-        //    var visualsController = new MemeVisualsController(context,new FileSaverStub(), new FileRemoverStub());
-        //    var soundsController = new MemeSoundsController(context);
-        //    var textsController = new MemeTextsController(context);
-        //    return new MemesController(context, visualsController, soundsController, textsController);
-        //}
-        
     }
 }
