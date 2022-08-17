@@ -14,6 +14,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using MemeApi.library;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using Microsoft.AspNetCore.Identity;
@@ -57,12 +58,23 @@ namespace MemeApi.Controllers
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut]
-        [Route("[controller]/{id}")]
-        public async Task<IActionResult> UpdateUser(int id, UserUpdateDTO updateDto)
+        [HttpPost]
+        [Route("[controller]/update")]
+        public async Task<IActionResult> UpdateUser([FromForm]UserUpdateDTO updateDto)
         {
-            if (!(await _userRepository.UpdateUser(id, updateDto))) return NotFound();
-
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var (updated, message) = await _userRepository.UpdateUser(int.Parse(userId), updateDto);
+            if (!updated)
+            {
+                return message switch
+                {
+                    Errors.Bad_Request => BadRequest(),
+                    Errors.Failure => StatusCode(500),
+                    Errors.Incorrect_Login => Unauthorized(),
+                    Errors.Not_Found => NotFound(),
+                    _ => StatusCode(500) // Should never happen
+                };
+            }
             return NoContent();
         }
 
@@ -77,7 +89,7 @@ namespace MemeApi.Controllers
 
             var user = new User
             {
-                UserName = userDTO.Username,
+                UserName = userDTO.Username, 
                 Email = userDTO.Email
             };
             var result = await _userManager.CreateAsync(user, userDTO.Password);
