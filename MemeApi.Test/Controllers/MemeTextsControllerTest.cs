@@ -3,6 +3,7 @@ using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.library.repositories;
 using MemeApi.Models.Entity;
+using MemeApi.Test.library;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,16 +11,14 @@ using Xunit;
 
 namespace MemeApi.Test.Controllers
 {
-    public class MemeTextsControllerTest
+    public class MemeTextsControllerTest : ControllerTestBase
     {
         [Theory]
         [InlineData(MemeTextPosition.TopText)]
         [InlineData(MemeTextPosition.BottomText)]
         public async Task GIVEN_DummyMemeText_WHEN_CreatingMemeBottomText_THEN_MemeBottomTextIsCreatedWithProperValues(MemeTextPosition memePosition)
         {
-            await using var context = ContextUtils.CreateMemeTestContext();
-            var repository = new TextRepository(context);
-            var controller = new TextsController(repository);
+            var controller = new TextsController(_textRepository, _mapper);
 
             // given
             var memeText = "Test";
@@ -30,17 +29,14 @@ namespace MemeApi.Test.Controllers
             // Then
             var createdMemeText = await ActionResultUtils.ActionResultToValueAndAssertCreated(createTask);
                 
-            (await context.Texts.CountAsync()).Should().Be(1);
+            (await _context.Texts.CountAsync()).Should().Be(1);
             createdMemeText.Text.Should().Be(memeText);
         }
 
         [Fact]
         public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_GettingMemeBottomText_THEN_MemeBottomTextHasProperValues()
         {
-            await using var context = ContextUtils.CreateMemeTestContext();
-            var repository = new TextRepository(context);
-            var controller = new TextsController(repository);
-
+            var controller = new TextsController(_textRepository,_mapper);
 
             // given
             var memeText = new MemeText()
@@ -48,7 +44,7 @@ namespace MemeApi.Test.Controllers
                 Text = "Test",
                 Position = MemeTextPosition.BottomText
             };
-            context.Texts.Add(memeText);
+            _context.Texts.Add(memeText);
 
             // When
             var result = (await controller.GetMemeBottomText(memeText.Id)).Result;
@@ -67,9 +63,7 @@ namespace MemeApi.Test.Controllers
         [InlineData(MemeTextPosition.BottomText, MemeTextPosition.TopText)]
         public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_Updating_THEN_MemeBottomTextIsUpdatedWithGivenValues(MemeTextPosition memePosition, MemeTextPosition newMemePosition)
         {
-            await using var context = ContextUtils.CreateMemeTestContext();
-            var repository = new TextRepository(context);
-            var controller = new TextsController(repository);
+            var controller = new TextsController(_textRepository, _mapper);
 
             // given
             var newMemeText = "Test2";
@@ -79,7 +73,7 @@ namespace MemeApi.Test.Controllers
                 Text = "Test",
                 Position = memePosition
             };
-            context.Texts.Add(memeText);
+            _context.Texts.Add(memeText);
 
             // When
             await controller.UpdateMemeText(memeText.Id, newMemeText, newMemePosition);
@@ -95,9 +89,7 @@ namespace MemeApi.Test.Controllers
         [Fact]
         public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_Deleting_THEN_MemeBottomTextIsDeleted()
         {
-            await using var context = ContextUtils.CreateMemeTestContext();
-            var repository = new TextRepository(context);
-            var controller = new TextsController(repository);
+            var controller = new TextsController(_textRepository, _mapper);
 
             // given
 
@@ -106,7 +98,7 @@ namespace MemeApi.Test.Controllers
                 Text = "Test",
                 Position = MemeTextPosition.BottomText
             };
-            context.Texts.Add(memeText);
+            _context.Texts.Add(memeText);
 
             // When
             var result = await controller.DeleteMemeBottomText(memeText.Id);
@@ -115,7 +107,7 @@ namespace MemeApi.Test.Controllers
 
             result.Should().NotBeNull();
             result.Should().BeOfType<NoContentResult>();
-            (await context.Texts.CountAsync()).Should().Be(0);
+            (await _context.Texts.CountAsync()).Should().Be(0);
         }
     }
 }
