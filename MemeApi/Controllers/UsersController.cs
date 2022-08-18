@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -27,12 +28,14 @@ namespace MemeApi.Controllers
         private readonly UserRepository _userRepository;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        private readonly IMailSender _mailSender;
 
-        public UsersController(SignInManager<User> signInManager, UserManager<User> userManager, UserRepository userRepository)
+        public UsersController(SignInManager<User> signInManager, UserManager<User> userManager, UserRepository userRepository, IMailSender mailSender)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _userRepository = userRepository;
+            _mailSender = mailSender;
         }
 
         // GET: api/Users
@@ -100,6 +103,14 @@ namespace MemeApi.Controllers
             await _signInManager.SignInAsync(user, false);
 
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        }
+
+        [HttpPost]
+        [Route("[controller]/recover")]
+        public async Task<bool> RecoverUser([FromForm]string username)
+        {
+            var user = await _userManager.FindByNameAsync(username);
+            return await _mailSender.sendMail(new MailAddress(user.Email), "Recover account", "beans");
         }
 
         // DELETE: api/Users/5

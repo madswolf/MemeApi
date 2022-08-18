@@ -60,6 +60,7 @@ namespace MemeApi
 
             services.AddScoped<IFileSaver, FileSaver>();
             services.AddScoped<IFileRemover, FileRemover>();
+            services.AddScoped<IMailSender, MailSender>();
 
             services.AddScoped<UserRepository>();
             services.AddScoped<MemeRepository>();
