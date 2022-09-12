@@ -66,7 +66,7 @@ namespace MemeApi.Controllers
         [Route("random")]
         public async Task<ActionResult<Meme>> RandomMeme()
         {
-            var visual = this.RandomItem(await _visualRepository.GetVisuals());
+            var visual = (await _visualRepository.GetVisuals()).RandomItem();
             return Ok(_mapper.Map<MemeVisual, RandomComponentDTO>(visual));
         }
     }

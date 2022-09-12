@@ -73,6 +73,11 @@ namespace MemeApi.library.repositories
             return false;
         }
 
+        internal Task GetRandomMemes()
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<bool> ModifyMeme(int id, Meme meme)
         {
             _context.Entry(meme).State = EntityState.Modified;
