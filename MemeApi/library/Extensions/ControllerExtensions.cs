@@ -9,9 +9,15 @@ namespace MemeApi.library.Extensions
 {
     public static class MyExtensions
     {
-        public static T RandomItem<T>(this ControllerBase controller, List<T> list)
+        public static T RandomItem<T>(this List<T> list, string seed = "")
         {
-            return list[Random.Shared.Next(list.Count)];
+            if(seed == "")
+            {
+                seed = Guid.NewGuid().ToString();
+            }
+            var random = new Random(seed.GetHashCode());
+            
+            return list[random.Next(list.Count)];
         }
     }
 }

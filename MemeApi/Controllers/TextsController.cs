@@ -71,7 +71,7 @@ namespace MemeApi.Controllers
         [Route("random/{type}")]
         public async Task<ActionResult<RandomComponentDTO>> RandomText(MemeTextPosition type)
         {
-            var text = this.RandomItem(await _textRepository.GetTexts(type));
+            var text = (await _textRepository.GetTexts(type)).RandomItem();
             return Ok(_mapper.Map<MemeText, RandomComponentDTO>(text));
         }
 

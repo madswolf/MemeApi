@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MemeApi.library.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using System.Linq;
+using System.Text.RegularExpressions;
+
 namespace MemeApi.Controllers
 {
     [Route("[controller]")]
@@ -26,7 +29,7 @@ namespace MemeApi.Controllers
         }
 
         
-        [HttpGet("{id}")]
+        [HttpGet("one/{id}")]
         public async Task<ActionResult<Meme>> GetMeme(int id)
         {
             var meme = await _memeRepository.GetMeme(id);
@@ -69,10 +72,17 @@ namespace MemeApi.Controllers
         }
 
         [HttpGet]
-        [Route("random")]
-        public async Task<ActionResult<Meme>> RandomMeme()
+        [Route("random/{seed?}")]
+        public async Task<ActionResult<Meme>> RandomMeme(string seed = "")
         {
-            return Ok(this.RandomItem(await _memeRepository.GetMemes()));
+            var list = await _memeRepository.GetMemes();
+            var regex = new Regex("^.*\\.gif$");
+            list = list
+                .Where(x => !regex.IsMatch(x.MemeVisual.Filename))
+                .Where(x => x.Toptext == null || x.Toptext.Text.Length < 150)
+                .Where(x => x.BottomText == null || x.BottomText.Text.Length < 150)
+                .ToList();
+            return Ok(list.RandomItem(seed));
         }
     }
 }

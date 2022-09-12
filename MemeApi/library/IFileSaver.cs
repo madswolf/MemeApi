@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 
 namespace MemeApi.library
 {
     public interface IFileSaver
     { 
-        void SaveFile(IFormFile file, string path);
+        Task SaveFile(IFormFile file, string path);
     }
 }
