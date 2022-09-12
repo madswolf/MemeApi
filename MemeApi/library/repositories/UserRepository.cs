@@ -60,7 +60,7 @@ namespace MemeApi.library.repositories
                 if (updateDto.NewProfilePic != null)
                 {
                     user.ProfilePicFile = updateDto.NewProfilePic.Name;
-                    _fileSaver.SaveFile(updateDto.NewProfilePic, "profilePictures/");
+                    await _fileSaver.SaveFile(updateDto.NewProfilePic, "profilePictures/");
                 }
 
                 if (updateDto.NewEmail != null) user.Email = updateDto.NewEmail;

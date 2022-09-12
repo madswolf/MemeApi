@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
@@ -12,10 +13,13 @@ namespace MemeApi.library
             _configuration = configuration;
         }
 
-        public async void SaveFile(IFormFile file, string path)
+        public async Task SaveFile(IFormFile file, string path)
         {
-            await using Stream fileStream = new FileStream(Path.Combine(_configuration["BaseUploadFolder"], path, file.FileName), FileMode.Create);
-            await file.CopyToAsync(fileStream);
+            var completePath = Path.Combine(_configuration["BaseUploadFolder"], path, file.FileName);
+            using (Stream fileStream = new FileStream(completePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            };
         }
     }
 }
