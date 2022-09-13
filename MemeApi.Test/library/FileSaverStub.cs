@@ -10,9 +10,9 @@ namespace MemeApi.Test.library
 {
     internal class FileSaverStub : IFileSaver
     {
-        public void SaveFile(IFormFile file, string path)
+        public Task SaveFile(IFormFile file, string path)
         {
-            return;
+            return Task.CompletedTask;
         }
     }
 }
