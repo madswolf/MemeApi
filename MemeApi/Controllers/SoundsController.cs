@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MemeApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class SoundsController : ControllerBase
     {
