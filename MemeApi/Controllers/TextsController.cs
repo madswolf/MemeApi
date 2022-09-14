@@ -26,10 +26,10 @@ namespace MemeApi.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<MemeText>>> GetBottomTexts() => await _textRepository.GetTexts();
+        [HttpGet("{type?}")]
+        public async Task<ActionResult<IEnumerable<MemeText>>> GetTexts(MemeTextPosition? type = null) => await _textRepository.GetTexts(type);
 
-        [HttpGet("{id}")]
+        [HttpGet("one/{id}")]
         public async Task<ActionResult<MemeText>> GetMemeBottomText(int id)
         {
             var memeBottomText = await _textRepository.GetText(id);
