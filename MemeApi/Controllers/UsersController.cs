@@ -110,7 +110,9 @@ namespace MemeApi.Controllers
         public async Task<bool> RecoverUser([FromForm]string username)
         {
             var user = await _userManager.FindByNameAsync(username);
-            return _mailSender.sendMail(new MailAddress(user.Email, user.UserName), "Recover account", "beans");
+            return false;
+            // Currently don't have a sender that can send recovery emails
+            // return _mailSender.sendMail(new MailAddress(user.Email, user.UserName), "Recover account", "beans");
         }
 
         // DELETE: api/Users/5
