@@ -1,13 +1,47 @@
-﻿using System.Net.Mail;
+﻿using Microsoft.Extensions.Configuration;
+using System;
+using System.Net;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace MemeApi.library
 {
     public class MailSender : IMailSender
     {
-        public Task<bool> sendMail(MailAddress recipient, string subject, string body)
+        private readonly IConfiguration _configuration;
+        private readonly SmtpClient _smtpClient;
+        public MailSender(IConfiguration configuration)
         {
-            throw new System.NotImplementedException();
+            _configuration = configuration;
+            _smtpClient = new SmtpClient
+            {
+                Host = _configuration["Email.Bot.Host"],
+                Port = int.Parse(_configuration["Email.Bot.Host.Port"]),
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(_configuration["Email.Bot.Mail"], _configuration["Email.Bot.Password"])
+            };
+        }
+
+        public bool sendMail(MailAddress recipient, string subject, string body)
+        {
+            var botMail = new MailAddress(_configuration["Email.Bot.Mail"], _configuration["Email.Bot.Name"]);
+            using (var message = new MailMessage(botMail, recipient)
+            {
+                Subject = subject,
+                Body = body
+            })
+            {
+                try
+                {
+                   _smtpClient.Send(message);
+                   return true;
+                } catch (Exception)
+                {
+                    return false;
+                } 
+            }
         }
     }
 }
