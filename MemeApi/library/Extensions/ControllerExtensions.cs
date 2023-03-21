@@ -19,5 +19,11 @@ namespace MemeApi.library.Extensions
             
             return list[random.Next(list.Count)];
         }
+
+        public static int SumVotes(this Votable votable)
+        {
+            return votable.Votes.Aggregate(0, (acc, item) => acc + (item.Upvote ? 1 : -1));
+        }
+
     }
 }

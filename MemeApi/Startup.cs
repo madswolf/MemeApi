@@ -1,18 +1,14 @@
-﻿using MemeApi.Models.Context;
+﻿using MemeApi.library;
+using MemeApi.library.repositories;
+using MemeApi.Models.Context;
+using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using AutoMapper;
-using MemeApi.library;
-using MemeApi.library.Mappings;
-using MemeApi.library.repositories;
-using MemeApi.Models.Entity;
-using Microsoft.AspNetCore.Identity;
 
 namespace MemeApi
 {

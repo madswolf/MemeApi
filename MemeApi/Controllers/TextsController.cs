@@ -72,7 +72,14 @@ namespace MemeApi.Controllers
         public async Task<ActionResult<RandomComponentDTO>> RandomText(MemeTextPosition type)
         {
             var text = (await _textRepository.GetTexts(type)).RandomItem();
-            return Ok(_mapper.Map<MemeText, RandomComponentDTO>(text));
+            var randomDTO = new RandomComponentDTO
+            {
+                data = text.Text,
+                id = text.Id,
+                votes = text.SumVotes()
+            };
+
+            return Ok(randomDTO);
         }
 
     }

@@ -12,5 +12,6 @@ namespace MemeApi.Models.DTO
 
         public string Toptext { get; set; }
         public string Bottomtext { get; set; }
+        public string FileName { get; set; }
     }
 }
