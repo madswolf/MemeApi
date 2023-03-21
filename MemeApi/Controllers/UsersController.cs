@@ -29,13 +29,15 @@ namespace MemeApi.Controllers
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
         private readonly IMailSender _mailSender;
+        private readonly IConfiguration _configuration;
 
-        public UsersController(SignInManager<User> signInManager, UserManager<User> userManager, UserRepository userRepository, IMailSender mailSender)
+        public UsersController(SignInManager<User> signInManager, UserManager<User> userManager, UserRepository userRepository, IMailSender mailSender, IConfiguration configuration)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _userRepository = userRepository;
             _mailSender = mailSender;
+            _configuration = configuration;
         }
 
         // GET: api/Users
@@ -86,7 +88,7 @@ namespace MemeApi.Controllers
         [HttpPost]
         [Route("[controller]/register")]
         [AllowAnonymous]
-        public async Task<ActionResult<User>> Register([FromForm]UserCreationDTO userDTO)
+        public async Task<ActionResult<UserInfoDTO>> Register([FromForm]UserCreationDTO userDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.Values);
 
@@ -101,8 +103,8 @@ namespace MemeApi.Controllers
                 return BadRequest(userDTO);
 
             await _signInManager.SignInAsync(user, false);
-
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+            var url = _configuration["Media.Host"] + "profilepic/" + (!string.IsNullOrEmpty(user.ProfilePicFile) ? user.ProfilePicFile : "default.jpg");
+            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new UserInfoDTO { ProfilePicURl = url});
         }
 
         [HttpPost]
@@ -128,7 +130,7 @@ namespace MemeApi.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("[controller]/login")]
-        public async Task<IActionResult> Login([FromForm]UserLoginDTO loginDTO)
+        public async Task<ActionResult<UserInfoDTO>> Login([FromForm]UserLoginDTO loginDTO)
         {
             var user = await _userManager.FindByNameAsync(loginDTO.Username);
             if(user == null) return Unauthorized("The entered information was not correct");
@@ -136,14 +138,14 @@ namespace MemeApi.Controllers
             var result = await _signInManager.PasswordSignInAsync(user, loginDTO.Password, false, false);
             if (!result.Succeeded)
                 return Unauthorized("The entered information was not correct");
-
-            return Ok();
+            var url = _configuration["Media.Host"] + "profilepic/" + (!string.IsNullOrEmpty(user.ProfilePicFile) ? user.ProfilePicFile : "default.jpg");
+            return Ok(new UserInfoDTO { ProfilePicURl = url });
         }
 
         [AllowAnonymous]
         [HttpPost]
         [Route("[controller]/logout")]
-        public async Task<IActionResult> Lougout()
+        public async Task<IActionResult> Logout()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if(userId == null) return NotFound();

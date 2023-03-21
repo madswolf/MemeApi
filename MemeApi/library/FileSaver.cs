@@ -13,9 +13,9 @@ namespace MemeApi.library
             _configuration = configuration;
         }
 
-        public async Task SaveFile(IFormFile file, string path)
+        public async Task SaveFile(IFormFile file, string path, string fileName)
         {
-            var completePath = Path.Combine(_configuration["BaseUploadFolder"], path, file.FileName);
+            var completePath = Path.Combine(_configuration["BaseUploadFolder"], path, fileName);
             using (Stream fileStream = new FileStream(completePath, FileMode.Create))
             {
                 await file.CopyToAsync(fileStream);

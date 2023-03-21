@@ -1,19 +1,13 @@
-﻿using System;
-using MemeApi.Models.Context;
-using MemeApi.Models.Entity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using AutoMapper;
-using MemeApi.library;
+﻿using AutoMapper;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
+using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MemeApi.Controllers
 {
@@ -23,12 +17,14 @@ namespace MemeApi.Controllers
     {
         private readonly VisualRepository _visualRepository;
         private readonly IMapper _mapper;
-        public VisualsController(VisualRepository visualRepository, IMapper mapper)
+        private readonly IConfiguration _configuration;
+        public VisualsController(VisualRepository visualRepository, IMapper mapper, IConfiguration configuration)
         {
             _visualRepository = visualRepository;
             _mapper = mapper;
+            _configuration = configuration;
         }
-        
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MemeVisual>>> GetVisuals() => await _visualRepository.GetVisuals();
 
@@ -46,7 +42,7 @@ namespace MemeApi.Controllers
         {
             if (visual.Length > 5000) return StatusCode(413);
 
-            var memeVisual = await _visualRepository.CreateMemeVisual(visual);
+            var memeVisual = await _visualRepository.CreateMemeVisual(visual, visual.FileName);
             return CreatedAtAction("GetMemeVisual", new { id = memeVisual.Id }, memeVisual);
         }
         
@@ -64,10 +60,16 @@ namespace MemeApi.Controllers
 
         [HttpGet]
         [Route("random")]
-        public async Task<ActionResult<Meme>> RandomMeme()
+        public async Task<ActionResult<RandomComponentDTO>> RandomMeme()
         {
             var visual = (await _visualRepository.GetVisuals()).RandomItem();
-            return Ok(_mapper.Map<MemeVisual, RandomComponentDTO>(visual));
+            var randomDTO = new RandomComponentDTO
+            {
+                data = _configuration["Media.Host"] + "visual/" + visual.Filename,
+                id = visual.Id,
+                votes = visual.SumVotes()
+            };
+            return Ok(randomDTO);
         }
     }
 }
