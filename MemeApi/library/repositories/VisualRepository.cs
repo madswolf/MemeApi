@@ -52,7 +52,7 @@ namespace MemeApi.library.repositories
                 memeVisual.Filename = RandomString(5) + filename;
             }
 
-            await _fileSaver.SaveFile(visual, "visuals/", filename);
+            await _fileSaver.SaveFile(visual, "visual/", filename);
 
             _context.Visuals.Add(memeVisual);
             await _context.SaveChangesAsync();
