@@ -66,7 +66,7 @@ namespace MemeApi.library.repositories
                     {
                         user.ProfilePicFile = VisualRepository.RandomString(5) + user.ProfilePicFile;
                     }
-                    await _fileSaver.SaveFile(updateDto.NewProfilePic, "profilePictures/", user.ProfilePicFile);
+                    await _fileSaver.SaveFile(updateDto.NewProfilePic, "profilepic/", user.ProfilePicFile);
                 }
 
                 if (updateDto.NewEmail != null) user.Email = updateDto.NewEmail;

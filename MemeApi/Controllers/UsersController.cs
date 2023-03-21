@@ -1,24 +1,14 @@
-﻿using MemeApi.Models;
-using MemeApi.Models.Context;
-using MemeApi.Models.Entity;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net.Mail;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using MemeApi.library;
+﻿using MemeApi.library;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
+using MemeApi.Models.Entity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace MemeApi.Controllers
 {
@@ -95,7 +85,8 @@ namespace MemeApi.Controllers
             var user = new User
             {
                 UserName = userDTO.Username, 
-                Email = userDTO.Email
+                Email = userDTO.Email,
+                ProfilePicFile = "default.jpg"
             };
             var result = await _userManager.CreateAsync(user, userDTO.Password);
             //todo add better handling of already used email or username
@@ -103,7 +94,7 @@ namespace MemeApi.Controllers
                 return BadRequest(userDTO);
 
             await _signInManager.SignInAsync(user, false);
-            var url = _configuration["Media.Host"] + "profilepic/" + (!string.IsNullOrEmpty(user.ProfilePicFile) ? user.ProfilePicFile : "default.jpg");
+            var url = _configuration["Media.Host"] + "profilepic/" + user.ProfilePicFile;
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new UserInfoDTO { ProfilePicURl = url});
         }
 
@@ -138,7 +129,7 @@ namespace MemeApi.Controllers
             var result = await _signInManager.PasswordSignInAsync(user, loginDTO.Password, false, false);
             if (!result.Succeeded)
                 return Unauthorized("The entered information was not correct");
-            var url = _configuration["Media.Host"] + "profilepic/" + (!string.IsNullOrEmpty(user.ProfilePicFile) ? user.ProfilePicFile : "default.jpg");
+            var url = _configuration["Media.Host"] + "profilepic/" + user.ProfilePicFile;
             return Ok(new UserInfoDTO { ProfilePicURl = url });
         }
 

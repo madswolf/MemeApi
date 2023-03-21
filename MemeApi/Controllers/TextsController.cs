@@ -52,10 +52,10 @@ namespace MemeApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<MemeText>> CreateMemeBottomText(string text, MemeTextPosition position)
+        public async Task<ActionResult<MemeText>> CreateMemeText([FromBody] TextCreationDTO textCreationDTO)
         {
-            var memeText = await _textRepository.CreateText(text, position);
-            return CreatedAtAction("CreateMemeBottomText", new { id = memeText.Id }, memeText);
+            var memeText = await _textRepository.CreateText(textCreationDTO.Text, textCreationDTO.position);
+            return CreatedAtAction("CreateMemeText", new { id = memeText.Id }, memeText);
         }
 
         [HttpDelete("{id}")]
