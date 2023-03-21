@@ -4,17 +4,24 @@ import requests
 
 # Opening JSON file
 f = open('memes.json', encoding='utf-8')
-  
+f_visual = open('visuals.json', encoding='utf-8')
+f_toptext = open('toptexts.json', encoding='utf-8')
+f_bottomtext = open('bottomtexts.json', encoding='utf-8')
 # returns JSON object as 
 # a dictionary
 data = json.load(f)
-  
-baseurl = "https://media.mads.monster/visual/"
-test_url = "https://localhost/memes"
+data_visuals = json.load(f_visual)
+data_toptexts = json.load(f_toptext)
+data_bottomtexts = json.load(f_bottomtext)
+mediaurl = "https://media.mads.monster/visual/"
+meme_url = "https://localhost/memes"
+text_url = "https://localhost/texts"
+visual_url = "https://localhost/visuals"
 # Iterating through the json
 # list
 
 meme_ids = []
+visuals_ids = []
 toptext_ids = []
 bottomtext_ids = []
 for meme in data:
@@ -24,7 +31,9 @@ for meme in data:
         continue
 
     visual_filename = visual["filename"]
-    visual_file = requests.get(baseurl + visual_filename, allow_redirects=True)
+    
+    visuals_ids.append(visual["id"])
+    visual_file = requests.get(mediaurl + visual_filename, allow_redirects=True)
     meme_ids.append(meme["id"])
 
     toptext = meme["topText"]
@@ -40,13 +49,33 @@ for meme in data:
     data = {"Toptext": toptext,"Bottomtext": bottomtext, "FileName":visual_filename}
     session = requests.Session()
     session.verify = False
-    response = session.post(test_url,files = {"VisualFile": visual_file.content}, data = data)
-    #time.sleep(1)
-    if(response.ok):
-        print(meme["id"], visual_filename, toptext, bottomtext)
-    else:
-        print("OH FUCK")
+    response = session.post(meme_url,files = {"VisualFile": visual_file.content}, data = data)
+    print(response)
+
   
+for visual in data_visuals:
+    if visual["id"] not in visuals_ids:
+        session = requests.Session()
+        session.verify = False
+        visual_file = requests.get(mediaurl + visual["filename"], allow_redirects=True)
+        print(visual_file)
+        data = {"Toptext": toptext,"Bottomtext": "", "FileName":visual["filename"]}
+        response = session.post(visual_url,files = {"VisualFile": visual_file.content}, data = data)
+        print(visual, response)
+
+for toptext in data_toptexts:
+    if toptext["id"] not in toptext_ids:
+        session = requests.Session()
+        session.verify = False
+        session.post(text_url, data = json.dumps({"Text":toptext["memetext"], "Position": "TopText"}), headers={'content-type': 'application/json'})
+
+for bottomtext in data_bottomtexts:
+    if bottomtext["id"] not in bottomtext_ids:
+        session = requests.Session()
+        session.verify = False
+        session.post(text_url, data = json.dumps({"Text":bottomtext["memetext"], "Position": "BottomText"}), headers={'content-type': 'application/json'})
+
+print(len(visuals_ids))
 print(len(meme_ids))
 print(len(toptext_ids))
 print(len(bottomtext_ids))

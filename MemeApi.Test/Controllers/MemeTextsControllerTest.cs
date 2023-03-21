@@ -2,6 +2,7 @@
 using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.library.repositories;
+using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
@@ -21,16 +22,20 @@ namespace MemeApi.Test.Controllers
             var controller = new TextsController(_textRepository, _mapper);
 
             // given
-            var memeText = "Test";
+            var memeText = new TextCreationDTO
+            {
+                Text = "Test",
+                position = memePosition
+            }; 
 
             // When
-            var createTask = controller.CreateMemeBottomText(memeText, memePosition);
+            var createTask = controller.CreateMemeText(memeText);
 
             // Then
             var createdMemeText = await ActionResultUtils.ActionResultToValueAndAssertCreated(createTask);
                 
             (await _context.Texts.CountAsync()).Should().Be(1);
-            createdMemeText.Text.Should().Be(memeText);
+            createdMemeText.Text.Should().Be(memeText.Text);
         }
 
         [Fact]
