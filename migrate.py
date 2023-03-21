@@ -37,7 +37,7 @@ for meme in data:
         bottomtext_ids.append(bottomtext["id"])
         bottomtext = bottomtext["memetext"]
 
-    data = {"Toptext": toptext,"Bottomtext": bottomtext}
+    data = {"Toptext": toptext,"Bottomtext": bottomtext, "FileName":visual_filename}
     session = requests.Session()
     session.verify = False
     response = session.post(test_url,files = {"VisualFile": visual_file.content}, data = data)
