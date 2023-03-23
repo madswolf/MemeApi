@@ -25,7 +25,7 @@ namespace MemeApi.library.repositories
 
         public async Task<Meme> CreateMeme(MemeCreationDTO memeDTO)
         {
-            var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName);
+            var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile);
 
             var meme = new Meme
             {

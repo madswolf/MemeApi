@@ -4,6 +4,7 @@ using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.library;
 using MemeApi.library.repositories;
+using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
@@ -64,8 +65,8 @@ namespace MemeApi.Test.Controllers
             var controller = new VisualsController(_visualRepository, _mapper, _configuration);
 
             // given
-            var fileStream = new MemoryStream(5001);
-            var file = new FormFile(fileStream, 0, 5001, "filestream", "test");
+            var fileStream = new MemoryStream(5000001);
+            var file = new FormFile(fileStream, 0, 50000001, "filestream", "test");
 
             // When
             var createResult = (await controller.PostMemeVisual(file)).Result;

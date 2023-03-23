@@ -38,12 +38,11 @@ namespace MemeApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<MemeVisual>> PostMemeVisual([FromForm] MemeCreationDTO memeCreationDto)
+        public async Task<ActionResult<MemeVisual>> PostMemeVisual(IFormFile visual)
         {
-            var visual = memeCreationDto.VisualFile;
-            //if (visual.Length > 50000) return StatusCode(413);
+            if (visual.Length > 5000000) return StatusCode(413);
 
-            var memeVisual = await _visualRepository.CreateMemeVisual(visual, memeCreationDto.FileName);
+            var memeVisual = await _visualRepository.CreateMemeVisual(visual);
             return CreatedAtAction("GetMemeVisual", new { id = memeVisual.Id }, memeVisual);
         }
         
