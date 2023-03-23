@@ -1,16 +1,13 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using MemeApi.Controllers;
-using MemeApi.library;
-using MemeApi.library.repositories;
-using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace MemeApi.Test.Controllers
