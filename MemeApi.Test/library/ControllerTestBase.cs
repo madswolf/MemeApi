@@ -33,8 +33,6 @@ namespace MemeApi.Test.library
             });
             _mapper = mappingConfig.CreateMapper();
             _configuration = new ConfigurationBuilder()
-                .SetBasePath("/Users/Project/")
-                .AddJsonFile("appsettings.json")
                 .Build();
         }
     }
