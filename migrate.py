@@ -50,7 +50,8 @@ for meme in data:
     session = requests.Session()
     session.verify = False
     response = session.post(meme_url,files = {"VisualFile": visual_file.content}, data = data)
-    print(response)
+    if(not response.ok):
+        print(visual_file, response)
 
   
 for visual in data_visuals:
@@ -58,22 +59,27 @@ for visual in data_visuals:
         session = requests.Session()
         session.verify = False
         visual_file = requests.get(mediaurl + visual["filename"], allow_redirects=True)
-        print(visual_file)
-        data = {"Toptext": toptext,"Bottomtext": "", "FileName":visual["filename"]}
-        response = session.post(visual_url,files = {"VisualFile": visual_file.content}, data = data)
-        print(visual, response)
+        data = {"Toptext": "","Bottomtext": "", "FileName":visual["filename"]}
+        response = session.post(meme_url,files = {"VisualFile": visual_file.content}, data = data)
+        if(not response.ok):
+            print(visual, response)
 
 for toptext in data_toptexts:
     if toptext["id"] not in toptext_ids:
         session = requests.Session()
         session.verify = False
-        session.post(text_url, data = json.dumps({"Text":toptext["memetext"], "Position": "TopText"}), headers={'content-type': 'application/json'})
+        response = session.post(text_url, data = json.dumps({"Text":toptext["memetext"], "Position": "TopText"}), headers={'content-type': 'application/json'})
+        if(not response.ok):
+            print(toptext, response)
 
 for bottomtext in data_bottomtexts:
     if bottomtext["id"] not in bottomtext_ids:
         session = requests.Session()
         session.verify = False
-        session.post(text_url, data = json.dumps({"Text":bottomtext["memetext"], "Position": "BottomText"}), headers={'content-type': 'application/json'})
+        response = session.post(text_url, data = json.dumps({"Text":bottomtext["memetext"], "Position": "BottomText"}), headers={'content-type': 'application/json'})
+        if(not response.ok):
+            print(bottomtext, response)
+
 
 print(len(visuals_ids))
 print(len(meme_ids))

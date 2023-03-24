@@ -59,6 +59,7 @@ namespace MemeApi.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<Meme>> PostMeme([FromForm]MemeCreationDTO memeCreationDto)
         {
+            if (!memeCreationDto.VisualFile.FileName.Equals("VisualFile")) memeCreationDto.FileName = memeCreationDto.VisualFile.FileName;
             var meme = await _memeRepository.CreateMeme(memeCreationDto);
             return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme);
         }

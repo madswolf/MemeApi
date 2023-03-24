@@ -67,10 +67,10 @@ namespace MemeApi.Controllers
 
             var userId = int.Parse(userIdString);
             Votable element;
-            var visual = await _visualRepository.GetVisual(components.SingleOrDefault(item => item is MemeVisual).Id);
 
             if (components.Count > 1)
             {
+                var visual = await _visualRepository.GetVisual(components.SingleOrDefault(item => item is MemeVisual).Id);
                 var texts = await Task.WhenAll(
                     components.Where(item => item is MemeText)
                         .Select(async text => await _textRepository.GetText(text.Id))

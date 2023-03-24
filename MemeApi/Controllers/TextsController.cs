@@ -30,16 +30,20 @@ namespace MemeApi.Controllers
         public async Task<ActionResult<IEnumerable<MemeText>>> GetTexts(MemeTextPosition? type = null) => await _textRepository.GetTexts(type);
 
         [HttpGet("one/{id}")]
-        public async Task<ActionResult<MemeText>> GetMemeBottomText(int id)
+        public async Task<ActionResult<MemeText>> GetMemeText(int id)
         {
             var memeBottomText = await _textRepository.GetText(id);
 
-            if (memeBottomText == null)
-            {
-                return NotFound();
-            }
+            if (memeBottomText == null) return NotFound();
+            
 
-            return Ok(memeBottomText);
+            var componentDTO = new RandomComponentDTO
+            {
+                data = memeBottomText.Text,
+                id = memeBottomText.Id
+            };
+
+            return Ok(componentDTO);
         }
 
         [HttpPut("{id}")]
@@ -71,7 +75,8 @@ namespace MemeApi.Controllers
         [Route("random/{type}")]
         public async Task<ActionResult<RandomComponentDTO>> RandomText(MemeTextPosition type)
         {
-            var text = (await _textRepository.GetTexts(type)).RandomItem();
+            var texts = await _textRepository.GetTexts(type);
+            var text = texts.RandomItem();
             var randomDTO = new RandomComponentDTO
             {
                 data = text.Text,

@@ -29,12 +29,18 @@ namespace MemeApi.Controllers
         public async Task<ActionResult<IEnumerable<MemeVisual>>> GetVisuals() => await _visualRepository.GetVisuals();
 
             [HttpGet("{id}")]
-        public async Task<ActionResult<MemeVisual>> GetMemeVisual(int id)
+        public async Task<ActionResult<MemeComponentDTO>> GetMemeVisual(int id)
         {
             var memeVisual = await _visualRepository.GetVisual(id);
 
             if (memeVisual == null) return NotFound();
-            return memeVisual;
+            var componentDTO = new RandomComponentDTO
+            {
+                data = _configuration["Media.Host"] + "visual/" + memeVisual.Filename,
+                id = memeVisual.Id
+            };
+
+            return Ok(componentDTO);
         }
 
         [HttpPost]
@@ -42,7 +48,7 @@ namespace MemeApi.Controllers
         {
             if (visual.Length > 5000000) return StatusCode(413);
 
-            var memeVisual = await _visualRepository.CreateMemeVisual(visual);
+            var memeVisual = await _visualRepository.CreateMemeVisual(visual,visual.FileName);
             return CreatedAtAction("GetMemeVisual", new { id = memeVisual.Id }, memeVisual);
         }
         

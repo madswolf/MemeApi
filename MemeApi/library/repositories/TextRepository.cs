@@ -22,7 +22,7 @@ namespace MemeApi.library.repositories
         {
             if (type != null)
             {
-                return await _context.Texts.Where(x => x.Position == type).ToListAsync();
+                return await _context.Texts.Include(x => x.Votes).Where(x => x.Position == type).ToListAsync();
             }
             
             return await _context.Texts.ToListAsync();
