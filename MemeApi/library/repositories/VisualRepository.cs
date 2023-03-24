@@ -40,19 +40,19 @@ namespace MemeApi.library.repositories
                 .Select(s => s[Random.Next(s.Length)]).ToArray());
         }
 
-        public async Task<MemeVisual> CreateMemeVisual(IFormFile visual)
+        public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename)
         {
             var memeVisual = new MemeVisual()
             {
-                Filename = visual.FileName
+                Filename = filename
             };
 
-            if (_context.Visuals.Any(x => x.Filename == visual.FileName))
+            if (_context.Visuals.Any(x => x.Filename == memeVisual.Filename))
             {
-                memeVisual.Filename = RandomString(5) + visual.FileName;
+                memeVisual.Filename = RandomString(5) + memeVisual.Filename;
             }
 
-            await _fileSaver.SaveFile(visual, "visual/", visual.FileName);
+            await _fileSaver.SaveFile(visual, "visual/", memeVisual.Filename);
 
             _context.Visuals.Add(memeVisual);
             await _context.SaveChangesAsync();
