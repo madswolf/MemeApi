@@ -2,7 +2,6 @@
 using System;
 using System.Net;
 using System.Net.Mail;
-using System.Threading.Tasks;
 
 namespace MemeApi.library
 {

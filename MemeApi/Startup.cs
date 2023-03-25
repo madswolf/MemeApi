@@ -12,6 +12,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Net;
+using System;
+using System.IO;
+using System.Reflection;
 
 namespace MemeApi
 {
@@ -56,7 +59,23 @@ namespace MemeApi
             services.AddAutoMapper(typeof(Startup));
 
             services.AddCors();
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "Meme API",
+                    Description = "An ASP.NET Core Web API for creating memes",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Contact information",
+                        Email = "Contact@mads.monster"
+                      
+                    },
+                });
+                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+            });
 
             services.AddScoped<IFileSaver, FileSaver>();
             services.AddScoped<IFileRemover, FileRemover>();

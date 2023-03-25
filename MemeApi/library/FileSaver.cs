@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace MemeApi.library
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class FileSaver : IFileSaver
     {
         private readonly IConfiguration _configuration;
@@ -22,4 +23,6 @@ namespace MemeApi.library
             };
         }
     }
+
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

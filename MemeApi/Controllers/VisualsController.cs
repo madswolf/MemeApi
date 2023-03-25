@@ -11,24 +11,34 @@ using System.Threading.Tasks;
 
 namespace MemeApi.Controllers
 {
+    /// <summary>
+    /// A controller for creating and managing visual meme components.
+    /// </summary>
     [Route("[controller]")]
     [ApiController]
     public class VisualsController : ControllerBase
     {
         private readonly VisualRepository _visualRepository;
-        private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
-        public VisualsController(VisualRepository visualRepository, IMapper mapper, IConfiguration configuration)
+        /// <summary>
+        /// A controller for creating and managing visual meme components.
+        /// </summary>
+        public VisualsController(VisualRepository visualRepository, IConfiguration configuration)
         {
             _visualRepository = visualRepository;
-            _mapper = mapper;
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Get all visuals
+        /// </summary>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MemeVisual>>> GetVisuals() => await _visualRepository.GetVisuals();
 
-            [HttpGet("{id}")]
+        /// <summary>
+        /// Get a specific visual by ID
+        /// </summary>
+        [HttpGet("{id}")]
         public async Task<ActionResult<MemeComponentDTO>> GetMemeVisual(int id)
         {
             var memeVisual = await _visualRepository.GetVisual(id);
@@ -43,6 +53,9 @@ namespace MemeApi.Controllers
             return Ok(componentDTO);
         }
 
+        /// <summary>
+        /// Create a visual
+        /// </summary>
         [HttpPost]
         public async Task<ActionResult<MemeVisual>> PostMemeVisual(IFormFile visual)
         {
@@ -51,7 +64,11 @@ namespace MemeApi.Controllers
             var memeVisual = await _visualRepository.CreateMemeVisual(visual,visual.FileName);
             return CreatedAtAction("GetMemeVisual", new { id = memeVisual.Id }, memeVisual);
         }
-        
+
+        /// <summary>
+        /// Delete a visual by ID
+        /// </summary>
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMemeVisual(int id)
         {
@@ -64,9 +81,12 @@ namespace MemeApi.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Get a random visual
+        /// </summary>
         [HttpGet]
         [Route("random")]
-        public async Task<ActionResult<RandomComponentDTO>> RandomMeme()
+        public async Task<ActionResult<RandomComponentDTO>> RandomVisual()
         {
             var visual = (await _visualRepository.GetVisuals()).RandomItem();
             var randomDTO = new RandomComponentDTO

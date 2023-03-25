@@ -17,7 +17,7 @@ namespace MemeApi.Test.Controllers
         [Fact]
         public async Task GIVEN_DummyFile_WHEN_CreatingMemeVisual_THEN_MemeVisualIsCreatedWithProperValues()
         {
-            var controller = new VisualsController(_visualRepository, _mapper, _configuration);
+            var controller = new VisualsController(_visualRepository, _configuration);
 
             // given
             var fileStream = new MemoryStream(5);
@@ -36,7 +36,7 @@ namespace MemeApi.Test.Controllers
         [Fact]
         public async Task GIVEN_TwoDummyFilesWithSameName_WHEN_CreatingMemeVisuals_THEN_SecondMemeVisualIsHasDifferentName()
         {
-            var controller = new VisualsController(_visualRepository, _mapper, _configuration);
+            var controller = new VisualsController(_visualRepository _configuration);
 
             // given
             var fileStream = new MemoryStream(5);
@@ -59,7 +59,7 @@ namespace MemeApi.Test.Controllers
         [Fact]
         public async Task GIVEN_LargeDummyFile_WHEN_CreatingMemeVisual_THEN_MemeVisualIsNotCreated()
         {
-            var controller = new VisualsController(_visualRepository, _mapper, _configuration);
+            var controller = new VisualsController(_visualRepository, _configuration);
 
             // given
             var fileStream = new MemoryStream(5000001);
@@ -81,7 +81,7 @@ namespace MemeApi.Test.Controllers
         [Fact]
         public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_Deleting_THEN_MemeVisualIsDeleted()
         {
-            var controller = new VisualsController(_visualRepository, _mapper, _configuration);
+            var controller = new VisualsController(_visualRepository, _configuration);
 
             // given
             var memeVisual = new MemeVisual()
