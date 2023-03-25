@@ -56,6 +56,7 @@ namespace MemeApi
             services.AddAutoMapper(typeof(Startup));
 
             services.AddCors();
+            services.AddSwaggerGen();
 
             services.AddScoped<IFileSaver, FileSaver>();
             services.AddScoped<IFileRemover, FileRemover>();
@@ -71,11 +72,6 @@ namespace MemeApi
             {
                 options.KnownProxies.Add(IPAddress.Parse("10.0.0.100"));
             });
-
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "MemeApi", Version = "v1" });
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -84,10 +80,11 @@ namespace MemeApi
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MemeApi v1"));
+                app.UseSwaggerUI();
                 app.UseSwagger();
             }
             app.UseRouting();
+
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {

@@ -47,7 +47,7 @@ namespace MemeApi.Controllers
 
         // PUT: api/Topics/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut]
         [Route("[controller]/{topicId}/mod/{userId}")]
         public async Task<IActionResult> ModUser(int topicId, int userId)
         {
