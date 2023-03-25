@@ -12,6 +12,9 @@ using MemeApi.Models.Entity;
 
 namespace MemeApi.Controllers
 {
+    /// <summary>
+    /// A controller for creating managing votes
+    /// </summary>
     [Route("[controller]")]
     [ApiController]
     public class VotesController : ControllerBase
@@ -21,7 +24,9 @@ namespace MemeApi.Controllers
         private readonly VisualRepository _visualRepository;
         private readonly MemeRepository _memeRepository;
         private readonly UserRepository _userRepository;
-
+        /// <summary>
+        /// A controller for creating managing votes
+        /// </summary>
         public VotesController(VotableRepository votableRepository, TextRepository textRepository, VisualRepository visualRepository, MemeRepository memeRepository, UserRepository userRepository)
         {
             _votableRepository = votableRepository;
@@ -31,14 +36,18 @@ namespace MemeApi.Controllers
             _userRepository = userRepository;
         }
 
-        // GET: api/Votes
+        /// <summary>
+        /// Get all votes.
+        /// </summary>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Vote>>> GetVotes()
         {
             return await _votableRepository.GetVotes();
         }
 
-        // GET: api/Votes/5
+        /// <summary>
+        /// Get one vote.
+        /// </summary>
         [HttpGet("{id}")]
         public async Task<ActionResult<Vote>> GetVote(int id)
         {
@@ -52,8 +61,11 @@ namespace MemeApi.Controllers
             return vote;
         }
 
-        // POST: api/Votes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Vote on a particular meme component or meme component.
+        /// To vote on a component or existing meme include one id, the id of the component.
+        /// To vote for a meme that does not exist yet, include the id's of elements it contains.
+        /// </summary>
         [HttpPost]
         public async Task<ActionResult<Vote>> PostVote([FromForm]VoteDTO voteDTO)
         {
@@ -135,7 +147,9 @@ namespace MemeApi.Controllers
             return CreatedAtAction("GetVote", new { id = vote.Id }, vote);
         }
 
-        // DELETE: api/Votes/5
+        /// <summary>
+        /// Delete a vote. This can also be done with normal vote with Upvote = null
+        /// </summary>
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteVote(int id)
         {

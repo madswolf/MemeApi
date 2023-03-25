@@ -12,24 +12,35 @@ using System.Text.RegularExpressions;
 
 namespace MemeApi.Controllers
 {
+
+    /// <summary>
+    /// A controller for creating memes made of visuals and textual components.
+    /// </summary>
     [Route("[controller]")]
     [ApiController]
     public class MemesController : ControllerBase
     {
         private readonly MemeRepository _memeRepository;
+        /// <summary>
+        /// A controller for creating memes made of visuals and textual components.
+        /// </summary>
         public MemesController(MemeRepository memeRepository)
         {
             _memeRepository = memeRepository;
         }
-
+        /// <summary>
+        /// Get all memes
+        /// </summary>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Meme>>> GetMemes()
         {
             return await _memeRepository.GetMemes();
         }
 
-        
-        [HttpGet("one/{id}")]
+        /// <summary>
+        /// Get a specific meme by ID
+        /// </summary> 
+        [HttpGet("{id}")]
         public async Task<ActionResult<Meme>> GetMeme(int id)
         {
             var meme = await _memeRepository.GetMeme(id);
@@ -41,7 +52,7 @@ namespace MemeApi.Controllers
 
             return meme;
         }
-        
+
         //[HttpPut("{id}")]
         //public async Task<IActionResult> PutMeme(int id, Meme meme)
         //{
@@ -55,6 +66,9 @@ namespace MemeApi.Controllers
         //    return NoContent();
         //}
 
+        /// <summary>
+        /// Create a meme
+        /// </summary>
         [HttpPost]
         [AllowAnonymous]
         public async Task<ActionResult<Meme>> PostMeme([FromForm]MemeCreationDTO memeCreationDto)
@@ -64,6 +78,9 @@ namespace MemeApi.Controllers
             return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme);
         }
 
+        /// <summary>
+        /// Delete a meme
+        /// </summary>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMeme(int id)
         {
@@ -72,6 +89,9 @@ namespace MemeApi.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Get a random meme based on an optional seed
+        /// </summary>
         [HttpGet]
         [Route("random/{seed?}")]
         public async Task<ActionResult<Meme>> RandomMeme(string seed = "")

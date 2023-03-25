@@ -9,29 +9,40 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
+using System.ComponentModel;
 
 namespace MemeApi.Controllers
 {
+    /// <summary>
+    /// A controller for creating and managing meme and meme component groupings called topics.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class TopicsController : ControllerBase
     {
         private readonly MemeContext _context;
         private readonly UserRepository _userRepository;
+        /// <summary>
+        /// A controller for creating and managing meme and meme component groupings called topics.
+        /// </summary>
         public TopicsController(MemeContext context, UserRepository userRepository)
         {
             _context = context;
             _userRepository = userRepository;
         }
 
-        // GET: api/Topics
+        /// <summary>
+        /// Get all topics
+        /// </summary>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Topic>>> GetTopic()
         {
             return await _context.Topics.ToListAsync();
         }
 
-        // GET: api/Topics/5
+        /// <summary>
+        /// Get a specific topic by ID
+        /// </summary>
         [HttpGet("{id}")]
         public async Task<ActionResult<Topic>> GetTopic(int id)
         {
@@ -45,8 +56,9 @@ namespace MemeApi.Controllers
             return topic;
         }
 
-        // PUT: api/Topics/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Mod a user for the given topic. Requires the currently logged in user to be the topic owner
+        /// </summary>
         [HttpPut]
         [Route("[controller]/{topicId}/mod/{userId}")]
         public async Task<IActionResult> ModUser(int topicId, int userId)
@@ -86,8 +98,9 @@ namespace MemeApi.Controllers
             return Ok();
         }
 
-        // POST: api/Topics
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Create a topic with the currently logged in user as the owner
+        /// </summary>
         [HttpPost]
         public async Task<ActionResult<Topic>> CreateTopic(TopicCreationDTO topicCreationDTO)
         {
@@ -107,10 +120,12 @@ namespace MemeApi.Controllers
              _context.Topics.Add(topic);
             await _context.SaveChangesAsync();
 
+            topic.Owner = null;
             return CreatedAtAction("GetTopic", new { id = topic.Id }, topic);
         }
-
-        // DELETE: api/Topics/5
+        /// <summary>
+        /// Delete Topic
+        /// </summary>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTopic(int id)
         {
@@ -129,7 +144,11 @@ namespace MemeApi.Controllers
             return NoContent();
         }
 
-        [HttpPost]
+
+        /// <summary>
+        ///Delete a votable in a topic that you own or moderate
+        /// </summary>
+        [HttpDelete]
         [Route("[controller]/{id}")]
         public async Task<IActionResult> DeleteVotable(int id)
         {

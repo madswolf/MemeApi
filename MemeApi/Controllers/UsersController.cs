@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 
 namespace MemeApi.Controllers
 {
+    /// <summary>
+    /// A controller for creating and managing users and their login sessions.
+    /// </summary>
     [ApiController]
     public class UsersController : ControllerBase
     {
@@ -20,7 +23,9 @@ namespace MemeApi.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IMailSender _mailSender;
         private readonly IConfiguration _configuration;
-
+        /// <summary>
+        /// A controller for creating and managing users and their login sessions.
+        /// </summary>
         public UsersController(SignInManager<User> signInManager, UserManager<User> userManager, UserRepository userRepository, IMailSender mailSender, IConfiguration configuration)
         {
             _signInManager = signInManager;
@@ -30,7 +35,9 @@ namespace MemeApi.Controllers
             _configuration = configuration;
         }
 
-        // GET: api/Users
+        /// <summary>
+        /// Get all users
+        /// </summary>
         [HttpGet]
         [Route("[controller]")]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
@@ -38,7 +45,9 @@ namespace MemeApi.Controllers
             return await _userRepository.GetUsers();
         }
 
-        // GET: api/Users/5
+        /// <summary>
+        /// Get a specific user by ID
+        /// </summary>
         [HttpGet]
         [Route("[controller]/{id}")]
         public async Task<ActionResult<User>> GetUser(int id)
@@ -51,8 +60,9 @@ namespace MemeApi.Controllers
             return Ok(user);
         }
 
-        // PUT: api/Users/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Update a user with a new password or profile picture.
+        /// </summary>
         [HttpPost]
         [Route("[controller]/update")]
         public async Task<IActionResult> UpdateUser([FromForm]UserUpdateDTO updateDto)
@@ -73,8 +83,9 @@ namespace MemeApi.Controllers
             return NoContent();
         }
 
-        // POST: api/Users
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Register a user with a username, email, and password
+        /// </summary>
         [HttpPost]
         [Route("[controller]/register")]
         [AllowAnonymous]
@@ -98,6 +109,9 @@ namespace MemeApi.Controllers
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new UserInfoDTO { ProfilePicURl = url});
         }
 
+        /// <summary>
+        /// intiate the recovery of a user
+        /// </summary>
         [HttpPost]
         [Route("[controller]/recover")]
         public async Task<bool> RecoverUser([FromForm]string username)
@@ -108,16 +122,24 @@ namespace MemeApi.Controllers
             // return _mailSender.sendMail(new MailAddress(user.Email, user.UserName), "Recover account", "beans");
         }
 
-        // DELETE: api/Users/5
+        /// <summary>
+        /// Delete the currently logged in user
+        /// </summary>
         [HttpDelete]
         [Route("[controller]/{id}")]
-        public async Task<ActionResult> DeleteUser(int id)
+        public async Task<ActionResult> DeleteUser()
         {
-            if (await _userRepository.DeleteUser(id)) return NotFound();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userRepository.GetUser(int.Parse(userId));
+            if (user == null) return NotFound();
+            await _userManager.DeleteAsync(user);
 
             return NoContent();
         }
 
+        /// <summary>
+        /// Login to a user with the username and password
+        /// </summary>
         [AllowAnonymous]
         [HttpPost]
         [Route("[controller]/login")]
@@ -133,6 +155,9 @@ namespace MemeApi.Controllers
             return Ok(new UserInfoDTO { ProfilePicURl = url });
         }
 
+        /// <summary>
+        /// Log out of the currently logged in user
+        /// </summary>
         [AllowAnonymous]
         [HttpPost]
         [Route("[controller]/logout")]

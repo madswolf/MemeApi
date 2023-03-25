@@ -13,22 +13,32 @@ using MemeApi.Models.DTO;
 
 namespace MemeApi.Controllers
 {
+    /// <summary>
+    /// A controller for creating and managing meme textual components.
+    /// </summary>
     [Route("[controller]")]
     [ApiController]
     public class TextsController : ControllerBase
     {
         private readonly TextRepository _textRepository;
-        private readonly IMapper _mapper;
-
-        public TextsController( TextRepository textRepository, IMapper mapper)
+        /// <summary>
+        /// A controller for creating and managing meme textual components.
+        /// </summary>
+        public TextsController( TextRepository textRepository)
         {
             _textRepository = textRepository;
-            _mapper = mapper;
         }
 
+        /// <summary>
+        /// Get all texts.
+        /// Include text position to get all of that position
+        /// </summary>
         [HttpGet("{type?}")]
         public async Task<ActionResult<IEnumerable<MemeText>>> GetTexts(MemeTextPosition? type = null) => await _textRepository.GetTexts(type);
 
+        /// <summary>
+        /// Get a specific text by ID
+        /// </summary>
         [HttpGet("one/{id}")]
         public async Task<ActionResult<MemeText>> GetMemeText(int id)
         {
@@ -46,15 +56,18 @@ namespace MemeApi.Controllers
             return Ok(componentDTO);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateMemeText(int id, string newMemeBottomText, MemeTextPosition? newMemeTextPosition = null)
-        {
-            var memeText = await _textRepository.UpdateText(id, newMemeBottomText, newMemeTextPosition);
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> UpdateMemeText(int id, string newMemeBottomText, MemeTextPosition? newMemeTextPosition = null)
+        //{
+        //    var memeText = await _textRepository.UpdateText(id, newMemeBottomText, newMemeTextPosition);
 
-            if (!memeText) return NotFound();
-            return NoContent();
-        }
+        //    if (!memeText) return NotFound();
+        //    return NoContent();
+        //}
 
+        /// <summary>
+        /// Create a meme text
+        /// </summary>
         [HttpPost]
         public async Task<ActionResult<MemeText>> CreateMemeText([FromBody] TextCreationDTO textCreationDTO)
         {
@@ -62,14 +75,21 @@ namespace MemeApi.Controllers
             return CreatedAtAction("CreateMemeText", new { id = memeText.Id }, memeText);
         }
 
+        /// <summary>
+        /// Delete a meme text
+        /// </summary>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMemeBottomText(int id)
+        public async Task<IActionResult> DeleteMemeText(int id)
         {
             var removed = await _textRepository.RemoveText(id);
 
             if (!removed) return NotFound();
             return NoContent();
         }
+
+        /// <summary>
+        /// Get a random meme text
+        /// </summary>
 
         [HttpGet]
         [Route("random/{type}")]
