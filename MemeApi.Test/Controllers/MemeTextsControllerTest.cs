@@ -52,7 +52,7 @@ namespace MemeApi.Test.Controllers
             _context.Texts.Add(memeText);
 
             // When
-            var result = (await controller.GetMemeBottomText(memeText.Id)).Result;
+            var result = (await controller.GetMemeText(memeText.Id)).Result;
 
             // Then
 
@@ -86,7 +86,7 @@ namespace MemeApi.Test.Controllers
             // Then
             var foundMemeBottomText = await
                 ActionResultUtils.ActionResultToValueAndAssertOk(
-                    controller.GetMemeBottomText(memeText.Id));
+                    controller.GetMemeText(memeText.Id));
 
             foundMemeBottomText.Text.Should().Be(newMemeText);
         }

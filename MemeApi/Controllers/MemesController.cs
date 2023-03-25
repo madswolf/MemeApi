@@ -42,18 +42,18 @@ namespace MemeApi.Controllers
             return meme;
         }
         
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutMeme(int id, Meme meme)
-        {
-            if (id != meme.Id)
-            {
-                return BadRequest();
-            }
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutMeme(int id, Meme meme)
+        //{
+        //    if (id != meme.Id)
+        //    {
+        //        return BadRequest();
+        //    }
 
-            if (await _memeRepository.ModifyMeme(id, meme)) return NotFound();
+        //    if (await _memeRepository.ModifyMeme(id, meme)) return NotFound();
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         [HttpPost]
         [AllowAnonymous]
