@@ -106,7 +106,7 @@ namespace MemeApi.Test.Controllers
             _context.Texts.Add(memeText);
 
             // When
-            var result = await controller.DeleteMemeBottomText(memeText.Id);
+            var result = await controller.DeleteMemeText(memeText.Id);
 
             // Then
 
