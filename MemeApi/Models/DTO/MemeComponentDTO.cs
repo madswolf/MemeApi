@@ -1,11 +1,17 @@
 ﻿namespace MemeApi.Models.DTO
 {
     /// <summary>
-    /// Login to a user with the username and password
+    /// A DTO for meme components
     /// </summary>
     public class MemeComponentDTO
     {
+        /// <summary>
+        /// Data/Content of the component
+        /// </summary>
         public string data { get; set; }
+        /// <summary>
+        /// ID of the component
+        /// </summary>
         public int id { get; set; }
     }
 }

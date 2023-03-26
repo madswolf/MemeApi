@@ -36,7 +36,7 @@ namespace MemeApi.Test.Controllers
         [Fact]
         public async Task GIVEN_TwoDummyFilesWithSameName_WHEN_CreatingMemeVisuals_THEN_SecondMemeVisualIsHasDifferentName()
         {
-            var controller = new VisualsController(_visualRepository _configuration);
+            var controller = new VisualsController(_visualRepository, _configuration);
 
             // given
             var fileStream = new MemoryStream(5);

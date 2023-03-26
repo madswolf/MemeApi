@@ -33,9 +33,12 @@ namespace MemeApi
         {
 
             services.AddControllers();
-            services.AddDbContext<MemeContext>(opt =>
-            {
-                opt.UseInMemoryDatabase("MemeList");
+            services.AddDbContext<MemeContext>(options => {
+                var connstr = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING");
+                if (connstr != null)
+                    options.UseNpgsql(connstr);
+                else
+                    options.UseInMemoryDatabase("Test");
             });
             services.AddControllers().AddNewtonsoftJson(options =>
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
