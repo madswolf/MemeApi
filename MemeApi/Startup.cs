@@ -103,8 +103,6 @@ namespace MemeApi
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwaggerUI();
-                app.UseSwagger();
                 var factory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
                 using var serviceScope = factory.CreateScope();
                 var context = serviceScope.ServiceProvider.GetRequiredService<MemeContext>();
@@ -113,6 +111,10 @@ namespace MemeApi
                     context.SaveChanges();
                 }
             }
+
+            app.UseMiddleware<SwaggerAuthenticationMiddleware>();
+            app.UseSwaggerUI();
+            app.UseSwagger();
             app.UseRouting();
 
 

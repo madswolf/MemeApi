@@ -24,7 +24,7 @@ namespace MemeApi.Models.DTO
         /// </summary>
         public string Bottomtext { get; set; }
         /// <summary>
-        /// Optional name for the visual compo´nent
+        /// Optional name for the visual component
         /// </summary>
         public string FileName { get; set; }
     }
