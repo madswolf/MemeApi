@@ -17,6 +17,7 @@ namespace MemeApi.library.repositories
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IFileSaver _fileSaver;
+        private static readonly Random _random = Random.Shared;
 
         public UserRepository(MemeContext memeContext, UserManager<User> userManager, SignInManager<User> signInManager, IFileSaver fileSaver)
         {
@@ -36,6 +37,10 @@ namespace MemeApi.library.repositories
             return await _memeContext.Users.FindAsync(id);
         }
 
+        public async Task<User> FindByEmail(string userEmail)
+        {
+            return await _memeContext.Users.FirstOrDefaultAsync(user => user.Email == userEmail);
+        }
 
         public async Task<(bool, Errors)> UpdateUser(int id, UserUpdateDTO updateDto)
         {
@@ -113,6 +118,32 @@ namespace MemeApi.library.repositories
         private bool UserExists(int id)
         {
             return _memeContext.Users.Any(e => e.Id == id);
+        }
+
+        public async Task<string> CreateNewPassword(User user)
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var password = RandomString(20);
+            var result = await _userManager.ResetPasswordAsync(user, token, password);
+            int attempts = 0;
+
+            while (!result.Succeeded)
+            {
+                password = RandomString(20);
+                if (attempts > 10) throw new Exception("Couldn't create new password");
+                await _userManager.ResetPasswordAsync(user, token, password);
+                attempts++;
+            }
+            await _memeContext.SaveChangesAsync();
+
+            return password;
+        }
+
+        public static string RandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[_random.Next(s.Length)]).ToArray());
         }
     }
 }

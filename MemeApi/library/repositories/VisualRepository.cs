@@ -15,7 +15,7 @@ namespace MemeApi.library.repositories
         private readonly MemeContext _context;
         private readonly IFileSaver _fileSaver;
         private readonly IFileRemover _fileRemover;
-        private static readonly Random Random = new();
+        private static readonly Random Random = Random.Shared;
         public VisualRepository(MemeContext context, IFileSaver fileSaver, IFileRemover fileRemover)
         {
             _context = context;

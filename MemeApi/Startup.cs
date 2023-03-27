@@ -89,6 +89,7 @@ namespace MemeApi
             services.AddScoped<VisualRepository>();
             services.AddScoped<TextRepository>();
             services.AddScoped<VotableRepository>();
+            services.AddScoped<TopicRepository>();
 
             services.Configure<ForwardedHeadersOptions>(options =>
             {
@@ -104,6 +105,13 @@ namespace MemeApi
                 app.UseDeveloperExceptionPage();
                 app.UseSwaggerUI();
                 app.UseSwagger();
+                var factory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
+                using var serviceScope = factory.CreateScope();
+                var context = serviceScope.ServiceProvider.GetRequiredService<MemeContext>();
+                if (context.Database.EnsureCreated()) // false when db already exists
+                {
+                    context.SaveChanges();
+                }
             }
             app.UseRouting();
 
