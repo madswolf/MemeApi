@@ -44,13 +44,9 @@ namespace MemeApi.Controllers
         public async Task<ActionResult<Meme>> GetMeme(int id)
         {
             var meme = await _memeRepository.GetMeme(id);
-
-            if (meme == null)
-            {
-                return NotFound();
-            }
-
-            return meme;
+            if (meme == null) return NotFound();
+ 
+            return Ok(meme);
         }
 
         //[HttpPut("{id}")]

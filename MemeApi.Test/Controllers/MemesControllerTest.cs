@@ -46,6 +46,38 @@ namespace MemeApi.Test.Controllers
             createdMeme.MemeVisual.Filename.Should().Be(filename);
         }
 
+        [Fact]
+        public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_GettingMemeBottomText_THEN_MemeBottomTextHasProperValues()
+        {
+            var controller = new MemesController(_memeRepository);
+
+            // given
+            var visual = new MemeVisual()
+            {
+                Filename = "Test"
+            };
+            var meme = new Meme
+            {
+                MemeVisual = visual,
+            };
+            _context.Memes.Add(meme);
+            await _context.SaveChangesAsync();
+
+            // When
+            var response = await controller.GetMeme(meme.Id);
+            var result = response.Result;
+
+            // Then
+
+            result.Should().NotBeNull();
+            result.Should().BeOfType<OkObjectResult>();
+            var foundMemeText = ((OkObjectResult)result).Value as Meme;
+
+            foundMemeText.MemeVisual.Should().Be(visual);
+            foundMemeText.Id.Should().Be(meme.Id);
+            foundMemeText.Votes.Should().BeNull();
+        }
+
         public static IFormFile CreateFormFile(int size, string filename)
         {
             var fileStream = new MemoryStream(size);
