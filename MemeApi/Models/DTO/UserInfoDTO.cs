@@ -5,6 +5,11 @@
     /// </summary>
     public class UserInfoDTO
     {
+
+        /// <summary>
+        /// Users name
+        /// </summary>
+        public string UserName { get; set; }
         /// <summary>
         /// Users profile picture URL
         /// </summary>

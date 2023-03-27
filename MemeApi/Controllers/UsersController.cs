@@ -1,4 +1,5 @@
 ﻿using MemeApi.library;
+using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -42,9 +44,10 @@ namespace MemeApi.Controllers
         /// </summary>
         [HttpGet]
         [Route("[controller]")]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<UserInfoDTO>>> GetUsers()
         {
-            return await _userRepository.GetUsers();
+            var users = await _userRepository.GetUsers();
+            return users.Select(u => u.ToUserInfo(_configuration["Media.Host"])).ToList();
         }
 
         /// <summary>
@@ -52,14 +55,14 @@ namespace MemeApi.Controllers
         /// </summary>
         [HttpGet]
         [Route("[controller]/{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<ActionResult<UserInfoDTO>> GetUser(int id)
         {
             var user = await _userRepository.GetUser(id);
 
             if (user == null)
                 return NotFound();
 
-            return Ok(user);
+            return Ok(user.ToUserInfo(_configuration["Media.Host"]));
         }
 
         /// <summary>
@@ -107,8 +110,7 @@ namespace MemeApi.Controllers
                 return BadRequest(userDTO);
 
             await _signInManager.SignInAsync(user, false);
-            var url = _configuration["Media.Host"] + "profilepic/" + user.ProfilePicFile;
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new UserInfoDTO { ProfilePicURl = url});
+            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user.ToUserInfo(_configuration["Media.Host"]));
         }
 
         /// <summary>
@@ -162,8 +164,7 @@ namespace MemeApi.Controllers
             var result = await _signInManager.PasswordSignInAsync(user, loginDTO.Password, false, false);
             if (!result.Succeeded)
                 return Unauthorized("The entered information was not correct");
-            var url = _configuration["Media.Host"] + "profilepic/" + user.ProfilePicFile;
-            return Ok(new UserInfoDTO { ProfilePicURl = url });
+            return Ok(user.ToUserInfo(_configuration["Media.Host"]));
         }
 
         /// <summary>
@@ -175,7 +176,7 @@ namespace MemeApi.Controllers
         public async Task<IActionResult> Logout()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if(userId == null) return NotFound();
+            if(userId == null) return Unauthorized();
             await _signInManager.SignOutAsync();
             return Ok();
         }
