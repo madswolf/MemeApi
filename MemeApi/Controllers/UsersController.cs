@@ -125,7 +125,8 @@ namespace MemeApi.Controllers
             try
             {
                 var password = await _userRepository.CreateNewPassword(user);
-                return _mailSender.sendMail(new MailAddress(user.Email, user.UserName), "Recover account", password);
+                var body = "Hello gamer, you requested a new password, so here it is: \n" + password;
+                return _mailSender.sendMail(new MailAddress(user.Email, user.UserName), "Recovery password", body);
             }
             catch (Exception)
             {
