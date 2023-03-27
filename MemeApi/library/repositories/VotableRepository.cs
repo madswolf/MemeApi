@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MemeApi.Models;
@@ -62,6 +63,21 @@ namespace MemeApi.library.repositories
             }
 
             _context.Votes.Remove(vote);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<Votable> GetVotable(int id)
+        {
+            return await _context.Votables.FindAsync(id);
+        }
+
+        public async Task<bool> DeleteVotable(Votable votable, User user)
+        {
+            if (votable.Topic.Owner != user || votable.Topic.Moderators.All(x => x != user))
+                return false;
+            _context.Votables.Remove(votable);
             await _context.SaveChangesAsync();
 
             return true;
