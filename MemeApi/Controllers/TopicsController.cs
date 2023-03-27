@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using System.ComponentModel;
+using MemeApi.library.Extensions;
 
 namespace MemeApi.Controllers
 {
@@ -20,40 +21,38 @@ namespace MemeApi.Controllers
     [ApiController]
     public class TopicsController : ControllerBase
     {
-        private readonly MemeContext _context;
         private readonly UserRepository _userRepository;
+        private readonly TopicRepository _topicRepository;
+        private readonly VotableRepository _votableRepository;
         /// <summary>
         /// A controller for creating and managing meme and meme component groupings called topics.
         /// </summary>
-        public TopicsController(MemeContext context, UserRepository userRepository)
+        public TopicsController( UserRepository userRepository, TopicRepository topicRepository)
         {
-            _context = context;
             _userRepository = userRepository;
+            _topicRepository = topicRepository;
         }
 
         /// <summary>
         /// Get all topics
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Topic>>> GetTopic()
+        public async Task<ActionResult<IEnumerable<TopicDTO>>> GetTopic()
         {
-            return await _context.Topics.ToListAsync();
+            return await _topicRepository.GetTopics();
         }
 
         /// <summary>
         /// Get a specific topic by ID
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Topic>> GetTopic(int id)
+        public async Task<ActionResult<TopicDTO>> GetTopic(int id)
         {
-            var topic = await _context.Topics.FindAsync(id);
+            var topic = await _topicRepository.GetTopic(id);
 
-            if (topic == null)
-            {
-                return NotFound();
-            }
+            if (topic == null) return NotFound();
 
-            return topic;
+            return topic.ToTopicDTO();
         }
 
         /// <summary>
@@ -63,37 +62,17 @@ namespace MemeApi.Controllers
         [Route("[controller]/{topicId}/mod/{userId}")]
         public async Task<IActionResult> ModUser(int topicId, int userId)
         {
-            var topic = await _context.Topics.FindAsync(topicId);
-            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var topic = await _topicRepository.GetTopic(topicId);
+            var user = await _userRepository.GetUser(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
 
-            if (topic == null || ownerId == null)
-            {
-                return NotFound();
-            }
+            if (topic == null) return NotFound("Topic not found");
+            if (user == null) return Unauthorized("User not logged in");
 
-            if (topic.Owner.Id != int.Parse(ownerId)) return Unauthorized();
+            if (topic.Owner != user) return Forbid("Action is forbidden");
 
-            var userToMod = await _context.Users.FindAsync(userId);
+            var success = await _topicRepository.ModUser(topic, userId);
 
-            if(userToMod == null) return NotFound();
-
-            topic.Moderators.Add(userToMod);
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TopicExists(topicId))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            if (!success) return NotFound("User with provided ID not found");
 
             return Ok();
         }
@@ -102,45 +81,31 @@ namespace MemeApi.Controllers
         /// Create a topic with the currently logged in user as the owner
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<Topic>> CreateTopic(TopicCreationDTO topicCreationDTO)
+        public async Task<ActionResult<TopicDTO>> CreateTopic(TopicCreationDTO topicCreationDTO)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null) return Unauthorized();
-            var user = await _userRepository.GetUser(int.Parse(userId));
-
-            var topic = new Topic()
-            {
-                Owner = user,
-                Name = topicCreationDTO.TopicName,
-                Description = topicCreationDTO.Description,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-             _context.Topics.Add(topic);
-            await _context.SaveChangesAsync();
+            var topic = await _topicRepository.CreateTopic(topicCreationDTO, userId);
 
             topic.Owner = null;
             return CreatedAtAction("GetTopic", new { id = topic.Id }, topic);
         }
+
         /// <summary>
         /// Delete Topic
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTopic(int id)
+        public async Task<ActionResult<bool>> DeleteTopic(int id)
         {
-            var topic = await _context.Topics.FindAsync(id);
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (topic == null || userId == null)
-            {
-                return NotFound();
-            }
+            var topic = await _topicRepository.GetTopic(id);
+            var user = await _userRepository.GetUser(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            
+            if (topic == null) return NotFound("Topic not found");
+            if (user == null) return Unauthorized("User not logged in");
 
-            if (topic.Owner.Id != int.Parse(userId)) return Unauthorized();
+            var success = await _topicRepository.DeleteTopic(topic, user);
 
-            _context.Topics.Remove(topic);
-            await _context.SaveChangesAsync();
-
+            if (!success) return Unauthorized();
             return NoContent();
         }
 
@@ -152,21 +117,16 @@ namespace MemeApi.Controllers
         [Route("[controller]/{id}")]
         public async Task<IActionResult> DeleteVotable(int id)
         {
-            var votable = await _context.Votables.FindAsync(id);
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var votable = await _votableRepository.GetVotable(id);
+            var user = await _userRepository.GetUser(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
 
-            if (votable == null || userId == null) return NotFound();
+            if (votable == null) return NotFound("Votable not found");
+            if (user == null) return Unauthorized("User not logged in");
 
-            if (votable.Topic.Owner.Id != int.Parse(userId) || votable.Topic.Moderators.All(x => x.Id != int.Parse(userId)))
-                return Unauthorized();
-
-            _context.Votables.Remove(votable);
+            var success = await _votableRepository.DeleteVotable(votable, user);
+            if (!success) return Forbid("Action is forbidden");
+           
             return Ok();
-        }
-
-        private bool TopicExists(int id)
-        {
-            return _context.Topics.Any(e => e.Id == id);
         }
     }
 }

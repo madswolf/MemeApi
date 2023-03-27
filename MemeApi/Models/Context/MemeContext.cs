@@ -2,14 +2,16 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace MemeApi.Models.Context
 {
     public class MemeContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
-
-        public MemeContext(DbContextOptions<MemeContext> options) : base(options)
+        private readonly IConfiguration _configuration;
+        public MemeContext(DbContextOptions<MemeContext> options, IConfiguration configuration) : base(options)
         {
+            _configuration = configuration;
         }
         public DbSet<Meme> Memes { get; set; }
         public DbSet<MemeVisual> Visuals { get; set; }
@@ -60,7 +62,35 @@ namespace MemeApi.Models.Context
             
             modelBuilder.Entity<Topic>()
                 .HasMany(t => t.Moderators);
-        
+
+            var admin = new User
+            {
+                UserName = _configuration["Admin.UserName"],
+                Email = _configuration["Admin.Email"],
+            };
+
+            var defaultTopic = new Topic
+            {
+                Name = "Swu-legacy",
+                Description = "Memes created 2020-2023",
+                Id = 0,
+                Owner = admin,
+                CreatedAt = System.DateTime.Now,
+                UpdatedAt = System.DateTime.Now
+            };
+
+            var defaultTopic2 = new Topic
+            {
+                Name = "Swu-reloaded",
+                Description = "Memes are back baby!",
+                Id = 1,
+                Owner = admin,
+                CreatedAt = System.DateTime.Now,
+                UpdatedAt = System.DateTime.Now
+            };
+
+            modelBuilder.Entity<User>().HasData(admin);
+            modelBuilder.Entity<Topic>().HasData(defaultTopic, defaultTopic2);
         }
     }
 }
