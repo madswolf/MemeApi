@@ -8,7 +8,7 @@ namespace MemeApi.Models.DTO
     public class UserLoginDTO
     {
         /// <summary>
-        /// Username of the user
+        /// Username or email of the user
         /// </summary>
         [Required]
         public string Username { get; set; }

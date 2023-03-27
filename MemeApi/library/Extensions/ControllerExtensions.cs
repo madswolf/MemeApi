@@ -34,6 +34,15 @@ namespace MemeApi.library.Extensions
             };
         }
 
+        public static UserInfoDTO ToUserInfo(this User u, string mediaHost)
+        {
+            return new UserInfoDTO
+            {
+                UserName = u.UserName,
+                ProfilePicURl = mediaHost + "profilepic/" + u.ProfilePicFile
+            };
+        }
+
 
         public static int SumVotes(this Votable votable)
         {
