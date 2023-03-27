@@ -1,5 +1,7 @@
 ﻿using FluentAssertions;
 using MemeApi.Controllers;
+using MemeApi.library.Extensions;
+using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
@@ -31,6 +33,34 @@ namespace MemeApi.Test.Controllers
 
             (await _context.Visuals.CountAsync()).Should().Be(1);
             createdMemeVisual.Filename.Should().Be(file.FileName);
+        }
+
+        [Fact]
+        public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_GettingMemeBottomText_THEN_MemeBottomTextHasProperValues()
+        {
+            var controller = new VisualsController(_visualRepository, _configuration);
+
+            // given
+            var visual = new MemeVisual()
+            {
+                Filename = "Test"
+            };
+            _context.Visuals.Add(visual);
+            await _context.SaveChangesAsync();
+
+            // When
+            var expected = visual.ToRandomComponentDTO("");
+            var result = (await controller.GetMemeVisual(visual.Id)).Result;
+
+            // Then
+
+            result.Should().NotBeNull();
+            result.Should().BeOfType<OkObjectResult>();
+            var foundMemeText = ((OkObjectResult)result).Value as RandomComponentDTO;
+
+            foundMemeText.data.Should().Be(expected.data);
+            foundMemeText.id.Should().Be(expected.id);
+            foundMemeText.votes.Should().Be(expected.votes);
         }
 
         [Fact]

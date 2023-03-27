@@ -25,12 +25,12 @@ namespace MemeApi.library.repositories
                 return await _context.Texts.Include(x => x.Votes).Where(x => x.Position == type).ToListAsync();
             }
             
-            return await _context.Texts.ToListAsync();
+            return await _context.Texts.Include(x => x.Votes).ToListAsync();
         }
 
         public async Task<MemeText> GetText(int id)
         {
-            return await _context.Texts.FindAsync(id);
+            return await _context.Texts.Include(x => x.Votes).FirstOrDefaultAsync(t => t.Id == id);
         }
 
         public async Task<bool> UpdateText(int id, string newMemeBottomText, MemeTextPosition? newMemeTextPosition = null)

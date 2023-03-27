@@ -44,13 +44,7 @@ namespace MemeApi.Controllers
             var memeVisual = await _visualRepository.GetVisual(id);
 
             if (memeVisual == null) return NotFound();
-            var componentDTO = new RandomComponentDTO
-            {
-                data = _configuration["Media.Host"] + "visual/" + memeVisual.Filename,
-                id = memeVisual.Id
-            };
-
-            return Ok(componentDTO);
+            return Ok(memeVisual.ToRandomComponentDTO(_configuration["Media.Host"]));
         }
 
         /// <summary>
@@ -89,13 +83,7 @@ namespace MemeApi.Controllers
         public async Task<ActionResult<RandomComponentDTO>> RandomVisual()
         {
             var visual = (await _visualRepository.GetVisuals()).RandomItem();
-            var randomDTO = new RandomComponentDTO
-            {
-                data = _configuration["Media.Host"] + "visual/" + visual.Filename,
-                id = visual.Id,
-                votes = visual.SumVotes()
-            };
-            return Ok(randomDTO);
+            return Ok(visual.ToRandomComponentDTO(_configuration["Media.Host"]));
         }
     }
 }

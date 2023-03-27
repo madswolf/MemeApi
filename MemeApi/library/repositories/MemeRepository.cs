@@ -108,7 +108,7 @@ namespace MemeApi.library.repositories
         public async Task<Meme> GetMeme(int id)
         {
             return await IncludeParts()
-                .FirstAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
         }
 
         private IIncludableQueryable<Meme, MemeText> IncludeParts()

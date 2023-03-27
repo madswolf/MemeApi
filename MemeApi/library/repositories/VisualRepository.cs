@@ -30,7 +30,7 @@ namespace MemeApi.library.repositories
 
         public async Task<MemeVisual?> GetVisual(int id)
         {
-            return await _context.Visuals.Include(x => x.Votes).FirstOrDefaultAsync(x => x.Id == id);
+            return await _context.Visuals.Include(x => x.Votes).FirstOrDefaultAsync(v => v.Id == id);
         }
 
         public static string RandomString(int length)

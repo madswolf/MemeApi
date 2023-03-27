@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using FluentAssertions;
 using MemeApi.Controllers;
+using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
@@ -50,17 +51,21 @@ namespace MemeApi.Test.Controllers
                 Position = MemeTextPosition.BottomText
             };
             _context.Texts.Add(memeText);
+            await _context.SaveChangesAsync();
 
             // When
+            var expected = memeText.ToRandomComponentDTO();
             var result = (await controller.GetMemeText(memeText.Id)).Result;
 
             // Then
 
             result.Should().NotBeNull();
             result.Should().BeOfType<OkObjectResult>();
-            var foundMemeBottomText = ((OkObjectResult)result).Value as MemeText;
+            var foundMemeText = ((OkObjectResult)result).Value as RandomComponentDTO;
 
-            foundMemeBottomText.Should().Be(memeText);
+            foundMemeText.data.Should().Be(expected.data);
+            foundMemeText.id.Should().Be(expected.id);
+            foundMemeText.votes.Should().Be(expected.votes);
         }
 
         //[Theory]

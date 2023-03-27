@@ -40,20 +40,13 @@ namespace MemeApi.Controllers
         /// Get a specific text by ID
         /// </summary>
         [HttpGet("one/{id}")]
-        public async Task<ActionResult<MemeText>> GetMemeText(int id)
+        public async Task<ActionResult<RandomComponentDTO>> GetMemeText(int id)
         {
             var memeBottomText = await _textRepository.GetText(id);
 
             if (memeBottomText == null) return NotFound();
-            
 
-            var componentDTO = new RandomComponentDTO
-            {
-                data = memeBottomText.Text,
-                id = memeBottomText.Id
-            };
-
-            return Ok(componentDTO);
+            return Ok(memeBottomText.ToRandomComponentDTO());
         }
 
         //[HttpPut("{id}")]
@@ -97,14 +90,7 @@ namespace MemeApi.Controllers
         {
             var texts = await _textRepository.GetTexts(type);
             var text = texts.RandomItem();
-            var randomDTO = new RandomComponentDTO
-            {
-                data = text.Text,
-                id = text.Id,
-                votes = text.SumVotes()
-            };
-
-            return Ok(randomDTO);
+            return Ok(text.ToRandomComponentDTO());
         }
 
     }
