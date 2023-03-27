@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -114,12 +116,19 @@ namespace MemeApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("[controller]/recover")]
-        public async Task<bool> RecoverUser([FromForm]string username)
+        public async Task<bool> RecoverUser([FromForm]string userEmail)
         {
-            var user = await _userManager.FindByNameAsync(username);
-            return false;
-            // Currently don't have a sender that can send recovery emails
-            // return _mailSender.sendMail(new MailAddress(user.Email, user.UserName), "Recover account", "beans");
+            var user = await _userRepository.FindByEmail(userEmail);
+            if (user == null) return false;
+            try
+            {
+                var password = await _userRepository.CreateNewPassword(user);
+                return _mailSender.sendMail(new MailAddress(user.Email, user.UserName), "Recover account", password);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -146,7 +155,9 @@ namespace MemeApi.Controllers
         public async Task<ActionResult<UserInfoDTO>> Login([FromForm]UserLoginDTO loginDTO)
         {
             var user = await _userManager.FindByNameAsync(loginDTO.Username);
-            if(user == null) return Unauthorized("The entered information was not correct");
+            if (user == null)
+                user = await _userRepository.FindByEmail(loginDTO.Username);
+                if( user == null) return Unauthorized("The entered information was not correct");
 
             var result = await _signInManager.PasswordSignInAsync(user, loginDTO.Password, false, false);
             if (!result.Succeeded)

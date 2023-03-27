@@ -17,7 +17,7 @@ namespace MemeApi.Controllers
     /// <summary>
     /// A controller for creating and managing meme and meme component groupings called topics.
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class TopicsController : ControllerBase
     {
@@ -37,7 +37,7 @@ namespace MemeApi.Controllers
         /// Get all topics
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TopicDTO>>> GetTopic()
+        public async Task<ActionResult<IEnumerable<TopicDTO>>> GetTopics()
         {
             return await _topicRepository.GetTopics();
         }

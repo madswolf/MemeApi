@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System;
 
 namespace MemeApi.Models.Context
 {
@@ -32,6 +33,7 @@ namespace MemeApi.Models.Context
                 .WithOne(v => v.User)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
+
 
             modelBuilder.Entity<Meme>()
                 .HasOne(m => m.MemeVisual);
@@ -65,26 +67,28 @@ namespace MemeApi.Models.Context
 
             var admin = new User
             {
+                Id = 1,
                 UserName = _configuration["Admin.UserName"],
                 Email = _configuration["Admin.Email"],
+                SecurityStamp = DateTime.Now.ToString(),
             };
 
             var defaultTopic = new Topic
             {
+                Id = 1,
+                OwnerId = admin.Id,
                 Name = "Swu-legacy",
                 Description = "Memes created 2020-2023",
-                Id = 0,
-                Owner = admin,
                 CreatedAt = System.DateTime.Now,
                 UpdatedAt = System.DateTime.Now
             };
 
             var defaultTopic2 = new Topic
             {
+                Id = 2,
+                OwnerId = admin.Id,
                 Name = "Swu-reloaded",
                 Description = "Memes are back baby!",
-                Id = 1,
-                Owner = admin,
                 CreatedAt = System.DateTime.Now,
                 UpdatedAt = System.DateTime.Now
             };
