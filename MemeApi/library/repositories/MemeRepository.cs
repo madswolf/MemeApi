@@ -8,6 +8,7 @@ using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.Extensions.Configuration;
 
 namespace MemeApi.library.repositories
 {
@@ -16,20 +17,29 @@ namespace MemeApi.library.repositories
         private readonly MemeContext _context;
         private readonly VisualRepository _visualRepository;
         private readonly TextRepository _textRepository;
-        public MemeRepository(MemeContext context, VisualRepository visualRepository, TextRepository textRepository)
+        private readonly TopicRepository _topicRepository;
+        private readonly IConfiguration _configuration;
+        public MemeRepository(MemeContext context, VisualRepository visualRepository, TextRepository textRepository, IConfiguration configuration, TopicRepository topicRepository)
         {
             _context = context;
             _visualRepository = visualRepository;
             _textRepository = textRepository;
+            _configuration = configuration;
+            _topicRepository = topicRepository;
         }
 
         public async Task<Meme> CreateMeme(MemeCreationDTO memeDTO)
         {
             var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName);
 
+            var topics = await Task.WhenAll(memeDTO.Topics
+                    .DefaultIfEmpty(_configuration["Topic.Default.Topicname"])
+                    .Select(async topicName => await _topicRepository.GetTopicByName(topicName)));
+
             var meme = new Meme
             {
                 MemeVisual = memeVisual,
+                Topics = topics.ToList()
             };
 
             //if (memeDTO.SoundFile != null)
