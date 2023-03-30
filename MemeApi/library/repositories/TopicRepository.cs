@@ -38,6 +38,12 @@ public class TopicRepository
         return topic;
     }
 
+    public async Task<Topic> GetTopicByName(string name)
+    {
+        var topic = await _context.Topics.Where(t => t.Name == name).FirstOrDefaultAsync();
+        return topic;
+    }
+
     public async Task<bool> UpdateTopic(int id, string name = null, string description = null)
     {
         var topic = await _context.Topics.FindAsync(id);

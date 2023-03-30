@@ -13,7 +13,7 @@ using Xunit;
 
 namespace MemeApi.Test.Controllers
 {
-    public class MemeTextsControllerTest : ControllerTestBase
+    public class MemeTextsControllerTest : MemeTestBase
     {
         [Theory]
         [InlineData(MemeTextPosition.TopText)]

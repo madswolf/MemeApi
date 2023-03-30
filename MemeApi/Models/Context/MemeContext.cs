@@ -65,6 +65,13 @@ namespace MemeApi.Models.Context
             modelBuilder.Entity<Topic>()
                 .HasMany(t => t.Moderators);
 
+            modelBuilder.Entity<Topic>()
+                .HasIndex(t => t.Name)
+                .IsUnique();
+
+            modelBuilder.Entity<Votable>()
+                .HasMany(v => v.Topics);
+
             var admin = new User
             {
                 Id = 1,

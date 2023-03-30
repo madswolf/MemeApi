@@ -19,7 +19,7 @@ using Xunit;
 
 namespace MemeApi.Test.Controllers
 {
-    public class MemesControllerTest : ControllerTestBase
+    public class MemesControllerTest : MemeTestBase
     {
         [Fact]
         public async Task GIVEN_Visual_WHEN_CreatingMeme_THEN_MemeIsCreated()

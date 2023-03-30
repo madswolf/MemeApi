@@ -27,5 +27,9 @@ namespace MemeApi.Models.DTO
         /// Optional name for the visual component
         /// </summary>
         public string FileName { get; set; }
+        /// <summary>
+        /// The list of topics that the Meme belongs to.
+        /// </summary>
+        public IEnumerable<string> Topics { get; set; }
     }
 }

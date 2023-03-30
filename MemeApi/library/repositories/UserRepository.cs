@@ -15,15 +15,13 @@ namespace MemeApi.library.repositories
     {
         private readonly MemeContext _memeContext;
         private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
         private readonly IFileSaver _fileSaver;
         private static readonly Random _random = Random.Shared;
 
-        public UserRepository(MemeContext memeContext, UserManager<User> userManager, SignInManager<User> signInManager, IFileSaver fileSaver)
+        public UserRepository(MemeContext memeContext, UserManager<User> userManager, IFileSaver fileSaver)
         {
             _memeContext = memeContext;
             _userManager = userManager;
-            _signInManager = signInManager;
             _fileSaver = fileSaver;
         }
 

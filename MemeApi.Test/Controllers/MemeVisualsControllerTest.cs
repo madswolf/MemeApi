@@ -14,7 +14,7 @@ using Xunit;
 
 namespace MemeApi.Test.Controllers
 {
-    public class MemeVisualsControllerTest : ControllerTestBase
+    public class MemeVisualsControllerTest : MemeTestBase
     {
         [Fact]
         public async Task GIVEN_DummyFile_WHEN_CreatingMemeVisual_THEN_MemeVisualIsCreatedWithProperValues()

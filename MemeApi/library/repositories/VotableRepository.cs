@@ -75,9 +75,19 @@ namespace MemeApi.library.repositories
 
         public async Task<bool> DeleteVotable(Votable votable, User user)
         {
-            if (votable.Topic.Owner != user || votable.Topic.Moderators.All(x => x != user))
+
+            var topicUserModerates = votable.Topics
+                .Where(t => t.Owner == user || t.Moderators.Exists(m => m == user))
+                .FirstOrDefault();
+            if (topicUserModerates == null)
+            {
                 return false;
-            _context.Votables.Remove(votable);
+            }
+            votable.Topics.Remove(topicUserModerates);
+            if(votable.Topics.Count == 0)
+            {
+                _context.Votables.Remove(votable);
+            }
             await _context.SaveChangesAsync();
 
             return true;
