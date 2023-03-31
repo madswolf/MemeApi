@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MemeApi.library.Extensions
 {
-    public static class MyExtensions
+    public static class Extensions
     {
         public static T RandomItem<T>(this List<T> list, string seed = "")
         {
@@ -32,6 +32,25 @@ namespace MemeApi.library.Extensions
                 Moderators = t.Moderators.Select(u => u.UserName).ToList(),
                 CreatedAt = t.CreatedAt,
                 UpdatedAt = t.UpdatedAt,
+            };
+        }
+
+        public static TextDTO ToTextDTO(this MemeText text)
+        {
+            return new TextDTO
+            {
+                Text = text.Text,
+                Position = text.Position,
+                Topics = text.Topics.Select(t => t.Name).ToList()
+            };
+        }
+
+        public static VisualDTO ToVisualDTO(this MemeVisual visual)
+        {
+            return new VisualDTO
+            {
+                Filename = visual.Filename,
+                Topics = visual.Topics.Select(t => t.Name).ToList()
             };
         }
 
@@ -68,9 +87,9 @@ namespace MemeApi.library.Extensions
         {
             return new MemeDTO
             {
-                MemeVisual = meme.MemeVisual,
-                BottomText = meme.BottomText,
-                Toptext = meme.Toptext,
+                MemeVisual = meme.MemeVisual.ToVisualDTO(),
+                BottomText = meme.BottomText.ToTextDTO(),
+                Toptext = meme.Toptext.ToTextDTO(),
                 Topics = meme.Topics.Select(t => t.Name).ToList()
             };
         }

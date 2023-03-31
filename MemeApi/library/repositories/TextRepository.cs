@@ -68,6 +68,7 @@ namespace MemeApi.library.repositories
 
         public async Task<MemeText> CreateText(string text, MemeTextPosition position, List<Topic> topics = null)
         {
+            if (topics == null) topics = new List<Topic> { await _context.GetDefaultTopic() };
             var memeText = new MemeText
             {
                 Text = text,

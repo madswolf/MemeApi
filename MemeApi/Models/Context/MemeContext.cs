@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Threading.Tasks;
 
 namespace MemeApi.Models.Context
 {
@@ -21,6 +22,11 @@ namespace MemeApi.Models.Context
         public DbSet<Vote> Votes { get; set; }
         public DbSet<Votable> Votables { get; set; }
         public DbSet<Topic> Topics { get; set; }
+
+        public async Task<Topic> GetDefaultTopic()
+        {
+            return await Topics.FirstAsync(t => t.Name == _configuration["Topic.Default.Topicname"]);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -94,7 +100,7 @@ namespace MemeApi.Models.Context
             {
                 Id = 2,
                 OwnerId = admin.Id,
-                Name = "Swu-reloaded",
+                Name = _configuration["Topic.Default.Topicname"],
                 Description = "Memes are back baby!",
                 CreatedAt = System.DateTime.Now,
                 UpdatedAt = System.DateTime.Now
