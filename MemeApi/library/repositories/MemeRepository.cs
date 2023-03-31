@@ -30,25 +30,11 @@ namespace MemeApi.library.repositories
 
         public async Task<Meme> CreateMeme(MemeCreationDTO memeDTO)
         {
-
-            if (memeDTO.Topics == null)
-            {
-                memeDTO.Topics = new List<string> { _configuration["Topic.Default.Topicname"] };
-            }
-
-            var topics = await Task.WhenAll(
-                memeDTO.Topics
-                .Select(async topicName => await _topicRepository.GetTopicByName(topicName))
-            );
-
-            if (topics.Any(t => t == null)) return null;
-            var topicList = topics.ToList();
-            var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName, topicList);
+            var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName, memeDTO.Topics);
 
             var meme = new Meme
             {
-                MemeVisual = memeVisual,
-                Topics = topicList
+                MemeVisual = memeVisual
             };
 
             //if (memeDTO.SoundFile != null)
@@ -60,13 +46,20 @@ namespace MemeApi.library.repositories
 
             if (memeDTO.Toptext != null)
             {
-                meme.Toptext = await _textRepository.CreateText(memeDTO.Toptext, MemeTextPosition.TopText, topicList);
+                meme.Toptext = await _textRepository.CreateText(memeDTO.Toptext, MemeTextPosition.TopText, memeDTO.Topics);
             }
 
             if (memeDTO.Bottomtext != null)
             {
-                meme.BottomText = await _textRepository.CreateText(memeDTO.Bottomtext, MemeTextPosition.BottomText, topicList);
+                meme.BottomText = await _textRepository.CreateText(memeDTO.Bottomtext, MemeTextPosition.BottomText, memeDTO.Topics);
             }
+
+            //TODO: fix multiple calls to get topics by reworking creation in createtext and createvisual to have a deeper version that does not save changes 
+            var topics = await _topicRepository.GetTopicsByNameOrDefault(memeDTO.Topics);
+
+            if (topics.Any(t => t == null)) return null;
+
+            meme.Topics = topics.ToList();
 
             _context.Memes.Add(meme);
             await _context.SaveChangesAsync();
@@ -130,16 +123,13 @@ namespace MemeApi.library.repositories
                 .FirstOrDefaultAsync(m => m.Id == id);
         }
 
-        private IIncludableQueryable<Meme, List<Topic>> IncludeParts()
+        private IIncludableQueryable<Meme, MemeText> IncludeParts()
         {
             return _context.Memes
                 .Include(m => m.MemeVisual)
-                .ThenInclude(v => v.Topics)
                 .Include(m => m.Topics)
                 .Include(m => m.Toptext)
-                .ThenInclude(t => t.Topics)
-                .Include(m => m.BottomText)
-                .ThenInclude(t => t.Topics);
+                .Include(m => m.BottomText);
         }
 
         private bool MemeExists(int id)

@@ -43,7 +43,7 @@ namespace MemeApi.Test.Controllers
             (await _context.Memes.CountAsync()).Should().Be(1);
             (await _context.Visuals.CountAsync()).Should().Be(1);
 
-            createdMeme.MemeVisual.Filename.Should().Be(filename);
+            createdMeme.MemeVisual.Should().Be(filename);
         }
 
         [Fact]

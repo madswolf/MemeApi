@@ -11,6 +11,7 @@ namespace MemeApi.Models.Entity
         public User Owner { get; set; }
         public int OwnerId { get; set; }
         public List<User> Moderators { get; set; }
+        public List<Votable> Votables { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }

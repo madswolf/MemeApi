@@ -4,7 +4,6 @@ using System.Linq;
 using MemeApi.Models;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
-using Microsoft.AspNetCore.Mvc;
 
 namespace MemeApi.library.Extensions
 {
@@ -88,12 +87,13 @@ namespace MemeApi.library.Extensions
         {
             var memeDTO = new MemeDTO
             {
-                MemeVisual = meme.MemeVisual.ToVisualDTO(),
+                Id = meme.Id,
+                MemeVisual = meme.MemeVisual.Filename,
                 Topics = meme.Topics.Select(t => t.Name).ToList()
             };
 
-            if( meme.Toptext != null ) memeDTO.Toptext = meme.Toptext.ToTextDTO();
-            if( meme.BottomText != null ) memeDTO.BottomText = meme.BottomText.ToTextDTO();
+            if( meme.Toptext != null ) memeDTO.Toptext = meme.Toptext.Text;
+            if( meme.BottomText != null ) memeDTO.BottomText = meme.BottomText.Text;
             
             return memeDTO;
         }
