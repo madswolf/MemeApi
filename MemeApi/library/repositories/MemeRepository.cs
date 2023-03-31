@@ -32,9 +32,17 @@ namespace MemeApi.library.repositories
         {
             var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName);
 
-            var topics = await Task.WhenAll(memeDTO.Topics
-                    .DefaultIfEmpty(_configuration["Topic.Default.Topicname"])
-                    .Select(async topicName => await _topicRepository.GetTopicByName(topicName)));
+            if (memeDTO.Topics == null)
+            {
+                memeDTO.Topics = new List<string> { _configuration["Topic.Default.Topicname"] };
+            }
+
+            var topics = await Task.WhenAll(
+                memeDTO.Topics
+                .Select(async topicName => await _topicRepository.GetTopicByName(topicName))
+            );
+
+            if (topics.Any(t => t == null)) return null;
 
             var meme = new Meme
             {
@@ -51,12 +59,12 @@ namespace MemeApi.library.repositories
 
             if (memeDTO.Toptext != null)
             {
-                meme.Toptext = await _textRepository.CreateText(memeDTO.Toptext, MemeTextPosition.TopText);
+                meme.Toptext = await _textRepository.CreateText(memeDTO.Toptext, MemeTextPosition.TopText, meme.Topics);
             }
 
             if (memeDTO.Bottomtext != null)
             {
-                meme.BottomText = await _textRepository.CreateText(memeDTO.Bottomtext, MemeTextPosition.BottomText);
+                meme.BottomText = await _textRepository.CreateText(memeDTO.Bottomtext, MemeTextPosition.BottomText, meme.Topics);
             }
 
             _context.Memes.Add(meme);
@@ -125,6 +133,7 @@ namespace MemeApi.library.repositories
         {
             return _context.Memes
                 .Include(m => m.MemeVisual)
+                .Include(m => m.Topics)
                 .Include(m => m.MemeSound)
                 .Include(m => m.Toptext)
                 .Include(m => m.BottomText);

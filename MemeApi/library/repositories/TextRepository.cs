@@ -66,12 +66,13 @@ namespace MemeApi.library.repositories
             return true;
         }
 
-        public async Task<MemeText> CreateText(string text, MemeTextPosition position)
+        public async Task<MemeText> CreateText(string text, MemeTextPosition position, List<Topic> topics = null)
         {
             var memeText = new MemeText
             {
                 Text = text,
-                Position = position
+                Position = position,
+                Topics = topics
             };
 
             _context.Texts.Add(memeText);

@@ -93,6 +93,7 @@ public class TopicRepository
             Owner = user,
             Name = topicCreationDTO.TopicName,
             Description = topicCreationDTO.Description,
+            Moderators = new List<User>(),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

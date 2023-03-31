@@ -64,12 +64,22 @@ namespace MemeApi.library.Extensions
             };
         }
 
+        public static MemeDTO ToMemeDTO(this Meme meme)
+        {
+            return new MemeDTO
+            {
+                MemeVisual = meme.MemeVisual,
+                BottomText = meme.BottomText,
+                Toptext = meme.Toptext,
+                Topics = meme.Topics.Select(t => t.Name).ToList()
+            };
+        }
+
 
         public static int SumVotes(this Votable votable)
         {
             var votes = votable.Votes ?? new List<Vote>();
             return votes.Aggregate(0, (acc, item) => acc + (item.Upvote ? 1 : -1));
         }
-
     }
 }

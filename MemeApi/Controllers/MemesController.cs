@@ -32,21 +32,22 @@ namespace MemeApi.Controllers
         /// Get all memes
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Meme>>> GetMemes()
+        public async Task<ActionResult<IEnumerable<MemeDTO>>> GetMemes()
         {
-            return await _memeRepository.GetMemes();
+            var memes = await _memeRepository.GetMemes();
+            return Ok(memes.Select(m => m.ToMemeDTO()));
         }
 
         /// <summary>
         /// Get a specific meme by ID
         /// </summary> 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Meme>> GetMeme(int id)
+        public async Task<ActionResult<MemeDTO>> GetMeme(int id)
         {
             var meme = await _memeRepository.GetMeme(id);
             if (meme == null) return NotFound();
  
-            return Ok(meme);
+            return Ok(meme.ToMemeDTO());
         }
 
         //[HttpPut("{id}")]
@@ -67,11 +68,12 @@ namespace MemeApi.Controllers
         /// </summary>
         [HttpPost]
         [AllowAnonymous]
-        public async Task<ActionResult<Meme>> PostMeme([FromForm]MemeCreationDTO memeCreationDto)
+        public async Task<ActionResult<MemeDTO>> PostMeme([FromForm]MemeCreationDTO memeCreationDto)
         {
             if (!memeCreationDto.VisualFile.FileName.Equals("VisualFile")) memeCreationDto.FileName = memeCreationDto.VisualFile.FileName;
             var meme = await _memeRepository.CreateMeme(memeCreationDto);
-            return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme);
+            if (meme == null) return NotFound("One of the topics was not found");
+            return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme.ToMemeDTO());
         }
 
         /// <summary>
