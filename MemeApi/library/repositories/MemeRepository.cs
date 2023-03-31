@@ -30,7 +30,6 @@ namespace MemeApi.library.repositories
 
         public async Task<Meme> CreateMeme(MemeCreationDTO memeDTO)
         {
-            var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName);
 
             if (memeDTO.Topics == null)
             {
@@ -43,11 +42,13 @@ namespace MemeApi.library.repositories
             );
 
             if (topics.Any(t => t == null)) return null;
+            var topicList = topics.ToList();
+            var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName, topicList);
 
             var meme = new Meme
             {
                 MemeVisual = memeVisual,
-                Topics = topics.ToList()
+                Topics = topicList
             };
 
             //if (memeDTO.SoundFile != null)
@@ -59,12 +60,12 @@ namespace MemeApi.library.repositories
 
             if (memeDTO.Toptext != null)
             {
-                meme.Toptext = await _textRepository.CreateText(memeDTO.Toptext, MemeTextPosition.TopText, meme.Topics);
+                meme.Toptext = await _textRepository.CreateText(memeDTO.Toptext, MemeTextPosition.TopText, topicList);
             }
 
             if (memeDTO.Bottomtext != null)
             {
-                meme.BottomText = await _textRepository.CreateText(memeDTO.Bottomtext, MemeTextPosition.BottomText, meme.Topics);
+                meme.BottomText = await _textRepository.CreateText(memeDTO.Bottomtext, MemeTextPosition.BottomText, topicList);
             }
 
             _context.Memes.Add(meme);

@@ -11,15 +11,15 @@ namespace MemeApi.Models.DTO
         /// <summary>
         /// Visual component of the meme
         /// </summary>
-        public MemeVisual MemeVisual { get; set; }
+        public VisualDTO MemeVisual { get; set; }
         /// <summary>
         /// Textual top component of the meme
         /// </summary>
-        public MemeText Toptext { get; set; }
+        public TextDTO Toptext { get; set; }
         /// <summary>
         /// Textual bottom component of the meme
         /// </summary>
-        public MemeText BottomText { get; set; }
+        public TextDTO BottomText { get; set; }
         /// <summary>
         /// Topics that the meme belongs to
         /// </summary>

@@ -40,11 +40,13 @@ namespace MemeApi.library.repositories
                 .Select(s => s[Random.Next(s.Length)]).ToArray());
         }
 
-        public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename)
+        public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename, List<Topic> topics = null)
         {
+            if (topics == null) topics = new List<Topic> { await _context.GetDefaultTopic() };
             var memeVisual = new MemeVisual()
             {
-                Filename = filename
+                Filename = filename,
+                Topics = topics
             };
 
             if (_context.Visuals.Any(x => x.Filename == memeVisual.Filename))
