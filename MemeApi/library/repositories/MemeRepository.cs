@@ -130,14 +130,16 @@ namespace MemeApi.library.repositories
                 .FirstOrDefaultAsync(m => m.Id == id);
         }
 
-        private IIncludableQueryable<Meme, MemeText> IncludeParts()
+        private IIncludableQueryable<Meme, List<Topic>> IncludeParts()
         {
             return _context.Memes
                 .Include(m => m.MemeVisual)
+                .ThenInclude(v => v.Topics)
                 .Include(m => m.Topics)
-                .Include(m => m.MemeSound)
                 .Include(m => m.Toptext)
-                .Include(m => m.BottomText);
+                .ThenInclude(t => t.Topics)
+                .Include(m => m.BottomText)
+                .ThenInclude(t => t.Topics);
         }
 
         private bool MemeExists(int id)

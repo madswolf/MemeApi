@@ -86,13 +86,16 @@ namespace MemeApi.library.Extensions
 
         public static MemeDTO ToMemeDTO(this Meme meme)
         {
-            return new MemeDTO
+            var memeDTO = new MemeDTO
             {
                 MemeVisual = meme.MemeVisual.ToVisualDTO(),
-                BottomText = meme.BottomText.ToTextDTO(),
-                Toptext = meme.Toptext.ToTextDTO(),
                 Topics = meme.Topics.Select(t => t.Name).ToList()
             };
+
+            if( meme.Toptext != null ) memeDTO.Toptext = meme.Toptext.ToTextDTO();
+            if( meme.BottomText != null ) memeDTO.BottomText = meme.BottomText.ToTextDTO();
+            
+            return memeDTO;
         }
 
 
