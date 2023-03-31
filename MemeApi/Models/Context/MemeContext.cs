@@ -66,7 +66,9 @@ namespace MemeApi.Models.Context
                 .IsRequired();
 
             modelBuilder.Entity<Topic>()
-                .HasOne(t => t.Owner);
+                .HasOne(t => t.Owner)
+                .WithMany(u => u.Topics)
+                .HasForeignKey(t => t.OwnerId);
             
             modelBuilder.Entity<Topic>()
                 .HasMany(t => t.Moderators);
@@ -83,7 +85,7 @@ namespace MemeApi.Models.Context
                 Id = 1,
                 UserName = _configuration["Admin.UserName"],
                 Email = _configuration["Admin.Email"],
-                SecurityStamp = DateTime.Now.ToString(),
+                SecurityStamp = DateTime.UtcNow.ToString(),
             };
 
             var defaultTopic = new Topic
@@ -92,8 +94,8 @@ namespace MemeApi.Models.Context
                 OwnerId = admin.Id,
                 Name = "Swu-legacy",
                 Description = "Memes created 2020-2023",
-                CreatedAt = System.DateTime.Now,
-                UpdatedAt = System.DateTime.Now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             var defaultTopic2 = new Topic
@@ -102,8 +104,8 @@ namespace MemeApi.Models.Context
                 OwnerId = admin.Id,
                 Name = _configuration["Topic.Default.Topicname"],
                 Description = "Memes are back baby!",
-                CreatedAt = System.DateTime.Now,
-                UpdatedAt = System.DateTime.Now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             modelBuilder.Entity<User>().HasData(admin);

@@ -27,12 +27,12 @@ namespace MemeApi.library.repositories
 
         public async Task<List<User>> GetUsers()
         {
-            return await _memeContext.Users.ToListAsync();
+            return await _memeContext.Users.Include(u => u.Topics).ToListAsync();
         }
 
         public async Task<User> GetUser(int id)
         {
-            return await _memeContext.Users.FindAsync(id);
+            return await _memeContext.Users.Include(u => u.Topics).FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<User> FindByEmail(string userEmail)
