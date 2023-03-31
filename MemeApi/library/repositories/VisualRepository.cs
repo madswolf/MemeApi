@@ -13,19 +13,21 @@ namespace MemeApi.library.repositories
     public class VisualRepository
     {
         private readonly MemeContext _context;
+        private readonly TopicRepository _topicRepository;
         private readonly IFileSaver _fileSaver;
         private readonly IFileRemover _fileRemover;
         private static readonly Random Random = Random.Shared;
-        public VisualRepository(MemeContext context, IFileSaver fileSaver, IFileRemover fileRemover)
+        public VisualRepository(MemeContext context, IFileSaver fileSaver, IFileRemover fileRemover, TopicRepository topicRepository)
         {
             _context = context;
             _fileSaver = fileSaver;
             _fileRemover = fileRemover;
+            _topicRepository = topicRepository;
         }
 
         public async Task<List<MemeVisual>> GetVisuals()
         {
-            return await _context.Visuals.Include(x => x.Votes).ToListAsync();
+            return await _context.Visuals.Include(x => x.Votes).Include(x => x.Topics).ToListAsync();
         }
 
         public async Task<MemeVisual?> GetVisual(int id)
@@ -40,9 +42,9 @@ namespace MemeApi.library.repositories
                 .Select(s => s[Random.Next(s.Length)]).ToArray());
         }
 
-        public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename, List<Topic> topics = null)
+        public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename, IEnumerable<string> topicNames = null)
         {
-            if (topics == null) topics = new List<Topic> { await _context.GetDefaultTopic() };
+            var topics = await _topicRepository.GetTopicsByNameOrDefault(topicNames);
             var memeVisual = new MemeVisual()
             {
                 Filename = filename,

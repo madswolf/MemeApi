@@ -192,8 +192,7 @@ namespace MemeApi.Migrations
                     Description = table.Column<string>(type: "text", nullable: true),
                     OwnerId = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    VotableId = table.Column<int>(type: "integer", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -204,11 +203,6 @@ namespace MemeApi.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Topics_Votables_VotableId",
-                        column: x => x.VotableId,
-                        principalTable: "Votables",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -238,18 +232,42 @@ namespace MemeApi.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "TopicVotable",
+                columns: table => new
+                {
+                    TopicsId = table.Column<int>(type: "integer", nullable: false),
+                    VotablesId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TopicVotable", x => new { x.TopicsId, x.VotablesId });
+                    table.ForeignKey(
+                        name: "FK_TopicVotable_Topics_TopicsId",
+                        column: x => x.TopicsId,
+                        principalTable: "Topics",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TopicVotable_Votables_VotablesId",
+                        column: x => x.VotablesId,
+                        principalTable: "Votables",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePicFile", "SecurityStamp", "TopicId", "TwoFactorEnabled", "UserName" },
-                values: new object[] { 1, 0, "4270327b-46fd-4aac-a911-88b0e2128579", "Admin@mads.monster", false, false, null, null, null, null, null, false, null, "31/03/2023 17.42.38", null, false, "Admin" });
+                values: new object[] { 1, 0, "369f248b-2c37-4f39-8951-6595c283f000", "Admin@mads.monster", false, false, null, null, null, null, null, false, null, "31/03/2023 22.10.46", null, false, "Admin" });
 
             migrationBuilder.InsertData(
                 table: "Topics",
-                columns: new[] { "Id", "CreatedAt", "Description", "Name", "OwnerId", "UpdatedAt", "VotableId" },
+                columns: new[] { "Id", "CreatedAt", "Description", "Name", "OwnerId", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2023, 3, 31, 17, 42, 38, 777, DateTimeKind.Utc).AddTicks(7729), "Memes created 2020-2023", "Swu-legacy", 1, new DateTime(2023, 3, 31, 17, 42, 38, 777, DateTimeKind.Utc).AddTicks(7729), null },
-                    { 2, new DateTime(2023, 3, 31, 17, 42, 38, 777, DateTimeKind.Utc).AddTicks(7733), "Memes are back baby!", "Swu-reloaded", 1, new DateTime(2023, 3, 31, 17, 42, 38, 777, DateTimeKind.Utc).AddTicks(7733), null }
+                    { 1, new DateTime(2023, 3, 31, 22, 10, 46, 620, DateTimeKind.Utc).AddTicks(2996), "Memes created 2020-2023", "Swu-legacy", 1, new DateTime(2023, 3, 31, 22, 10, 46, 620, DateTimeKind.Utc).AddTicks(2997) },
+                    { 2, new DateTime(2023, 3, 31, 22, 10, 46, 620, DateTimeKind.Utc).AddTicks(2998), "Memes are back baby!", "Swu-reloaded", 1, new DateTime(2023, 3, 31, 22, 10, 46, 620, DateTimeKind.Utc).AddTicks(2998) }
                 });
 
             migrationBuilder.CreateIndex(
@@ -312,9 +330,9 @@ namespace MemeApi.Migrations
                 column: "OwnerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Topics_VotableId",
-                table: "Topics",
-                column: "VotableId");
+                name: "IX_TopicVotable_VotablesId",
+                table: "TopicVotable",
+                column: "VotablesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Votables_BottomTextId",
@@ -400,19 +418,22 @@ namespace MemeApi.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "TopicVotable");
+
+            migrationBuilder.DropTable(
                 name: "Votes");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "Votables");
+
+            migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "Topics");
-
-            migrationBuilder.DropTable(
-                name: "Votables");
         }
     }
 }

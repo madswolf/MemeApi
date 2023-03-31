@@ -33,9 +33,9 @@ namespace MemeApi.Test.library
         {
             _context = ContextUtils.CreateMemeTestContext();
             _userRepository = new UserRepository(_context, TestUserManager<User>(), new FileSaverStub());
-            _visualRepository = new VisualRepository(_context, new FileSaverStub(), new FileRemoverStub());
-            _textRepository = new TextRepository(_context);
-            _topicRepository = new TopicRepository(_context, _userRepository);
+            _visualRepository = new VisualRepository(_context, new FileSaverStub(), new FileRemoverStub(), _topicRepository);
+            _textRepository = new TextRepository(_context, _topicRepository);
+            _topicRepository = new TopicRepository(_context, _userRepository, _configuration);
             _memeRepository = new MemeRepository(_context, _visualRepository, _textRepository, _configuration, _topicRepository);
            _votableRepository = new VotableRepository(_context);
             var mappingConfig = new MapperConfiguration(mc =>

@@ -12,10 +12,12 @@ namespace MemeApi.library.repositories
     public class TextRepository
     {
         private readonly MemeContext _context;
+        private readonly TopicRepository _topicRepository;
 
-        public TextRepository(MemeContext context)
+        public TextRepository(MemeContext context, TopicRepository topicRepository)
         {
             _context = context;
+            _topicRepository = topicRepository;
         }
 
         public async Task<List<MemeText>> GetTexts(MemeTextPosition? type = null)
@@ -30,7 +32,7 @@ namespace MemeApi.library.repositories
 
         public async Task<MemeText> GetText(int id)
         {
-            return await _context.Texts.Include(x => x.Votes).FirstOrDefaultAsync(t => t.Id == id);
+            return await _context.Texts.Include(x => x.Votes).Include(t => t.Topics).FirstOrDefaultAsync(t => t.Id == id);
         }
 
         public async Task<bool> UpdateText(int id, string newMemeBottomText, MemeTextPosition? newMemeTextPosition = null)
@@ -66,9 +68,9 @@ namespace MemeApi.library.repositories
             return true;
         }
 
-        public async Task<MemeText> CreateText(string text, MemeTextPosition position, List<Topic> topics = null)
+        public async Task<MemeText> CreateText(string text, MemeTextPosition position, IEnumerable<string> topicNames = null)
         {
-            if (topics == null) topics = new List<Topic> { await _context.GetDefaultTopic() };
+            var topics = await _topicRepository.GetTopicsByNameOrDefault(topicNames);
             var memeText = new MemeText
             {
                 Text = text,

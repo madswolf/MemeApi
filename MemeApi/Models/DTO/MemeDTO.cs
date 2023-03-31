@@ -8,18 +8,19 @@ namespace MemeApi.Models.DTO
     /// </summary>
     public class MemeDTO
     {
+        public int Id { get; set; }
         /// <summary>
         /// Visual component of the meme
         /// </summary>
-        public VisualDTO MemeVisual { get; set; }
+        public string MemeVisual { get; set; }
         /// <summary>
         /// Textual top component of the meme
         /// </summary>
-        public TextDTO Toptext { get; set; }
+        public string Toptext { get; set; }
         /// <summary>
         /// Textual bottom component of the meme
         /// </summary>
-        public TextDTO BottomText { get; set; }
+        public string BottomText { get; set; }
         /// <summary>
         /// Topics that the meme belongs to
         /// </summary>

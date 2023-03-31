@@ -7,6 +7,7 @@ using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace MemeApi.library.repositories;
 
@@ -14,11 +15,13 @@ public class TopicRepository
 {
     private readonly MemeContext _context;
     private UserRepository _userRepository;
+    private readonly IConfiguration _configuration;
 
-    public TopicRepository(MemeContext context, UserRepository userRepository)
+    public TopicRepository(MemeContext context, UserRepository userRepository, IConfiguration configuration)
     {
         _context = context;
         _userRepository = userRepository;
+        _configuration = configuration;
     }
 
     public async Task<List<TopicDTO>> GetTopics()
@@ -42,6 +45,18 @@ public class TopicRepository
     {
         var topic = await _context.Topics.Where(t => t.Name == name).FirstOrDefaultAsync();
         return topic;
+    }
+
+    public async Task<List<Topic>> GetTopicsByNameOrDefault(IEnumerable<string> topicNames)
+    {
+        var topics = topicNames != null ?
+            await _context.Topics.Where(t => topicNames.Contains(t.Name)).ToListAsync()
+            : new List<Topic> { await _context.Topics.FirstAsync(t => t.Name == _configuration["Topic.Default.Topicname"]) };
+        return topics;
+    }
+    public async Task<Topic> GetDefaultTopic()
+    {
+        return await _context.Topics.FirstAsync(t => t.Name == _configuration["Topic.Default.Topicname"]);
     }
 
     public async Task<bool> UpdateTopic(int id, string name = null, string description = null)

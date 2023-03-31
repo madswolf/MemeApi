@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MemeApi.Models.Context
@@ -22,12 +23,6 @@ namespace MemeApi.Models.Context
         public DbSet<Vote> Votes { get; set; }
         public DbSet<Votable> Votables { get; set; }
         public DbSet<Topic> Topics { get; set; }
-
-        public async Task<Topic> GetDefaultTopic()
-        {
-            return await Topics.FirstAsync(t => t.Name == _configuration["Topic.Default.Topicname"]);
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -78,7 +73,8 @@ namespace MemeApi.Models.Context
                 .IsUnique();
 
             modelBuilder.Entity<Votable>()
-                .HasMany(v => v.Topics);
+                .HasMany(v => v.Topics)
+                .WithMany(t => t.Votables);
 
             var admin = new User
             {
@@ -92,7 +88,7 @@ namespace MemeApi.Models.Context
             {
                 Id = 1,
                 OwnerId = admin.Id,
-                Name = "Swu-legacy",
+                Name = _configuration["Topic.Default.Topicname"],
                 Description = "Memes created 2020-2023",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -102,14 +98,30 @@ namespace MemeApi.Models.Context
             {
                 Id = 2,
                 OwnerId = admin.Id,
-                Name = _configuration["Topic.Default.Topicname"],
+                Name = "Swu-reloaded",
                 Description = "Memes are back baby!",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
-            modelBuilder.Entity<User>().HasData(admin);
+            //var defaultVisual = new MemeVisual
+            //{
+            //    Id = 1,
+            //    Filename = "oof",
+            //    Topics = new List<Topic> { defaultTopic }
+            //};
+            //
+            //var defaultMeme = new Meme
+            //{
+            //    Id = 1,
+            //    MemeVisual = defaultVisual,
+            //    Topics = new List<Topic> { defaultTopic }
+            //};
+
             modelBuilder.Entity<Topic>().HasData(defaultTopic, defaultTopic2);
+            //modelBuilder.Entity<MemeVisual>().HasData(defaultVisual);
+            //modelBuilder.Entity<Meme>().HasData(defaultMeme);
+            modelBuilder.Entity<User>().HasData(admin);
         }
     }
 }
