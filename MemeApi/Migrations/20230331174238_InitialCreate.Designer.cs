@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MemeApi.Migrations
 {
     [DbContext(typeof(MemeContext))]
-    [Migration("20230326010228_InitialCreate")]
+    [Migration("20230331174238_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,17 +41,45 @@ namespace MemeApi.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<int?>("OwnerId")
+                    b.Property<int>("OwnerId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("VotableId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.HasIndex("OwnerId");
 
+                    b.HasIndex("VotableId");
+
                     b.ToTable("Topics");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2023, 3, 31, 17, 42, 38, 777, DateTimeKind.Utc).AddTicks(7729),
+                            Description = "Memes created 2020-2023",
+                            Name = "Swu-legacy",
+                            OwnerId = 1,
+                            UpdatedAt = new DateTime(2023, 3, 31, 17, 42, 38, 777, DateTimeKind.Utc).AddTicks(7729)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2023, 3, 31, 17, 42, 38, 777, DateTimeKind.Utc).AddTicks(7733),
+                            Description = "Memes are back baby!",
+                            Name = "Swu-reloaded",
+                            OwnerId = 1,
+                            UpdatedAt = new DateTime(2023, 3, 31, 17, 42, 38, 777, DateTimeKind.Utc).AddTicks(7733)
+                        });
                 });
 
             modelBuilder.Entity("MemeApi.Models.Entity.User", b =>
@@ -130,6 +158,21 @@ namespace MemeApi.Migrations
                         .IsUnique();
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "4270327b-46fd-4aac-a911-88b0e2128579",
+                            Email = "Admin@mads.monster",
+                            EmailConfirmed = false,
+                            LockoutEnabled = false,
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "31/03/2023 17.42.38",
+                            TwoFactorEnabled = false,
+                            UserName = "Admin"
+                        });
                 });
 
             modelBuilder.Entity("MemeApi.Models.Entity.Votable", b =>
@@ -144,12 +187,7 @@ namespace MemeApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("TopicId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("TopicId");
 
                     b.ToTable("Votables");
 
@@ -382,8 +420,14 @@ namespace MemeApi.Migrations
             modelBuilder.Entity("MemeApi.Models.Entity.Topic", b =>
                 {
                     b.HasOne("MemeApi.Models.Entity.User", "Owner")
-                        .WithMany()
-                        .HasForeignKey("OwnerId");
+                        .WithMany("Topics")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MemeApi.Models.Entity.Votable", null)
+                        .WithMany("Topics")
+                        .HasForeignKey("VotableId");
 
                     b.Navigation("Owner");
                 });
@@ -393,15 +437,6 @@ namespace MemeApi.Migrations
                     b.HasOne("MemeApi.Models.Entity.Topic", null)
                         .WithMany("Moderators")
                         .HasForeignKey("TopicId");
-                });
-
-            modelBuilder.Entity("MemeApi.Models.Entity.Votable", b =>
-                {
-                    b.HasOne("MemeApi.Models.Entity.Topic", "Topic")
-                        .WithMany()
-                        .HasForeignKey("TopicId");
-
-                    b.Navigation("Topic");
                 });
 
             modelBuilder.Entity("MemeApi.Models.Vote", b =>
@@ -508,11 +543,15 @@ namespace MemeApi.Migrations
 
             modelBuilder.Entity("MemeApi.Models.Entity.User", b =>
                 {
+                    b.Navigation("Topics");
+
                     b.Navigation("Votes");
                 });
 
             modelBuilder.Entity("MemeApi.Models.Entity.Votable", b =>
                 {
+                    b.Navigation("Topics");
+
                     b.Navigation("Votes");
                 });
 #pragma warning restore 612, 618

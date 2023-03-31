@@ -26,6 +26,47 @@ namespace MemeApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Votables",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Discriminator = table.Column<string>(type: "text", nullable: false),
+                    MemeVisualId = table.Column<int>(type: "integer", nullable: true),
+                    MemeSoundId = table.Column<int>(type: "integer", nullable: true),
+                    ToptextId = table.Column<int>(type: "integer", nullable: true),
+                    BottomTextId = table.Column<int>(type: "integer", nullable: true),
+                    MemeSound_Filename = table.Column<string>(type: "text", nullable: true),
+                    Text = table.Column<string>(type: "text", nullable: true),
+                    Position = table.Column<int>(type: "integer", nullable: true),
+                    Filename = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Votables", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Votables_Votables_BottomTextId",
+                        column: x => x.BottomTextId,
+                        principalTable: "Votables",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Votables_Votables_MemeSoundId",
+                        column: x => x.MemeSoundId,
+                        principalTable: "Votables",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Votables_Votables_MemeVisualId",
+                        column: x => x.MemeVisualId,
+                        principalTable: "Votables",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Votables_Votables_ToptextId",
+                        column: x => x.ToptextId,
+                        principalTable: "Votables",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -149,9 +190,10 @@ namespace MemeApi.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    OwnerId = table.Column<int>(type: "integer", nullable: true),
+                    OwnerId = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    VotableId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -160,52 +202,11 @@ namespace MemeApi.Migrations
                         name: "FK_Topics_AspNetUsers_OwnerId",
                         column: x => x.OwnerId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Votables",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    TopicId = table.Column<int>(type: "integer", nullable: true),
-                    Discriminator = table.Column<string>(type: "text", nullable: false),
-                    MemeVisualId = table.Column<int>(type: "integer", nullable: true),
-                    MemeSoundId = table.Column<int>(type: "integer", nullable: true),
-                    ToptextId = table.Column<int>(type: "integer", nullable: true),
-                    BottomTextId = table.Column<int>(type: "integer", nullable: true),
-                    MemeSound_Filename = table.Column<string>(type: "text", nullable: true),
-                    Text = table.Column<string>(type: "text", nullable: true),
-                    Position = table.Column<int>(type: "integer", nullable: true),
-                    Filename = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Votables", x => x.Id);
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Votables_Topics_TopicId",
-                        column: x => x.TopicId,
-                        principalTable: "Topics",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Votables_Votables_BottomTextId",
-                        column: x => x.BottomTextId,
-                        principalTable: "Votables",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Votables_Votables_MemeSoundId",
-                        column: x => x.MemeSoundId,
-                        principalTable: "Votables",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Votables_Votables_MemeVisualId",
-                        column: x => x.MemeVisualId,
-                        principalTable: "Votables",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Votables_Votables_ToptextId",
-                        column: x => x.ToptextId,
+                        name: "FK_Topics_Votables_VotableId",
+                        column: x => x.VotableId,
                         principalTable: "Votables",
                         principalColumn: "Id");
                 });
@@ -235,6 +236,20 @@ namespace MemeApi.Migrations
                         principalTable: "Votables",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePicFile", "SecurityStamp", "TopicId", "TwoFactorEnabled", "UserName" },
+                values: new object[] { 1, 0, "4270327b-46fd-4aac-a911-88b0e2128579", "Admin@mads.monster", false, false, null, null, null, null, null, false, null, "31/03/2023 17.42.38", null, false, "Admin" });
+
+            migrationBuilder.InsertData(
+                table: "Topics",
+                columns: new[] { "Id", "CreatedAt", "Description", "Name", "OwnerId", "UpdatedAt", "VotableId" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2023, 3, 31, 17, 42, 38, 777, DateTimeKind.Utc).AddTicks(7729), "Memes created 2020-2023", "Swu-legacy", 1, new DateTime(2023, 3, 31, 17, 42, 38, 777, DateTimeKind.Utc).AddTicks(7729), null },
+                    { 2, new DateTime(2023, 3, 31, 17, 42, 38, 777, DateTimeKind.Utc).AddTicks(7733), "Memes are back baby!", "Swu-reloaded", 1, new DateTime(2023, 3, 31, 17, 42, 38, 777, DateTimeKind.Utc).AddTicks(7733), null }
                 });
 
             migrationBuilder.CreateIndex(
@@ -286,9 +301,20 @@ namespace MemeApi.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Topics_Name",
+                table: "Topics",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Topics_OwnerId",
                 table: "Topics",
                 column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Topics_VotableId",
+                table: "Topics",
+                column: "VotableId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Votables_BottomTextId",
@@ -304,11 +330,6 @@ namespace MemeApi.Migrations
                 name: "IX_Votables_MemeVisualId",
                 table: "Votables",
                 column: "MemeVisualId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Votables_TopicId",
-                table: "Votables",
-                column: "TopicId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Votables_ToptextId",
@@ -385,13 +406,13 @@ namespace MemeApi.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Votables");
-
-            migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "Topics");
+
+            migrationBuilder.DropTable(
+                name: "Votables");
         }
     }
 }

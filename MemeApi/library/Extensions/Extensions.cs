@@ -59,7 +59,8 @@ namespace MemeApi.library.Extensions
             return new UserInfoDTO
             {
                 UserName = u.UserName,
-                ProfilePicURl = mediaHost + "profilepic/" + u.ProfilePicFile
+                ProfilePicURl = mediaHost + "profilepic/" + u.ProfilePicFile,
+                Topics = u.Topics.Select(t => t.Name).ToList()
             };
         }
 

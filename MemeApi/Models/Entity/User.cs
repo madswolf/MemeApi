@@ -8,6 +8,7 @@ namespace MemeApi.Models.Entity
     {
         public string ProfilePicFile { get; set; }
         public List<Vote> Votes { get; set; }
+        public List<Topic>  Topics { get; set; }
     }
 }
 

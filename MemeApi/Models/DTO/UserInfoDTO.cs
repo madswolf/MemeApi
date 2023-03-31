@@ -1,4 +1,6 @@
-﻿namespace MemeApi.Models.DTO
+﻿using System.Collections.Generic;
+
+namespace MemeApi.Models.DTO
 {
     /// <summary>
     /// A DTO of user info
@@ -14,5 +16,9 @@
         /// Users profile picture URL
         /// </summary>
         public string ProfilePicURl { get; set; }
+        /// <summary>
+        /// Topics that the users owns
+        /// </summary>
+        public List<string> Topics { get; set; }
     }
 }
