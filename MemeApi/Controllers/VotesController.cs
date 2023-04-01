@@ -50,7 +50,7 @@ namespace MemeApi.Controllers
         /// Get one vote.
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Vote>> GetVote(int id)
+        public async Task<ActionResult<Vote>> GetVote(string id)
         {
             var vote = await _votableRepository.GetVote(id);
 
@@ -78,7 +78,7 @@ namespace MemeApi.Controllers
                 return NotFound();
             }
 
-            var userId = int.Parse(userIdString);
+            var userId = userIdString;
             Votable element;
 
             if (components.Count > 1)
@@ -98,6 +98,7 @@ namespace MemeApi.Controllers
                 {
                     meme = new Meme
                     {
+                        Id = Guid.NewGuid().ToString(),
                         MemeVisual = visual,
                         //TODO handle which position they are in in the rendered meme when
                         Toptext = toptext,
@@ -136,6 +137,7 @@ namespace MemeApi.Controllers
                 }
                 vote = new Vote
                 {
+                    Id = Guid.NewGuid().ToString(),
                     Upvote = voteDTO.UpVote == Upvote.Upvote,
                     Element = element,
                     User = await _userRepository.GetUser(userId),
@@ -153,7 +155,7 @@ namespace MemeApi.Controllers
         /// Delete a vote. This can also be done with normal vote with Upvote = null
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteVote(int id)
+        public async Task<ActionResult> DeleteVote(string id)
         {
             var deleted = await _votableRepository.DeleteVote(id);
             if (!deleted)

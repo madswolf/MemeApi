@@ -55,7 +55,7 @@ namespace MemeApi.Controllers
         /// </summary>
         [HttpGet]
         [Route("[controller]/{id}")]
-        public async Task<ActionResult<UserInfoDTO>> GetUser(int id)
+        public async Task<ActionResult<UserInfoDTO>> GetUser(string id)
         {
             var user = await _userRepository.GetUser(id);
 
@@ -73,7 +73,7 @@ namespace MemeApi.Controllers
         public async Task<IActionResult> UpdateUser([FromForm]UserUpdateDTO updateDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var (updated, message) = await _userRepository.UpdateUser(int.Parse(userId), updateDto);
+            var (updated, message) = await _userRepository.UpdateUser(userId, updateDto);
             if (!updated)
             {
                 return message switch
@@ -100,6 +100,7 @@ namespace MemeApi.Controllers
 
             var user = new User
             {
+                Id = Guid.NewGuid().ToString(),
                 UserName = userDTO.Username, 
                 Email = userDTO.Email,
                 ProfilePicFile = "default.jpg",
@@ -145,7 +146,7 @@ namespace MemeApi.Controllers
         public async Task<ActionResult> DeleteUser()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _userRepository.GetUser(int.Parse(userId));
+            var user = await _userRepository.GetUser(userId);
             if (user == null) return NotFound();
             await _userManager.DeleteAsync(user);
 

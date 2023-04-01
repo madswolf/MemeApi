@@ -30,7 +30,7 @@ namespace MemeApi.library.repositories
             return await _memeContext.Users.Include(u => u.Topics).ToListAsync();
         }
 
-        public async Task<User> GetUser(int id)
+        public async Task<User> GetUser(string id)
         {
             return await _memeContext.Users.Include(u => u.Topics).FirstOrDefaultAsync(u => u.Id == id);
         }
@@ -46,7 +46,7 @@ namespace MemeApi.library.repositories
             await _memeContext.SaveChangesAsync();
         }
 
-        public async Task<(bool, Errors)> UpdateUser(int id, UserUpdateDTO updateDto)
+        public async Task<(bool, Errors)> UpdateUser(string id, UserUpdateDTO updateDto)
         {
             var user = await GetUser(id);
 
@@ -107,7 +107,7 @@ namespace MemeApi.library.repositories
             return (true,Errors.NoFailure);
         }
 
-        public async Task<bool> DeleteUser(int id)
+        public async Task<bool> DeleteUser(string id)
         {
             var user = await GetUser(id);
             if (user == null)
@@ -120,7 +120,7 @@ namespace MemeApi.library.repositories
             return false;
         }
 
-        private bool UserExists(int id)
+        private bool UserExists(string id)
         {
             return _memeContext.Users.Any(e => e.Id == id);
         }

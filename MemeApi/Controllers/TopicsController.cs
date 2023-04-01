@@ -46,7 +46,7 @@ namespace MemeApi.Controllers
         /// Get a specific topic by ID
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<TopicDTO>> GetTopic(int id)
+        public async Task<ActionResult<TopicDTO>> GetTopic(string id)
         {
             var topic = await _topicRepository.GetTopic(id);
 
@@ -60,10 +60,10 @@ namespace MemeApi.Controllers
         /// </summary>
         [HttpPut]
         [Route("[controller]/{topicId}/mod/{userId}")]
-        public async Task<IActionResult> ModUser(int topicId, int userId)
+        public async Task<IActionResult> ModUser(string topicId, string userId)
         {
             var topic = await _topicRepository.GetTopic(topicId);
-            var user = await _userRepository.GetUser(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            var user = await _userRepository.GetUser(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             if (topic == null) return NotFound("Topic not found");
             if (user == null) return Unauthorized("User not logged in");
@@ -95,10 +95,10 @@ namespace MemeApi.Controllers
         /// Delete Topic
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<bool>> DeleteTopic(int id)
+        public async Task<ActionResult<bool>> DeleteTopic(string id)
         {
             var topic = await _topicRepository.GetTopic(id);
-            var user = await _userRepository.GetUser(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            var user = await _userRepository.GetUser(User.FindFirstValue(ClaimTypes.NameIdentifier));
             
             if (topic == null) return NotFound("Topic not found");
             if (user == null) return Unauthorized("User not logged in");
@@ -115,10 +115,10 @@ namespace MemeApi.Controllers
         /// </summary>
         [HttpDelete]
         [Route("[controller]/{id}")]
-        public async Task<IActionResult> DeleteVotable(int id)
+        public async Task<IActionResult> DeleteVotable(string id)
         {
             var votable = await _votableRepository.GetVotable(id);
-            var user = await _userRepository.GetUser(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            var user = await _userRepository.GetUser(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             if (votable == null) return NotFound("Votable not found");
             if (user == null) return Unauthorized("User not logged in");

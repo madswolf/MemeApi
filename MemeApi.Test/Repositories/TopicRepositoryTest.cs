@@ -69,7 +69,7 @@ namespace MemeApi.Test.Repositories
             var user = new User();
             var topic = new Topic { Name = "Test", Owner = user };
             var topic2 = new Topic { Name = "Test2", Owner = new User(), Moderators = new List<User>() };
-            var votable = new Votable { Id = 1, Topics = new List<Topic>() { topic, topic2 } };
+            var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = new List<Topic>() { topic, topic2 } };
             _context.Votables.Add(votable);
             // When
             var result = await _votableRepository.DeleteVotable(votable, user);
@@ -87,7 +87,7 @@ namespace MemeApi.Test.Repositories
             var user = new User();
             var topic = new Topic { Name = "Test", Moderators = new List<User> { user } };
             var topic2 = new Topic { Name = "Test2", Owner = new User(), Moderators = new List<User>() };
-            var votable = new Votable { Id = 1, Topics = new List<Topic>() { topic, topic2 } };
+            var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = new List<Topic>() { topic, topic2 } };
             _context.Votables.Add(votable);
             // When
             var result = await _votableRepository.DeleteVotable(votable, user);

@@ -25,13 +25,13 @@ namespace MemeApi.library.repositories
             return await _context.Votes.ToListAsync();
         }
 
-        public async Task<Vote> GetVote(int id)
+        public async Task<Vote> GetVote(string id)
         {
             var vote = await _context.Votes.FindAsync(id);
             return vote;
         }
 
-        public async Task<List<Votable>> FindMany(IEnumerable<int> ids)
+        public async Task<List<Votable>> FindMany(IEnumerable<string> ids)
         {
             return await _context.Votables
                 .Where(x => ids.Contains(x.Id))
@@ -39,7 +39,7 @@ namespace MemeApi.library.repositories
         }
 
 
-        public Vote? FindByElementAndUser(Votable element, int userId)
+        public Vote? FindByElementAndUser(Votable element, string userId)
         {
             return _context.Votes
                 .Select(x => x)
@@ -55,7 +55,7 @@ namespace MemeApi.library.repositories
             return vote;
         }
 
-        public async Task<bool> DeleteVote(int id)
+        public async Task<bool> DeleteVote(string id)
         {
             var vote = await GetVote(id);
             if (vote == null)
@@ -69,7 +69,7 @@ namespace MemeApi.library.repositories
             return true;
         }
 
-        public async Task<Votable> GetVotable(int id)
+        public async Task<Votable> GetVotable(string id)
         {
             return await _context.Votables.FindAsync(id);
         }

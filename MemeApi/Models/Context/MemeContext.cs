@@ -7,7 +7,7 @@ using System;
 
 namespace MemeApi.Models.Context
 {
-    public class MemeContext : IdentityDbContext<User, IdentityRole<int>, int>
+    public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
     {
         private readonly IConfiguration _configuration;
         public MemeContext(DbContextOptions<MemeContext> options, IConfiguration configuration) : base(options)
@@ -76,7 +76,7 @@ namespace MemeApi.Models.Context
 
             var admin = new User
             {
-                Id = 1,
+                Id = Guid.NewGuid().ToString(),
                 UserName = _configuration["Admin.UserName"],
                 Email = _configuration["Admin.Email"],
                 SecurityStamp = DateTime.UtcNow.ToString(),
@@ -87,7 +87,7 @@ namespace MemeApi.Models.Context
 
             var defaultTopic = new Topic
             {
-                Id = 1,
+                Id = Guid.NewGuid().ToString(),
                 OwnerId = admin.Id,
                 Name = "Swu-legacy",
                 Description = "Memes created 2020-2023",
@@ -97,7 +97,7 @@ namespace MemeApi.Models.Context
 
             var defaultTopic2 = new Topic
             {
-                Id = 2,
+                Id = Guid.NewGuid().ToString(),
                 OwnerId = admin.Id,
                 Name = "Swu-reloaded",
                 Description = "Memes are back baby!",

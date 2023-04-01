@@ -9,7 +9,7 @@ namespace MemeApi.Models.DTO
     /// </summary>
     public class MemeDTO
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
         /// <summary>
         /// Visual component of the meme
         /// </summary>

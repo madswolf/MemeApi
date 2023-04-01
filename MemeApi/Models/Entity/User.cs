@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace MemeApi.Models.Entity
 {
-    public class User : IdentityUser<int>
+    public class User : IdentityUser<string>
     {
         public string ProfilePicFile { get; set; }
         public List<Vote> Votes { get; set; }

@@ -8,6 +8,10 @@ namespace MemeApi.Models.DTO
         /// <summary>
         /// Filename of the Visual
         /// </summary>
+        public string Id { get; set; }
+        /// <summary>
+        /// Filename of the Visual
+        /// </summary>
         public string Filename { get; set; }
         /// <summary>
         /// Topics that the Visual are in

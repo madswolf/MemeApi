@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MemeApi.Controllers
@@ -33,13 +34,15 @@ namespace MemeApi.Controllers
         /// Get all visuals
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MemeVisual>>> GetVisuals() => await _visualRepository.GetVisuals();
-
+        public async Task<ActionResult<IEnumerable<VisualDTO>>> GetVisuals(){
+            var visuals = await _visualRepository.GetVisuals();
+            return Ok(visuals.Select(v => v.ToVisualDTO()));
+        }
         /// <summary>
         /// Get a specific visual by ID
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<MemeComponentDTO>> GetMemeVisual(int id)
+        public async Task<ActionResult<MemeComponentDTO>> GetMemeVisual(string id)
         {
             var memeVisual = await _visualRepository.GetVisual(id);
 
@@ -64,7 +67,7 @@ namespace MemeApi.Controllers
         /// </summary>
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMemeVisual(int id)
+        public async Task<IActionResult> DeleteMemeVisual(string id)
         {
             var deleted = await _visualRepository.RemoveMemeVisual(id);
             if (deleted == false)

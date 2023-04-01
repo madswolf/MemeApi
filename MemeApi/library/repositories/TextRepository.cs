@@ -22,20 +22,21 @@ namespace MemeApi.library.repositories
 
         public async Task<List<MemeText>> GetTexts(MemeTextPosition? type = null)
         {
+            var texts = _context.Texts.Include(x => x.Votes).Include(t => t.Topics);
             if (type != null)
             {
-                return await _context.Texts.Include(x => x.Votes).Where(x => x.Position == type).ToListAsync();
+                return await texts.Where(x => x.Position == type).ToListAsync();
             }
             
-            return await _context.Texts.Include(x => x.Votes).ToListAsync();
+            return await texts.ToListAsync();
         }
 
-        public async Task<MemeText> GetText(int id)
+        public async Task<MemeText> GetText(string id)
         {
             return await _context.Texts.Include(x => x.Votes).Include(t => t.Topics).FirstOrDefaultAsync(t => t.Id == id);
         }
 
-        public async Task<bool> UpdateText(int id, string newMemeBottomText, MemeTextPosition? newMemeTextPosition = null)
+        public async Task<bool> UpdateText(string id, string newMemeBottomText, MemeTextPosition? newMemeTextPosition = null)
         {
             var memeText = await _context.Texts.FindAsync(id);
 
@@ -74,6 +75,7 @@ namespace MemeApi.library.repositories
             var topics = await _topicRepository.GetTopicsByNameOrDefault(topicNames);
             var memeText = new MemeText
             {
+                Id = Guid.NewGuid().ToString(),
                 Text = text,
                 Position = position,
                 Topics = topics,
@@ -86,7 +88,7 @@ namespace MemeApi.library.repositories
             return memeText;
         }
 
-        public async Task<bool> RemoveText(int id)
+        public async Task<bool> RemoveText(string id)
         {
             var memeBottomText = await _context.Texts.FindAsync(id);
             if (memeBottomText == null) return false;
@@ -98,7 +100,7 @@ namespace MemeApi.library.repositories
             return true;
         }
 
-        private bool MemeBottomTextExists(int id)
+        private bool MemeBottomTextExists(string id)
         {
             return _context.Texts.Any(e => e.Id == id);
         }

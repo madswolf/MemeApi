@@ -14,8 +14,7 @@ namespace MemeApi.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
@@ -29,13 +28,14 @@ namespace MemeApi.Migrations
                 name: "Votables",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastUpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Discriminator = table.Column<string>(type: "text", nullable: false),
-                    MemeVisualId = table.Column<int>(type: "integer", nullable: true),
-                    MemeSoundId = table.Column<int>(type: "integer", nullable: true),
-                    ToptextId = table.Column<int>(type: "integer", nullable: true),
-                    BottomTextId = table.Column<int>(type: "integer", nullable: true),
+                    MemeVisualId = table.Column<string>(type: "text", nullable: true),
+                    MemeSoundId = table.Column<string>(type: "text", nullable: true),
+                    ToptextId = table.Column<string>(type: "text", nullable: true),
+                    BottomTextId = table.Column<string>(type: "text", nullable: true),
                     MemeSound_Filename = table.Column<string>(type: "text", nullable: true),
                     Text = table.Column<string>(type: "text", nullable: true),
                     Position = table.Column<int>(type: "integer", nullable: true),
@@ -72,7 +72,7 @@ namespace MemeApi.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    RoleId = table.Column<int>(type: "integer", nullable: false),
+                    RoleId = table.Column<string>(type: "text", nullable: false),
                     ClaimType = table.Column<string>(type: "text", nullable: true),
                     ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
@@ -93,7 +93,7 @@ namespace MemeApi.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
                     ClaimType = table.Column<string>(type: "text", nullable: true),
                     ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
@@ -109,7 +109,7 @@ namespace MemeApi.Migrations
                     LoginProvider = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     ProviderKey = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
-                    UserId = table.Column<int>(type: "integer", nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -120,8 +120,8 @@ namespace MemeApi.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    RoleId = table.Column<int>(type: "integer", nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    RoleId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -138,10 +138,12 @@ namespace MemeApi.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<string>(type: "text", nullable: false),
                     ProfilePicFile = table.Column<string>(type: "text", nullable: true),
-                    TopicId = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastUpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastLoginAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TopicId = table.Column<string>(type: "text", nullable: true),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -166,7 +168,7 @@ namespace MemeApi.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
                     LoginProvider = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     Name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     Value = table.Column<string>(type: "text", nullable: true)
@@ -186,13 +188,12 @@ namespace MemeApi.Migrations
                 name: "Topics",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    OwnerId = table.Column<int>(type: "integer", nullable: false),
+                    OwnerId = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    LastUpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -201,19 +202,19 @@ namespace MemeApi.Migrations
                         name: "FK_Topics_AspNetUsers_OwnerId",
                         column: x => x.OwnerId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
                 name: "Votes",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<string>(type: "text", nullable: false),
                     Upvote = table.Column<bool>(type: "boolean", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    ElementId = table.Column<int>(type: "integer", nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ElementId = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastUpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -236,8 +237,8 @@ namespace MemeApi.Migrations
                 name: "TopicVotable",
                 columns: table => new
                 {
-                    TopicsId = table.Column<int>(type: "integer", nullable: false),
-                    VotablesId = table.Column<int>(type: "integer", nullable: false)
+                    TopicsId = table.Column<string>(type: "text", nullable: false),
+                    VotablesId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -258,16 +259,16 @@ namespace MemeApi.Migrations
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePicFile", "SecurityStamp", "TopicId", "TwoFactorEnabled", "UserName" },
-                values: new object[] { 1, 0, "369f248b-2c37-4f39-8951-6595c283f000", "Admin@mads.monster", false, false, null, null, null, null, null, false, null, "31/03/2023 22.10.46", null, false, "Admin" });
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "CreatedAt", "Email", "EmailConfirmed", "LastLoginAt", "LastUpdatedAt", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePicFile", "SecurityStamp", "TopicId", "TwoFactorEnabled", "UserName" },
+                values: new object[] { "fc3e1e27-80d1-4fe6-9855-e5ac38bfe4eb", 0, "78b3232d-1105-4ef0-8006-00f5e33ecd5a", new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2189), "Admin@mads.monster", false, new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2190), new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2190), false, null, null, null, null, null, false, null, "01/04/2023 22.51.37", null, false, "Admin" });
 
             migrationBuilder.InsertData(
                 table: "Topics",
-                columns: new[] { "Id", "CreatedAt", "Description", "Name", "OwnerId", "UpdatedAt" },
+                columns: new[] { "Id", "CreatedAt", "Description", "LastUpdatedAt", "Name", "OwnerId" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2023, 3, 31, 22, 10, 46, 620, DateTimeKind.Utc).AddTicks(2996), "Memes created 2020-2023", "Swu-legacy", 1, new DateTime(2023, 3, 31, 22, 10, 46, 620, DateTimeKind.Utc).AddTicks(2997) },
-                    { 2, new DateTime(2023, 3, 31, 22, 10, 46, 620, DateTimeKind.Utc).AddTicks(2998), "Memes are back baby!", "Swu-reloaded", 1, new DateTime(2023, 3, 31, 22, 10, 46, 620, DateTimeKind.Utc).AddTicks(2998) }
+                    { "24d988f7-1065-49eb-93c7-66ed55970e7f", new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2209), "Memes are back baby!", new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2209), "Swu-reloaded", "fc3e1e27-80d1-4fe6-9855-e5ac38bfe4eb" },
+                    { "a1e41a10-26cd-4cdf-ba29-b2ef10bd8f9d", new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2196), "Memes created 2020-2023", new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2196), "Swu-legacy", "fc3e1e27-80d1-4fe6-9855-e5ac38bfe4eb" }
                 });
 
             migrationBuilder.CreateIndex(

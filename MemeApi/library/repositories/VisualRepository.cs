@@ -30,7 +30,7 @@ namespace MemeApi.library.repositories
             return await _context.Visuals.Include(x => x.Votes).Include(x => x.Topics).ToListAsync();
         }
 
-        public async Task<MemeVisual?> GetVisual(int id)
+        public async Task<MemeVisual?> GetVisual(string id)
         {
             return await _context.Visuals.Include(x => x.Votes).FirstOrDefaultAsync(v => v.Id == id);
         }
@@ -47,6 +47,7 @@ namespace MemeApi.library.repositories
             var topics = await _topicRepository.GetTopicsByNameOrDefault(topicNames);
             var memeVisual = new MemeVisual()
             {
+                Id = Guid.NewGuid().ToString(),
                 Filename = filename,
                 Topics = topics,
                 CreatedAt = DateTime.UtcNow,
@@ -65,7 +66,7 @@ namespace MemeApi.library.repositories
             return memeVisual;
         }
 
-        public async Task<bool> RemoveMemeVisual(int id)
+        public async Task<bool> RemoveMemeVisual(string id)
         {
             var memeVisual = await _context.Visuals.FindAsync(id);
             if (memeVisual == null)
