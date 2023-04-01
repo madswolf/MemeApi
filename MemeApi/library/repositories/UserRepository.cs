@@ -43,7 +43,7 @@ namespace MemeApi.library.repositories
         public async Task UserLoggedIn(User user)
         {
             user.LastLoginAt = DateTime.UtcNow;
-            await _memeContext.SaveChangesAsync()
+            await _memeContext.SaveChangesAsync();
         }
 
         public async Task<(bool, Errors)> UpdateUser(int id, UserUpdateDTO updateDto)

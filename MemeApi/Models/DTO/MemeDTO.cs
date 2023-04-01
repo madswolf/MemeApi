@@ -1,4 +1,5 @@
 ﻿using MemeApi.Models.Entity;
+using System;
 using System.Collections.Generic;
 
 namespace MemeApi.Models.DTO
@@ -25,5 +26,6 @@ namespace MemeApi.Models.DTO
         /// Topics that the meme belongs to
         /// </summary>
         public List<string> Topics { get; set; }
+        public DateTime CreatedAt { get; set; } 
     }
 }

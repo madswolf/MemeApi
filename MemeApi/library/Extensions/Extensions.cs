@@ -30,7 +30,7 @@ namespace MemeApi.library.Extensions
                 Owner = t.Owner.UserName,
                 Moderators = t.Moderators.Select(u => u.UserName).ToList(),
                 CreatedAt = t.CreatedAt,
-                UpdatedAt = t.UpdatedAt,
+                UpdatedAt = t.LastUpdatedAt,
             };
         }
 
@@ -40,7 +40,8 @@ namespace MemeApi.library.Extensions
             {
                 Text = text.Text,
                 Position = text.Position,
-                Topics = text.Topics.Select(t => t.Name).ToList()
+                Topics = text.Topics.Select(t => t.Name).ToList(),
+                CreatedAt = text.CreatedAt
             };
         }
 
@@ -49,7 +50,8 @@ namespace MemeApi.library.Extensions
             return new VisualDTO
             {
                 Filename = visual.Filename,
-                Topics = visual.Topics.Select(t => t.Name).ToList()
+                Topics = visual.Topics.Select(t => t.Name).ToList(),
+                CreatedAt = visual.CreatedAt
             };
         }
 
@@ -89,7 +91,8 @@ namespace MemeApi.library.Extensions
             {
                 Id = meme.Id,
                 MemeVisual = meme.MemeVisual.Filename,
-                Topics = meme.Topics.Select(t => t.Name).ToList()
+                Topics = meme.Topics.Select(t => t.Name).ToList(),
+                CreatedAt = meme.CreatedAt
             };
 
             if( meme.Toptext != null ) memeDTO.Toptext = meme.Toptext.Text;
