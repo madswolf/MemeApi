@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Drawing;
 using System.Threading.Tasks;
 
 namespace MemeApi.Controllers;
@@ -48,6 +51,39 @@ public class MemesController : ControllerBase
 
         return Ok(meme.ToMemeDTO());
     }
+
+        [HttpGet("test/{message}/{message2}")]
+        public ActionResult RenderImage(string message, string message2)
+        {
+            // Create a new Bitmap object with the desired image dimensions
+            Bitmap bitmap = new Bitmap(400, 400);
+
+            // Draw some content onto the bitmap using Graphics
+            using (Graphics graphics = Graphics.FromImage(bitmap))
+            {
+                // Draw a red rectangle
+                graphics.FillRectangle(Brushes.Red, new Rectangle(0, 0, 400, 400));
+
+                // Draw some text
+                graphics.DrawString(message, new Font("Impact", 12), Brushes.White, new PointF(200, 50));
+                graphics.DrawString(message2, new Font("Impact", 12), Brushes.White, new PointF(200, 350));
+            }
+
+            // Create a memory stream to hold the image data
+            MemoryStream stream = new MemoryStream();
+
+            // Save the bitmap to the memory stream in JPEG format
+            bitmap.Save(stream, ImageFormat.Jpeg);
+
+            // Clean up
+            bitmap.Dispose();
+
+            // Reset the memory stream position to the beginning
+            stream.Position = 0;
+
+
+            return File(stream, "image/jpeg");
+        }
 
     //[HttpPut("{id}")]
     //public async Task<IActionResult> PutMeme(int id, Meme meme)
