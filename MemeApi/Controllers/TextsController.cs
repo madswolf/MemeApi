@@ -24,7 +24,7 @@ namespace MemeApi.Controllers
         /// <summary>
         /// A controller for creating and managing meme textual components.
         /// </summary>
-        public TextsController( TextRepository textRepository)
+        public TextsController(TextRepository textRepository)
         {
             _textRepository = textRepository;
         }
@@ -34,7 +34,10 @@ namespace MemeApi.Controllers
         /// Include text position to get all of that position
         /// </summary>
         [HttpGet("{type?}")]
-        public async Task<ActionResult<IEnumerable<MemeText>>> GetTexts(MemeTextPosition? type = null) => await _textRepository.GetTexts(type);
+        public async Task<ActionResult<IEnumerable<TextDTO>>> GetTexts(MemeTextPosition? type = null){
+            var texts = await _textRepository.GetTexts(type);
+            return Ok(texts.Select(t => t.ToTextDTO()));
+        }
 
         /// <summary>
         /// Get a specific text by ID

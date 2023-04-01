@@ -1,4 +1,5 @@
 ﻿using MemeApi.Models.Entity;
+using System;
 using System.Collections.Generic;
 
 namespace MemeApi.Models.DTO
@@ -20,5 +21,10 @@ namespace MemeApi.Models.DTO
         /// Topics that the text belongs to
         /// </summary>
         public List<string> Topics { get; set; }
+        /// <summary>
+        /// The time at which the Text was created
+        /// </summary>
+        public DateTime CreatedAt { get; set; }
+
     }
 }
