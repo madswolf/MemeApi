@@ -48,7 +48,9 @@ namespace MemeApi.library.repositories
             var memeVisual = new MemeVisual()
             {
                 Filename = filename,
-                Topics = topics
+                Topics = topics,
+                CreatedAt = DateTime.UtcNow,
+                LastUpdatedAt = DateTime.UtcNow,
             };
 
             if (_context.Visuals.Any(x => x.Filename == memeVisual.Filename))

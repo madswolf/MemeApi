@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using MemeApi.library.repositories;
 using MemeApi.Models.Entity;
+using System;
 
 namespace MemeApi.Controllers
 {
@@ -120,8 +121,7 @@ namespace MemeApi.Controllers
             {
                 if (voteDTO.UpVote != Upvote.Unvote)
                 { 
-                    existingVote.Upvote = voteDTO.UpVote == Upvote.Upvote;
-                    vote = existingVote;
+                    return await _votableRepository.ChangeVote(existingVote, voteDTO.UpVote);
                 }
                 else
                 {
@@ -138,7 +138,9 @@ namespace MemeApi.Controllers
                 {
                     Upvote = voteDTO.UpVote == Upvote.Upvote,
                     Element = element,
-                    User = await _userRepository.GetUser(userId)
+                    User = await _userRepository.GetUser(userId),
+                    CreatedAt = DateTime.UtcNow,
+                    LastUpdatedAt = DateTime.UtcNow,
                 };
 
                 await _votableRepository.CreateVote(vote);

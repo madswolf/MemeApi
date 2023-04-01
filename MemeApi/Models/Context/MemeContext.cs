@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MemeApi.Models.Context
 {
@@ -82,16 +80,19 @@ namespace MemeApi.Models.Context
                 UserName = _configuration["Admin.UserName"],
                 Email = _configuration["Admin.Email"],
                 SecurityStamp = DateTime.UtcNow.ToString(),
+                CreatedAt = DateTime.UtcNow,
+                LastUpdatedAt = DateTime.UtcNow,
+                LastLoginAt = DateTime.UtcNow,
             };
 
             var defaultTopic = new Topic
             {
                 Id = 1,
                 OwnerId = admin.Id,
-                Name = _configuration["Topic.Default.Topicname"],
+                Name = "Swu-legacy",
                 Description = "Memes created 2020-2023",
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                LastUpdatedAt = DateTime.UtcNow
             };
 
             var defaultTopic2 = new Topic
@@ -101,26 +102,10 @@ namespace MemeApi.Models.Context
                 Name = "Swu-reloaded",
                 Description = "Memes are back baby!",
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                LastUpdatedAt = DateTime.UtcNow
             };
 
-            //var defaultVisual = new MemeVisual
-            //{
-            //    Id = 1,
-            //    Filename = "oof",
-            //    Topics = new List<Topic> { defaultTopic }
-            //};
-            //
-            //var defaultMeme = new Meme
-            //{
-            //    Id = 1,
-            //    MemeVisual = defaultVisual,
-            //    Topics = new List<Topic> { defaultTopic }
-            //};
-
             modelBuilder.Entity<Topic>().HasData(defaultTopic, defaultTopic2);
-            //modelBuilder.Entity<MemeVisual>().HasData(defaultVisual);
-            //modelBuilder.Entity<Meme>().HasData(defaultMeme);
             modelBuilder.Entity<User>().HasData(admin);
         }
     }

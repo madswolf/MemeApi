@@ -82,6 +82,7 @@ public class TopicRepository
 
         try
         {
+            topic.LastUpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
@@ -110,7 +111,7 @@ public class TopicRepository
             Description = topicCreationDTO.Description,
             Moderators = new List<User>(),
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            LastUpdatedAt = DateTime.UtcNow
         };
 
         _context.Topics.Add(topic);

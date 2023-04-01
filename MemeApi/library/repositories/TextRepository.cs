@@ -51,6 +51,7 @@ namespace MemeApi.library.repositories
 
             try
             {
+                memeText.LastUpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -75,7 +76,9 @@ namespace MemeApi.library.repositories
             {
                 Text = text,
                 Position = position,
-                Topics = topics
+                Topics = topics,
+                CreatedAt = DateTime.UtcNow,
+                LastUpdatedAt = DateTime.UtcNow,
             };
 
             _context.Texts.Add(memeText);

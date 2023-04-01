@@ -34,7 +34,9 @@ namespace MemeApi.library.repositories
 
             var meme = new Meme
             {
-                MemeVisual = memeVisual
+                MemeVisual = memeVisual,
+                CreatedAt = DateTime.UtcNow,
+                LastUpdatedAt = DateTime.UtcNow,
             };
 
             //if (memeDTO.SoundFile != null)
@@ -90,27 +92,6 @@ namespace MemeApi.library.repositories
             throw new NotImplementedException();
         }
 
-        public async Task<bool> ModifyMeme(int id, Meme meme)
-        {
-            _context.Entry(meme).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!MemeExists(id))
-                {
-                    return true;
-                }
-
-                throw;
-            }
-
-            return false;
-        }
-
         public async Task<List<Meme>> GetMemes()
         {
             return await IncludeParts()
@@ -130,11 +111,6 @@ namespace MemeApi.library.repositories
                 .Include(m => m.Topics)
                 .Include(m => m.Toptext)
                 .Include(m => m.BottomText);
-        }
-
-        private bool MemeExists(int id)
-        {
-            return _context.Memes.Any(e => e.Id == id);
         }
 
         public async Task<Meme?> FindByComponents(Votable visual, MemeText? toptext = null, MemeText? bottomtext = null)

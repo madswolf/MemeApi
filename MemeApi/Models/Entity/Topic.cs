@@ -13,6 +13,6 @@ namespace MemeApi.Models.Entity
         public List<User> Moderators { get; set; }
         public List<Votable> Votables { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime LastUpdatedAt { get; set; }
     }
 }
