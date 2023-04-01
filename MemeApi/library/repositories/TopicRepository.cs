@@ -35,7 +35,7 @@ public class TopicRepository
         return topics;
     }
 
-    public async Task<Topic> GetTopic(int id)
+    public async Task<Topic> GetTopic(string id)
     {
         var topic = await _context.Topics.FindAsync(id);
         return topic;
@@ -59,7 +59,7 @@ public class TopicRepository
         return await _context.Topics.FirstAsync(t => t.Name == _configuration["Topic.Default.Topicname"]);
     }
 
-    public async Task<bool> UpdateTopic(int id, string name = null, string description = null)
+    public async Task<bool> UpdateTopic(string id, string name = null, string description = null)
     {
         var topic = await _context.Topics.FindAsync(id);
 
@@ -102,10 +102,11 @@ public class TopicRepository
 
     public async Task<TopicDTO> CreateTopic(TopicCreationDTO topicCreationDTO, string userId)
     {
-        var user = await _userRepository.GetUser(int.Parse(userId));
+        var user = await _userRepository.GetUser(userId);
 
         var topic = new Topic()
         {
+            Id = Guid.NewGuid().ToString(),
             Owner = user,
             Name = topicCreationDTO.TopicName,
             Description = topicCreationDTO.Description,
@@ -129,12 +130,12 @@ public class TopicRepository
         return true;
     }
 
-    private bool TopicExists(int id)
+    private bool TopicExists(string id)
     {
         return _context.Topics.Any(e => e.Id == id);
     }
 
-    internal async Task<bool> ModUser(Topic topic, int userId)
+    internal async Task<bool> ModUser(Topic topic, string userId)
     {
         var user = await _userRepository.GetUser(userId);
         if (user == null) return false;

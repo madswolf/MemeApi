@@ -12,7 +12,7 @@
         /// <summary>
         /// The components ID
         /// </summary>
-        public int id { get; set; }
+        public string id { get; set; }
         /// <summary>
         /// The vote score of the component
         /// </summary>

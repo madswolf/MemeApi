@@ -38,6 +38,7 @@ namespace MemeApi.library.Extensions
         {
             return new TextDTO
             {
+                Id = text.Id,
                 Text = text.Text,
                 Position = text.Position,
                 Topics = text.Topics.Select(t => t.Name).ToList(),
@@ -49,6 +50,7 @@ namespace MemeApi.library.Extensions
         {
             return new VisualDTO
             {
+                Id = visual.Id,
                 Filename = visual.Filename,
                 Topics = visual.Topics.Select(t => t.Name).ToList(),
                 CreatedAt = visual.CreatedAt

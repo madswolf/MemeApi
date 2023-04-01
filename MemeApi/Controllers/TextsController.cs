@@ -43,13 +43,13 @@ namespace MemeApi.Controllers
         /// Get a specific text by ID
         /// </summary>
         [HttpGet("one/{id}")]
-        public async Task<ActionResult<RandomComponentDTO>> GetMemeText(int id)
+        public async Task<ActionResult<TextDTO>> GetMemeText(string id)
         {
             var memeBottomText = await _textRepository.GetText(id);
 
             if (memeBottomText == null) return NotFound();
 
-            return Ok(memeBottomText.ToRandomComponentDTO());
+            return Ok(memeBottomText.ToTextDTO());
         }
 
         //[HttpPut("{id}")]
@@ -75,7 +75,7 @@ namespace MemeApi.Controllers
         /// Delete a meme text
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMemeText(int id)
+        public async Task<IActionResult> DeleteMemeText(string id)
         {
             var removed = await _textRepository.RemoveText(id);
 

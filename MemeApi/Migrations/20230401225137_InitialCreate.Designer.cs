@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MemeApi.Migrations
 {
     [DbContext(typeof(MemeContext))]
-    [Migration("20230331221046_InitialCreate")]
+    [Migration("20230401225137_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,11 +26,8 @@ namespace MemeApi.Migrations
 
             modelBuilder.Entity("MemeApi.Models.Entity.Topic", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -38,14 +35,14 @@ namespace MemeApi.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<int>("OwnerId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("OwnerId")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -59,31 +56,28 @@ namespace MemeApi.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
-                            CreatedAt = new DateTime(2023, 3, 31, 22, 10, 46, 620, DateTimeKind.Utc).AddTicks(2996),
+                            Id = "a1e41a10-26cd-4cdf-ba29-b2ef10bd8f9d",
+                            CreatedAt = new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2196),
                             Description = "Memes created 2020-2023",
+                            LastUpdatedAt = new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2196),
                             Name = "Swu-legacy",
-                            OwnerId = 1,
-                            UpdatedAt = new DateTime(2023, 3, 31, 22, 10, 46, 620, DateTimeKind.Utc).AddTicks(2997)
+                            OwnerId = "fc3e1e27-80d1-4fe6-9855-e5ac38bfe4eb"
                         },
                         new
                         {
-                            Id = 2,
-                            CreatedAt = new DateTime(2023, 3, 31, 22, 10, 46, 620, DateTimeKind.Utc).AddTicks(2998),
+                            Id = "24d988f7-1065-49eb-93c7-66ed55970e7f",
+                            CreatedAt = new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2209),
                             Description = "Memes are back baby!",
+                            LastUpdatedAt = new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2209),
                             Name = "Swu-reloaded",
-                            OwnerId = 1,
-                            UpdatedAt = new DateTime(2023, 3, 31, 22, 10, 46, 620, DateTimeKind.Utc).AddTicks(2998)
+                            OwnerId = "fc3e1e27-80d1-4fe6-9855-e5ac38bfe4eb"
                         });
                 });
 
             modelBuilder.Entity("MemeApi.Models.Entity.User", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
@@ -92,12 +86,21 @@ namespace MemeApi.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastLoginAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
@@ -128,8 +131,8 @@ namespace MemeApi.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
-                    b.Property<int?>("TopicId")
-                        .HasColumnType("integer");
+                    b.Property<string>("TopicId")
+                        .HasColumnType("text");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
@@ -157,14 +160,17 @@ namespace MemeApi.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            Id = "fc3e1e27-80d1-4fe6-9855-e5ac38bfe4eb",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "369f248b-2c37-4f39-8951-6595c283f000",
+                            ConcurrencyStamp = "78b3232d-1105-4ef0-8006-00f5e33ecd5a",
+                            CreatedAt = new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2189),
                             Email = "Admin@mads.monster",
                             EmailConfirmed = false,
+                            LastLoginAt = new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2190),
+                            LastUpdatedAt = new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2190),
                             LockoutEnabled = false,
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "31/03/2023 22.10.46",
+                            SecurityStamp = "01/04/2023 22.51.37",
                             TwoFactorEnabled = false,
                             UserName = "Admin"
                         });
@@ -172,15 +178,18 @@ namespace MemeApi.Migrations
 
             modelBuilder.Entity("MemeApi.Models.Entity.Votable", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -191,20 +200,25 @@ namespace MemeApi.Migrations
 
             modelBuilder.Entity("MemeApi.Models.Vote", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("ElementId")
-                        .HasColumnType("integer");
+                    b.Property<string>("ElementId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("Upvote")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -215,13 +229,10 @@ namespace MemeApi.Migrations
                     b.ToTable("Votes");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<string>", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -244,7 +255,7 @@ namespace MemeApi.Migrations
                     b.ToTable("AspNetRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -258,8 +269,9 @@ namespace MemeApi.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("text");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("integer");
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -268,7 +280,7 @@ namespace MemeApi.Migrations
                     b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -282,8 +294,9 @@ namespace MemeApi.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -292,7 +305,7 @@ namespace MemeApi.Migrations
                     b.ToTable("AspNetUserClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
                         .HasMaxLength(128)
@@ -305,8 +318,9 @@ namespace MemeApi.Migrations
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -315,13 +329,13 @@ namespace MemeApi.Migrations
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("integer");
+                    b.Property<string>("RoleId")
+                        .HasColumnType("text");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -330,10 +344,10 @@ namespace MemeApi.Migrations
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
 
                     b.Property<string>("LoginProvider")
                         .HasMaxLength(128)
@@ -353,11 +367,11 @@ namespace MemeApi.Migrations
 
             modelBuilder.Entity("TopicVotable", b =>
                 {
-                    b.Property<int>("TopicsId")
-                        .HasColumnType("integer");
+                    b.Property<string>("TopicsId")
+                        .HasColumnType("text");
 
-                    b.Property<int>("VotablesId")
-                        .HasColumnType("integer");
+                    b.Property<string>("VotablesId")
+                        .HasColumnType("text");
 
                     b.HasKey("TopicsId", "VotablesId");
 
@@ -370,17 +384,17 @@ namespace MemeApi.Migrations
                 {
                     b.HasBaseType("MemeApi.Models.Entity.Votable");
 
-                    b.Property<int?>("BottomTextId")
-                        .HasColumnType("integer");
+                    b.Property<string>("BottomTextId")
+                        .HasColumnType("text");
 
-                    b.Property<int?>("MemeSoundId")
-                        .HasColumnType("integer");
+                    b.Property<string>("MemeSoundId")
+                        .HasColumnType("text");
 
-                    b.Property<int?>("MemeVisualId")
-                        .HasColumnType("integer");
+                    b.Property<string>("MemeVisualId")
+                        .HasColumnType("text");
 
-                    b.Property<int?>("ToptextId")
-                        .HasColumnType("integer");
+                    b.Property<string>("ToptextId")
+                        .HasColumnType("text");
 
                     b.HasIndex("BottomTextId");
 
@@ -431,9 +445,7 @@ namespace MemeApi.Migrations
                 {
                     b.HasOne("MemeApi.Models.Entity.User", "Owner")
                         .WithMany("Topics")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("OwnerId");
 
                     b.Navigation("Owner");
                 });
@@ -464,16 +476,16 @@ namespace MemeApi.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<string>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
                     b.HasOne("MemeApi.Models.Entity.User", null)
                         .WithMany()
@@ -482,7 +494,7 @@ namespace MemeApi.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.HasOne("MemeApi.Models.Entity.User", null)
                         .WithMany()
@@ -491,9 +503,9 @@ namespace MemeApi.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<string>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -506,7 +518,7 @@ namespace MemeApi.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
                     b.HasOne("MemeApi.Models.Entity.User", null)
                         .WithMany()

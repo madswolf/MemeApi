@@ -11,7 +11,7 @@ namespace MemeApi.Models.DTO
         /// <summary>
         /// Topic Id
         /// </summary>
-        public int Id { get; set; }
+        public string Id { get; set; }
         /// <summary>
         /// Topic name
         /// </summary>

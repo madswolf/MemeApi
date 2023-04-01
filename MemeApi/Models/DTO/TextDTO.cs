@@ -10,6 +10,10 @@ namespace MemeApi.Models.DTO
     public class TextDTO
     {
         /// <summary>
+        /// Id of the Text
+        /// </summary>
+        public string Id { get; set; }
+        /// <summary>
         /// Actual content of the text
         /// </summary>
         public string Text { get; set; }

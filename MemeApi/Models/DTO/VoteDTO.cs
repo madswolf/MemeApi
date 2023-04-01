@@ -14,7 +14,7 @@ namespace MemeApi.Models.DTO
         /// Ids of the element(s) to vote on 
         ///</Summary>
         [Required]
-        public List<int> ElementIDs { get; set; }
+        public List<string> ElementIDs { get; set; }
 
         ///<Summary>
         /// Upvote, Downvote or unvote

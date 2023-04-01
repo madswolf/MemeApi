@@ -34,6 +34,7 @@ namespace MemeApi.library.repositories
 
             var meme = new Meme
             {
+                Id = Guid.NewGuid().ToString(),
                 MemeVisual = memeVisual,
                 CreatedAt = DateTime.UtcNow,
                 LastUpdatedAt = DateTime.UtcNow,
@@ -74,7 +75,7 @@ namespace MemeApi.library.repositories
             await _context.SaveChangesAsync();
             return meme;
         }
-        public async Task<bool> DeleteMeme(int id)
+        public async Task<bool> DeleteMeme(string id)
         {
             var meme = await _context.Memes.FindAsync(id);
             if (meme == null)
@@ -87,18 +88,13 @@ namespace MemeApi.library.repositories
             return false;
         }
 
-        internal Task GetRandomMemes()
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<List<Meme>> GetMemes()
         {
             return await IncludeParts()
                 .ToListAsync();
         }
 
-        public async Task<Meme> GetMeme(int id)
+        public async Task<Meme> GetMeme(string id)
         {
             return await IncludeParts()
                 .FirstOrDefaultAsync(m => m.Id == id);
