@@ -102,12 +102,15 @@ namespace MemeApi.Controllers
             {
                 UserName = userDTO.Username, 
                 Email = userDTO.Email,
-                ProfilePicFile = "default.jpg"
+                ProfilePicFile = "default.jpg",
+                CreatedAt = DateTime.UtcNow,
+                LastUpdatedAt = DateTime.UtcNow,
+                LastLoginAt = DateTime.UtcNow,
             };
+
             var result = await _userManager.CreateAsync(user, userDTO.Password);
-            //todo add better handling of already used email or username
             if (!result.Succeeded)
-                return BadRequest(userDTO);
+                return Conflict("Email or username already exists");
 
             await _signInManager.SignInAsync(user, false);
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user.ToUserInfo(_configuration["Media.Host"]));
@@ -165,6 +168,7 @@ namespace MemeApi.Controllers
             var result = await _signInManager.PasswordSignInAsync(user, loginDTO.Password, false, false);
             if (!result.Succeeded)
                 return Unauthorized("The entered information was not correct");
+            await _userRepository.UserLoggedIn(user);
             return Ok(user.ToUserInfo(_configuration["Media.Host"]));
         }
 

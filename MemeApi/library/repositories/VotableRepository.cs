@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MemeApi.Models;
 using MemeApi.Models.Context;
+using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -71,6 +72,14 @@ namespace MemeApi.library.repositories
         public async Task<Votable> GetVotable(int id)
         {
             return await _context.Votables.FindAsync(id);
+        }
+
+        public async Task<Vote> ChangeVote(Vote vote, Upvote upvote)
+        {
+            vote.Upvote = upvote == Upvote.Upvote;
+            vote.LastUpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return vote;
         }
 
         public async Task<bool> DeleteVotable(Votable votable, User user)

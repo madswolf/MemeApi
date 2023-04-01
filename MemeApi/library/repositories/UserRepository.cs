@@ -40,6 +40,12 @@ namespace MemeApi.library.repositories
             return await _memeContext.Users.FirstOrDefaultAsync(user => user.Email == userEmail);
         }
 
+        public async Task UserLoggedIn(User user)
+        {
+            user.LastLoginAt = DateTime.UtcNow;
+            await _memeContext.SaveChangesAsync()
+        }
+
         public async Task<(bool, Errors)> UpdateUser(int id, UserUpdateDTO updateDto)
         {
             var user = await GetUser(id);
@@ -87,6 +93,7 @@ namespace MemeApi.library.repositories
 
             try
             {
+                user.LastUpdatedAt = DateTime.UtcNow;
                 await _memeContext.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
