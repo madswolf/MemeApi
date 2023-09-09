@@ -23,11 +23,7 @@ namespace MemeApi.Test.Controllers
             var controller = new TextsController(_textRepository);
 
             // given
-            var memeText = new TextCreationDTO
-            {
-                Text = "Test",
-                position = memePosition
-            }; 
+            var memeText = new TextCreationDTO("Test", memePosition); 
 
             // When
             var createTask = controller.CreateMemeText(memeText);
