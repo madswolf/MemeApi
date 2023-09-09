@@ -1,13 +1,11 @@
 ﻿using System.IO;
-using Microsoft.AspNetCore.Http;
 
-namespace MemeApi.library
+namespace MemeApi.library;
+
+public class FileRemover : IFileRemover
 {
-    public class FileRemover : IFileRemover
+    public void RemoveFile(string path)
     {
-        public void RemoveFile(string path)
-        {
-            File.Delete(path);
-        }
+        File.Delete(path);
     }
 }

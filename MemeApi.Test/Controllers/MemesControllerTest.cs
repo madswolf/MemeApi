@@ -29,10 +29,7 @@ namespace MemeApi.Test.Controllers
             // given
             var filename = "test.png";
 
-            var memeCreationDTO = new MemeCreationDTO()
-            {
-                VisualFile = CreateFormFile(5, filename),
-            };
+            var memeCreationDTO = new MemeCreationDTO(CreateFormFile(5, filename), default, default, default, default);
 
             // When
             var creationTask = controller.PostMeme(memeCreationDTO);
