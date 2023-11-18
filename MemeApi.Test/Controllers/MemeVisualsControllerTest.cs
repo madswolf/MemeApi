@@ -8,6 +8,7 @@ using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
@@ -43,6 +44,7 @@ namespace MemeApi.Test.Controllers
             // given
             var visual = new MemeVisual()
             {
+                Id = Guid.NewGuid().ToString(),
                 Filename = "Test"
             };
             _context.Visuals.Add(visual);
@@ -116,6 +118,7 @@ namespace MemeApi.Test.Controllers
             // given
             var memeVisual = new MemeVisual()
             {
+                Id = Guid.NewGuid().ToString(),
                 Filename = "Test"
             };
             _context.Visuals.Add(memeVisual);

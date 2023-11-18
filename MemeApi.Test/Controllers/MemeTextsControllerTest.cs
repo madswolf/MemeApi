@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.library.Extensions;
@@ -43,25 +45,27 @@ namespace MemeApi.Test.Controllers
             // given
             var memeText = new MemeText()
             {
+                Id = Guid.NewGuid().ToString(),
                 Text = "Test",
-                Position = MemeTextPosition.BottomText
+                Position = MemeTextPosition.BottomText,
+                Topics = new List<Topic>() { await _topicRepository.GetDefaultTopic() }
             };
             _context.Texts.Add(memeText);
             await _context.SaveChangesAsync();
 
             // When
-            var expected = memeText.ToRandomComponentDTO();
+            var expected = memeText.ToTextDTO();
             var result = (await controller.GetMemeText(memeText.Id)).Result;
 
             // Then
 
             result.Should().NotBeNull();
             result.Should().BeOfType<OkObjectResult>();
-            var foundMemeText = ((OkObjectResult)result).Value as RandomComponentDTO;
+            var foundMemeText = ((OkObjectResult)result).Value as TextDTO;
 
-            foundMemeText.data.Should().Be(expected.data);
-            foundMemeText.id.Should().Be(expected.id);
-            foundMemeText.votes.Should().Be(expected.votes);
+            foundMemeText.Text.Should().Be(expected.Text);
+            foundMemeText.Id.Should().Be(expected.Id);
+            foundMemeText.Position.Should().Be(expected.Position);
         }
 
         //[Theory]
@@ -101,6 +105,7 @@ namespace MemeApi.Test.Controllers
 
             var memeText = new MemeText()
             {
+                Id = Guid.NewGuid().ToString(),
                 Text = "Test",
                 Position = MemeTextPosition.BottomText
             };
