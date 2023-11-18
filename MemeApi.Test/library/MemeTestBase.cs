@@ -8,6 +8,7 @@ using MemeApi.library;
 using MemeApi.library.Mappings;
 using MemeApi.library.repositories;
 using MemeApi.Models.Context;
+using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Identity;
@@ -31,13 +32,38 @@ namespace MemeApi.Test.library
         protected IMapper _mapper;
         public MemeTestBase()
         {
+            var myConfiguration = new Dictionary<string, string>
+            {
+                {"Topic.Default.Topicname", "test"},
+            };
+
+            _configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(myConfiguration)
+            .Build();
+
             _context = ContextUtils.CreateMemeTestContext();
             _userRepository = new UserRepository(_context, TestUserManager<User>(), new FileSaverStub());
+            _topicRepository = new TopicRepository(_context, _userRepository, _configuration);
             _visualRepository = new VisualRepository(_context, new FileSaverStub(), new FileRemoverStub(), _topicRepository);
             _textRepository = new TextRepository(_context, _topicRepository);
-            _topicRepository = new TopicRepository(_context, _userRepository, _configuration);
             _memeRepository = new MemeRepository(_context, _visualRepository, _textRepository, _configuration, _topicRepository);
            _votableRepository = new VotableRepository(_context);
+
+            var defaultTopic = new Topic()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Owner = null,
+                Name = _configuration["Topic.Default.Topicname"],
+                Description = String.Empty,
+                Moderators = new List<User>(),
+                CreatedAt = DateTime.UtcNow,
+                LastUpdatedAt = DateTime.UtcNow
+            };
+
+            _context.Topics.Add(defaultTopic);
+            _context.SaveChanges();
+
+
             var mappingConfig = new MapperConfiguration(mc =>
             {
                 mc.AddProfile(new VotableProfile());

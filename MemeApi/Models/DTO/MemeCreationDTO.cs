@@ -1,16 +1,34 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
 
 namespace MemeApi.Models.DTO;
 
-//public IFormFile SoundFile { get; set; }
 /// <summary>
 /// A DTO with information to create a meme 
 /// </summary>
-/// <param name="VisualFile"> The visual component of the meme </param>
-/// <param name="Toptext"> The textual top component of the meme </param>
-/// <param name="Bottomtext"> The textual bottom component of the meme </param>
-/// <param name="FileName"> Optional name for the visual component </param>
-/// <param name="Topics"> The list of topics that the Meme belongs to. </param>
-public record MemeCreationDTO([property: Required] IFormFile VisualFile, string Toptext, string Bottomtext, string FileName, IEnumerable<string> Topics);
+public class MemeCreationDTO
+{
+    /// <summary>
+    /// The visual component of the meme
+    /// </summary>
+    [Required]
+    public IFormFile VisualFile { get; set; }
+    //public IFormFile SoundFile { get; set; }
+    /// <summary>
+    /// The textual top component of the meme
+    /// </summary>
+    public string Toptext { get; set; }
+    /// <summary>
+    /// The textual bottom component of the meme
+    /// </summary>
+    public string Bottomtext { get; set; }
+    /// <summary>
+    /// Optional name for the visual component
+    /// </summary>
+    public string FileName { get; set; }
+    /// <summary>
+    /// The list of topics that the Meme belongs to.
+    /// </summary>
+    public IEnumerable<string> Topics { get; set; }
+}

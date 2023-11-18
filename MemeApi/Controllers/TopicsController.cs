@@ -81,7 +81,6 @@ public class TopicsController : ControllerBase
         if (userId == null) return Unauthorized();
         var topic = await _topicRepository.CreateTopic(topicCreationDTO, userId);
 
-        topic.Owner = null;
         return CreatedAtAction("GetTopic", new { id = topic.Id }, topic);
     }
 

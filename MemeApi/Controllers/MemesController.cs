@@ -11,6 +11,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Drawing;
 using System.Threading.Tasks;
+using SkiaSharp;
 
 namespace MemeApi.Controllers;
 
@@ -52,38 +53,84 @@ public class MemesController : ControllerBase
         return Ok(meme.ToMemeDTO());
     }
 
-        [HttpGet("test/{message}/{message2}")]
-        public ActionResult RenderImage(string message, string message2)
+    private SKCanvas DrawText(SKCanvas canvas, string text, int canvasWidth, float centerY, SKTypeface font, int textSize)
+    {
+        using var textPaint = new SKPaint();
+        textPaint.Color = SKColors.White;
+        textPaint.TextSize = textSize;
+        textPaint.Typeface = font;
+        textPaint.IsAntialias = true;
+
+        // Outline 
+        using var outlinePaint = new SKPaint();
+        outlinePaint.Color = SKColors.Black; 
+        outlinePaint.TextSize = textSize; 
+        outlinePaint.Typeface = font;
+        outlinePaint.IsAntialias = true;
+        outlinePaint.StrokeWidth = 4; // Width of the outline
+        outlinePaint.Style = SKPaintStyle.Stroke;
+
+        float centerX = (canvasWidth - textPaint.MeasureText(text)) / 2; // Centered X-coordinate
+
+        canvas.DrawText(text, centerX, centerY, outlinePaint);
+        canvas.DrawText(text, centerX, centerY, textPaint);
+
+        return canvas;
+    }
+
+    [HttpGet("test/{toptext}/{bottomtext}")]
+    public ActionResult RenderImage(string topText, string bottomText)
+    {
+        // Load the existing image from disk
+        // var imagePath = Path.Combine("wwwroot", "images", imageName); // Adjust the path as needed
+        // if (!System.IO.File.Exists(imagePath))
+        // {
+        //    return NotFound();
+        // }
+
+        SKImageInfo info = new SKImageInfo(400, 400, SKColorType.Rgba8888, SKAlphaType.Premul);
+        using var inputImage = SKBitmap.Decode("C:\\code\\MemeApi\\MemeApi\\uploads\\image0.jpg");
+        using var resized = inputImage.Resize(info, SKFilterQuality.High);
+
+        var canvas = new SKCanvas(resized);
+        var textSize = 40;
+
+        canvas.DrawBitmap(resized, new SKPoint(0, 0));
+
+        float topTextY = resized.Height/6   ;
+        DrawText(canvas, topText, resized.Width, topTextY, SKTypeface.FromFamilyName("Impact"), textSize);
+
+        float bottomTextY = resized.Height - resized.Height/8;
+        DrawText(canvas, bottomText, resized.Width, bottomTextY, SKTypeface.FromFamilyName("Impact"), textSize);
+
+        using (var stream = new MemoryStream())
         {
-            // Create a new Bitmap object with the desired image dimensions
-            Bitmap bitmap = new Bitmap(400, 400);
-
-            // Draw some content onto the bitmap using Graphics
-            using (Graphics graphics = Graphics.FromImage(bitmap))
+            using (var imageStream = new SKManagedWStream(stream))
             {
-                // Draw a red rectangle
-                graphics.FillRectangle(Brushes.Red, new Rectangle(0, 0, 400, 400));
-
-                // Draw some text
-                graphics.DrawString(message, new Font("Impact", 12), Brushes.White, new PointF(200, 50));
-                graphics.DrawString(message2, new Font("Impact", 12), Brushes.White, new PointF(200, 350));
+                resized.Encode(imageStream, SKEncodedImageFormat.Png, quality: 100);
             }
 
-            // Create a memory stream to hold the image data
-            MemoryStream stream = new MemoryStream();
-
-            // Save the bitmap to the memory stream in JPEG format
-            bitmap.Save(stream, ImageFormat.Jpeg);
-
-            // Clean up
-            bitmap.Dispose();
-
-            // Reset the memory stream position to the beginning
-            stream.Position = 0;
-
-
-            return File(stream, "image/jpeg");
+            return File(stream.ToArray(), "image/png");
         }
+    }
+
+    private SKBitmap testImage()
+    {
+        // Create an SKImageInfo specifying the dimensions and color type (e.g., RGBA8888)
+        SKImageInfo info = new SKImageInfo(800, 600, SKColorType.Rgba8888, SKAlphaType.Premul);
+
+        // Create an SKBitmap with the specified image info
+        using SKBitmap bitmap = new SKBitmap(info);
+        // Create an SKCanvas to draw on the SKBitmap
+        using SKCanvas canvas = new SKCanvas(bitmap);
+        // Clear the canvas with a red background
+        canvas.Clear(SKColors.Red);
+
+        // Now, you have an SKBitmap with a red background that you can use for testing.
+        return bitmap;
+
+        // At this point, 'bitmap' contains your SKBitmap with the red background.
+    }
 
     //[HttpPut("{id}")]
     //public async Task<IActionResult> PutMeme(int id, Meme meme)
