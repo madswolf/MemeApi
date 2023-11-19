@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MemeApi.library.Services.Files;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Http;
