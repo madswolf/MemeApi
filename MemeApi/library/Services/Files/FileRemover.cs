@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace MemeApi.library;
+namespace MemeApi.library.Services.Files;
 
 public class FileRemover : IFileRemover
 {

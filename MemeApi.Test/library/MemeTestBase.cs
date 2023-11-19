@@ -1,14 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
-using MemeApi.library;
-using MemeApi.library.Mappings;
-using MemeApi.library.repositories;
+﻿using MemeApi.library.repositories;
 using MemeApi.Models.Context;
-using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Identity;
@@ -16,6 +7,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MemeApi.Test.library
 {
@@ -29,7 +23,6 @@ namespace MemeApi.Test.library
         protected readonly UserRepository _userRepository;
         protected readonly VotableRepository _votableRepository;
         protected readonly IConfiguration _configuration;
-        protected IMapper _mapper;
         public MemeTestBase()
         {
             var myConfiguration = new Dictionary<string, string>
@@ -63,12 +56,6 @@ namespace MemeApi.Test.library
             _context.Topics.Add(defaultTopic);
             _context.SaveChanges();
 
-
-            var mappingConfig = new MapperConfiguration(mc =>
-            {
-                mc.AddProfile(new VotableProfile());
-            });
-            _mapper = mappingConfig.CreateMapper();
             _configuration = new ConfigurationBuilder()
                 .Build();
         }
