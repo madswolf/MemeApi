@@ -108,6 +108,7 @@ public class UsersController : ControllerBase
             CreatedAt = DateTime.UtcNow,
             LastUpdatedAt = DateTime.UtcNow,
             LastLoginAt = DateTime.UtcNow,
+            Topics = new List<Topic> { }
         };
 
         var result = await _userManager.CreateAsync(user, userDTO.Password);
@@ -131,7 +132,7 @@ public class UsersController : ControllerBase
         {
             var password = await _userRepository.CreateNewPassword(user);
             var body = "Hello gamer, you requested a new password, so here it is: \n" + password;
-            return _mailSender.sendMail(new MailAddress(user.Email, user.UserName), "Recovery password", body);
+            return _mailSender.sendNoReplyMail(new MailAddress(user.Email, user.UserName), "Recovery password", body);
         }
         catch (Exception)
         {

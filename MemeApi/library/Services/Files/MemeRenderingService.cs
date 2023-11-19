@@ -17,11 +17,11 @@ public class MemeRenderingService : IMemeRenderingService
 
     public byte[] RenderMeme(Meme meme)
     {
+        var textSize = 40;
         SKImageInfo info = new SKImageInfo(400, 400, SKColorType.Rgba8888, SKAlphaType.Premul);
         var inputImage = SKBitmap.Decode(Path.Combine(_configuration["BaseUploadFolder"], meme.MemeVisual.Filename));
         var resized = inputImage.Resize(info, SKFilterQuality.High);
         var canvas = new SKCanvas(resized);
-        var textSize = 40;
 
         canvas.DrawBitmap(resized, new SKPoint(0, 0));
 
@@ -58,7 +58,7 @@ public class MemeRenderingService : IMemeRenderingService
         outlinePaint.StrokeWidth = 4; // Width of the outline
         outlinePaint.Style = SKPaintStyle.Stroke;
 
-        float centerX = (canvasWidth - textPaint.MeasureText(text)) / 2; // Centered X-coordinate
+        float centerX = (canvasWidth - textPaint.MeasureText(text)) / 2;
 
         canvas.DrawText(text, centerX, centerY, outlinePaint);
         canvas.DrawText(text, centerX, centerY, textPaint);

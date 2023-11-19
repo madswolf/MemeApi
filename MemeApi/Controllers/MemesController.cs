@@ -1,5 +1,6 @@
 ﻿using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
+using MemeApi.library.Services;
 using MemeApi.library.Services.Files;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
@@ -9,6 +10,7 @@ using SkiaSharp;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mail;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -23,15 +25,17 @@ namespace MemeApi.Controllers;
 public class MemesController : ControllerBase
 {
     private readonly IMemeRenderingService _memeRendererService;
+    private readonly IMailSender _mailSender;
     private readonly MemeRepository _memeRepository;
 
     /// <summary>
     /// A controller for creating memes made of visuals and textual components.
     /// </summary>
-    public MemesController(MemeRepository memeRepository, IMemeRenderingService memeRendererService)
+    public MemesController(MemeRepository memeRepository, IMemeRenderingService memeRendererService, IMailSender mailSender)
     {
         _memeRepository = memeRepository;
         _memeRendererService = memeRendererService;
+        _mailSender = mailSender;
     }
     /// <summary>
     /// Get all memes
@@ -64,6 +68,11 @@ public class MemesController : ControllerBase
             Toptext = new MemeText() { Text = topText },
             BottomText = new MemeText() { Text = bottomText }
         };
+
+        var renderedMeme = _memeRendererService.RenderMeme(testMeme);
+
+        var recipient = new MailAddress("");
+        var result = _mailSender.sendMemeOfTheDayMail(recipient, renderedMeme);
 
         return File(_memeRendererService.RenderMeme(testMeme), "image/png");
     }
