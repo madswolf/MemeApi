@@ -1,5 +1,4 @@
-﻿using MemeApi.library;
-using MemeApi.library.repositories;
+﻿using MemeApi.library.repositories;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Builder;
@@ -15,6 +14,8 @@ using System.Net;
 using System;
 using System.IO;
 using System.Reflection;
+using MemeApi.library.Services;
+using MemeApi.library.Services.Files;
 
 namespace MemeApi
 {
@@ -80,9 +81,12 @@ namespace MemeApi
                 options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
             });
 
+            services.AddHostedService<MemeOfTheDayBackgroundService>();
+
             services.AddScoped<IFileSaver, FileSaver>();
             services.AddScoped<IFileRemover, FileRemover>();
             services.AddScoped<IMailSender, MailSender>();
+            services.AddScoped<IMemeRenderingService, MemeRenderingService>();
 
             services.AddScoped<UserRepository>();
             services.AddScoped<MemeRepository>();
