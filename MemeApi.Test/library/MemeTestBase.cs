@@ -1,4 +1,5 @@
 ﻿using MemeApi.library.repositories;
+using MemeApi.library.Services.Files;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
 using MemeApi.Test.utils;
@@ -23,6 +24,7 @@ namespace MemeApi.Test.library
         protected readonly UserRepository _userRepository;
         protected readonly VotableRepository _votableRepository;
         protected readonly IConfiguration _configuration;
+        protected readonly MemeRenderingService _memeRenderingService;
         public MemeTestBase()
         {
             var myConfiguration = new Dictionary<string, string>
@@ -34,6 +36,7 @@ namespace MemeApi.Test.library
             .AddInMemoryCollection(myConfiguration)
             .Build();
 
+            _memeRenderingService = new MemeRenderingService(_configuration);
             _context = ContextUtils.CreateMemeTestContext();
             _userRepository = new UserRepository(_context, TestUserManager<User>(), new FileSaverStub());
             _topicRepository = new TopicRepository(_context, _userRepository, _configuration);

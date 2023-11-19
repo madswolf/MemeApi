@@ -8,4 +8,11 @@ namespace MemeApi.Models.DTO;
 /// <param name="Username"> Username of the user </param>
 /// <param name="Email"> Email of the user </param>
 /// <param name="Password"> Password of the user </param>
-public record UserCreationDTO([property: Required] string Username, [property: Required] string Email, [property: Required] string Password);
+public record UserCreationDTO {
+    [Required]
+    public string Username { get; init; }
+    [Required]
+    public string Email { get; init; }
+    [Required]
+    public string Password { get; init; }
+}

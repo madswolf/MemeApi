@@ -37,7 +37,9 @@ public class UserRepository
 
     public async Task<User> FindByEmail(string userEmail)
     {
-        return await _memeContext.Users.FirstOrDefaultAsync(user => user.Email == userEmail);
+        return await _memeContext.Users.FirstOrDefaultAsync(user => 
+            string.Equals(user.Email, userEmail, StringComparison.OrdinalIgnoreCase)
+        );
     }
 
     public async Task UserLoggedIn(User user)

@@ -19,7 +19,7 @@ namespace MemeApi.Test.Controllers
         [Fact]
         public async Task GIVEN_Visual_WHEN_CreatingMeme_THEN_MemeIsCreated()
         {
-            var controller = new MemesController(_memeRepository);
+            var controller = new MemesController(_memeRepository, _memeRenderingService);
 
             // given
             var filename = "test.png";
@@ -44,7 +44,7 @@ namespace MemeApi.Test.Controllers
         [Fact]
         public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_GettingMemeBottomText_THEN_MemeBottomTextHasProperValues()
         {
-            var controller = new MemesController(_memeRepository);
+            var controller = new MemesController(_memeRepository, _memeRenderingService);
 
             // given
             var visual = new MemeVisual()
