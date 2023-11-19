@@ -54,13 +54,23 @@ public static class Extensions
         var memeDTO = new MemeDTO(
             meme.Id,
             meme.MemeVisual.Filename,
-            meme.Toptext != null ? meme.Toptext.Text : "",
-            meme.BottomText != null ? meme.BottomText.Text : "",
+            meme.ToToptext(),
+            meme.ToBottomtext(),
             meme.Topics.Select(t => t.Name).ToList(),
             meme.CreatedAt
         );
 
         return memeDTO;
+    }
+
+    public static string ToToptext(this Meme meme)
+    {
+        return meme.Toptext != null ? meme.Toptext.Text : "";
+    }
+
+    public static string ToBottomtext(this Meme meme)
+    {
+        return meme.BottomText != null ? meme.BottomText.Text : "";
     }
 
     public static int SumVotes(this Votable votable)

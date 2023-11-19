@@ -3,7 +3,7 @@ using System;
 using System.Net;
 using System.Net.Mail;
 
-namespace MemeApi.library;
+namespace MemeApi.library.Services;
 
 public class MailSender : IMailSender
 {
@@ -32,12 +32,13 @@ public class MailSender : IMailSender
         {
             try
             {
-               _smtpClient.Send(message);
-               return true;
-            } catch (Exception)
+                _smtpClient.Send(message);
+                return true;
+            }
+            catch (Exception)
             {
                 return false;
-            } 
+            }
         }
     }
 }
