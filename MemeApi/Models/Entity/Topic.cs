@@ -14,4 +14,5 @@ public class Topic
     public List<Votable> Votables { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime LastUpdatedAt { get; set; }
+    public bool HasRestrictedPosting { get; set; }
 }

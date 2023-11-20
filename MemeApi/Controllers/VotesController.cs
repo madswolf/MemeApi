@@ -88,24 +88,9 @@ public class VotesController : ControllerBase
 
             if (texts.Length == 0) return NotFound();
             var toptext = texts.Length > 0 ? texts[0] : null;
-            var bottomtext = texts.Length > 1 ? texts[1] : null; 
-            
-            var meme = await _memeRepository.FindByComponents(visual, toptext, bottomtext);
-            if (meme == null)
-            {
-                meme = new Meme
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    MemeVisual = visual,
-                    //TODO handle which position they are in in the rendered meme when
-                    Toptext = toptext,
-                    BottomText = bottomtext
-                };
+            var bottomtext = texts.Length > 1 ? texts[1] : null;
 
-                await _memeRepository.CreateMemeRaw(meme);
-            }
-
-            element = meme;
+            element = await _memeRepository.UpsertByComponents(visual, toptext, bottomtext);
         }
         else
         {

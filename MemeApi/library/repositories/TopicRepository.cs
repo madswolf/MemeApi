@@ -47,6 +47,12 @@ public class TopicRepository
         return topic;
     }
 
+    public async Task<List<Topic>> GetTopicsByNameForUser(IEnumerable<string> topicNames, string userId = null)
+    {
+        var topics = await GetTopicsByNameOrDefault(topicNames);
+        return topics.Where(t => t.CanUserPost(userId)).ToList();
+    }
+
     public async Task<List<Topic>> GetTopicsByNameOrDefault(IEnumerable<string> topicNames)
     {
         var topics = topicNames != null ?

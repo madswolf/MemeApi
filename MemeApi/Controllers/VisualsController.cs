@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MemeApi.Controllers;
@@ -57,7 +58,8 @@ public class VisualsController : ControllerBase
     {
         if (visual.Length > 5000000) return StatusCode(413);
 
-        var memeVisual = await _visualRepository.CreateMemeVisual(visual,visual.FileName);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var memeVisual = await _visualRepository.CreateMemeVisual(visual, visual.FileName, userId:userId);
         return CreatedAtAction("GetMemeVisual", new { id = memeVisual.Id }, memeVisual);
     }
 
