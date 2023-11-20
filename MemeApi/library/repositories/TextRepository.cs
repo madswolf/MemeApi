@@ -1,4 +1,5 @@
-﻿using MemeApi.Models.Context;
+﻿using MemeApi.library.Extensions;
+using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -35,6 +36,11 @@ public class TextRepository
         return await _context.Texts.Include(x => x.Votes).Include(t => t.Topics).FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    public async Task<MemeText> GetRandomText(string seed = "")
+    {
+        return _context.Texts.RandomItem(seed);
+    }
+
     public async Task<bool> UpdateText(string id, string newMemeBottomText, MemeTextPosition? newMemeTextPosition = null)
     {
         var memeText = await _context.Texts.FindAsync(id);
@@ -69,9 +75,9 @@ public class TextRepository
         return true;
     }
 
-    public async Task<MemeText> CreateText(string text, MemeTextPosition position, IEnumerable<string> topicNames = null)
+    public async Task<MemeText> CreateText(string text, MemeTextPosition position, IEnumerable<string> topicNames = null, string userId = null)
     {
-        var topics = await _topicRepository.GetTopicsByNameOrDefault(topicNames);
+        var topics = await _topicRepository.GetTopicsByNameForUser(topicNames, userId);
         var memeText = new MemeText
         {
             Id = Guid.NewGuid().ToString(),

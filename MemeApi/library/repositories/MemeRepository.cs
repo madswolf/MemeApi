@@ -27,9 +27,9 @@ public class MemeRepository
         _topicRepository = topicRepository;
     }
 
-    public async Task<Meme> CreateMeme(MemeCreationDTO memeDTO)
+    public async Task<Meme> CreateMeme(MemeCreationDTO memeDTO, string userId = null)
     {
-        var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName, memeDTO.Topics);
+        var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName, memeDTO.Topics, userId);
 
         var meme = new Meme
         {
@@ -48,16 +48,15 @@ public class MemeRepository
 
         if (memeDTO.Toptext != null)
         {
-            meme.Toptext = await _textRepository.CreateText(memeDTO.Toptext, MemeTextPosition.TopText, memeDTO.Topics);
+            meme.Toptext = await _textRepository.CreateText(memeDTO.Toptext, MemeTextPosition.TopText, memeDTO.Topics, userId);
         }
 
         if (memeDTO.Bottomtext != null)
         {
-            meme.BottomText = await _textRepository.CreateText(memeDTO.Bottomtext, MemeTextPosition.BottomText, memeDTO.Topics);
+            meme.BottomText = await _textRepository.CreateText(memeDTO.Bottomtext, MemeTextPosition.BottomText, memeDTO.Topics, userId);
         }
 
-        //TODO: fix multiple calls to get topics by reworking creation in createtext and createvisual to have a deeper version that does not save changes 
-        var topics = await _topicRepository.GetTopicsByNameOrDefault(memeDTO.Topics);
+        var topics = await _topicRepository.GetTopicsByNameForUser(memeDTO.Topics, userId );
 
         if (topics.Any(t => t == null)) return null;
 
@@ -65,6 +64,32 @@ public class MemeRepository
 
         _context.Memes.Add(meme);
         await _context.SaveChangesAsync();
+        return meme;
+    }
+
+    public async Task<Meme> UpsertByComponents(MemeVisual visual, MemeText toptext, MemeText bottomtext, Topic topic = null)
+    {
+        var meme = await FindByComponents(visual, toptext, bottomtext);
+        if (meme == null)
+        {
+            meme = new Meme
+            {
+                Id = Guid.NewGuid().ToString(),
+                MemeVisual = visual,
+                //TODO handle which position they are in in the rendered meme when
+                Toptext = toptext,
+                BottomText = bottomtext,
+                Topics = new List<Topic> { topic }
+            };
+
+            await CreateMemeRaw(meme);
+        }
+        else if(topic != null)
+        {
+            meme.Topics.Add(topic);
+            await _context.SaveChangesAsync();
+        }
+
         return meme;
     }
 
@@ -108,12 +133,13 @@ public class MemeRepository
             .Include(m => m.BottomText);
     }
 
-    public async Task<Meme?> FindByComponents(Votable visual, MemeText? toptext = null, MemeText? bottomtext = null)
+    public async Task<Meme?> FindByComponents(MemeVisual visual, MemeText? toptext = null, MemeText? bottomtext = null)
     {
         var memes = _context.Memes
             .Include(meme => meme.MemeVisual)
             .Include(meme => meme.Toptext)
             .Include(meme => meme.BottomText)
+            .Include(meme => meme.Topics)
             .Where(meme => meme.MemeVisual.Id == visual.Id);
 
         memes = (toptext, bottomtext) switch

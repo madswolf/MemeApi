@@ -5,6 +5,7 @@ using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MemeApi.Controllers;
@@ -63,7 +64,8 @@ public class TextsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<MemeText>> CreateMemeText([FromBody] TextCreationDTO textCreationDTO)
     {
-        var memeText = await _textRepository.CreateText(textCreationDTO.Text, textCreationDTO.position);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var memeText = await _textRepository.CreateText(textCreationDTO.Text, textCreationDTO.position, userId: userId);
         return CreatedAtAction("CreateMemeText", new { id = memeText.Id }, memeText);
     }
 

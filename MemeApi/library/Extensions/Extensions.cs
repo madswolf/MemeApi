@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace MemeApi.library.Extensions;
 
@@ -10,13 +11,24 @@ public static class Extensions
 {
     public static T RandomItem<T>(this List<T> list, string seed = "")
     {
-        if(seed == "")
+        if (seed == "")
         {
             seed = Guid.NewGuid().ToString();
         }
         var random = new Random(seed.GetHashCode());
-        
+
         return list[random.Next(list.Count)];
+    }
+
+    public static T RandomItem<T>(this DbSet<T> list, string seed = "") where T : Votable
+    {
+        if (seed == "")
+        {
+            seed = Guid.NewGuid().ToString();
+        }
+        var random = new Random(seed.GetHashCode());
+        var skip = random.Next(list.Count());
+        return list.OrderBy(x => x.Id).Skip(skip).First();
     }
 
     public static TopicDTO ToTopicDTO(this Topic t)
@@ -71,6 +83,11 @@ public static class Extensions
     public static string ToBottomtext(this Meme meme)
     {
         return meme.BottomText != null ? meme.BottomText.Text : "";
+    }
+
+    public static bool CanUserPost(this Topic topic, string userId = null)
+    {
+        return !topic.HasRestrictedPosting || topic.Owner.Id == userId || topic.Moderators.Select(m => m.Id).Contains(userId);
     }
 
     public static int SumVotes(this Votable votable)

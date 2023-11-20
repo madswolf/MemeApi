@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MemeApi.library.Extensions;
 using MemeApi.library.Services.Files;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
@@ -31,6 +32,11 @@ public class VisualRepository
         return await _context.Visuals.Include(x => x.Votes).Include(x => x.Topics).ToListAsync();
     }
 
+    public async Task<MemeVisual> GetRandomVisual(string seed = "")
+    {
+        return _context.Visuals.RandomItem(seed);
+    }
+
     public async Task<MemeVisual?> GetVisual(string id)
     {
         return await _context.Visuals.Include(x => x.Votes).FirstOrDefaultAsync(v => v.Id == id);
@@ -43,9 +49,9 @@ public class VisualRepository
             .Select(s => s[Random.Next(s.Length)]).ToArray());
     }
 
-    public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename, IEnumerable<string> topicNames = null)
+    public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename, IEnumerable<string> topicNames = null, string userId = null)
     {
-        var topics = await _topicRepository.GetTopicsByNameOrDefault(topicNames);
+        var topics = await _topicRepository.GetTopicsByNameForUser(topicNames, userId);
         var memeVisual = new MemeVisual()
         {
             Id = Guid.NewGuid().ToString(),

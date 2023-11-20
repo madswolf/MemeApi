@@ -38,9 +38,6 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .HasOne(m => m.MemeVisual);
 
         modelBuilder.Entity<Meme>()
-            .HasOne(m => m.MemeSound);
-
-        modelBuilder.Entity<Meme>()
             .HasOne(m => m.Toptext);
 
         modelBuilder.Entity<Meme>()
@@ -105,7 +102,17 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             LastUpdatedAt = DateTime.UtcNow
         };
 
-        modelBuilder.Entity<Topic>().HasData(defaultTopic, defaultTopic2);
+        var memeOfTheDayTopic = new Topic
+        {
+            Id = Guid.NewGuid().ToString(),
+            OwnerId = admin.Id,
+            Name = "MemeOfTheDay",
+            Description = "Memes of the day",
+            CreatedAt = DateTime.UtcNow,
+            LastUpdatedAt = DateTime.UtcNow
+        };
+
+        modelBuilder.Entity<Topic>().HasData(defaultTopic, defaultTopic2, memeOfTheDayTopic);
         modelBuilder.Entity<User>().HasData(admin);
     }
 }
