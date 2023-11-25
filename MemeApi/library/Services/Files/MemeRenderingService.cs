@@ -19,7 +19,7 @@ public class MemeRenderingService : IMemeRenderingService
     {
         var textSize = 40;
         SKImageInfo info = new SKImageInfo(400, 400, SKColorType.Rgba8888, SKAlphaType.Premul);
-        var inputImage = SKBitmap.Decode(Path.Combine(_configuration["BaseUploadFolder"], meme.MemeVisual.Filename));
+        var inputImage = SKBitmap.Decode(Path.Combine(_configuration["BaseUploadFolder"] + "\\visual", meme.MemeVisual.Filename));
         var resized = inputImage.Resize(info, SKFilterQuality.High);
         var canvas = new SKCanvas(resized);
 
