@@ -23,9 +23,14 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_DummyMemeText_WHEN_CreatingMemeBottomText_THEN_MemeBottomTextIsCreatedWithProperValues(MemeTextPosition memePosition)
         {
             var controller = new TextsController(_textRepository);
+            controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
             // given
-            var memeText = new TextCreationDTO("Test", memePosition); 
+            var memeText = new TextCreationDTO()
+            {
+                Text = "Test",
+                position = memePosition
+            }; 
 
             // When
             var createTask = controller.CreateMemeText(memeText);
@@ -41,6 +46,7 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_GettingMemeBottomText_THEN_MemeBottomTextHasProperValues()
         {
             var controller = new TextsController(_textRepository);
+            controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
             // given
             var memeText = new MemeText()
@@ -100,6 +106,7 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_Deleting_THEN_MemeBottomTextIsDeleted()
         {
             var controller = new TextsController(_textRepository);
+            controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
             // given
 

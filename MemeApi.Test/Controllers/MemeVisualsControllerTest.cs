@@ -21,6 +21,7 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_DummyFile_WHEN_CreatingMemeVisual_THEN_MemeVisualIsCreatedWithProperValues()
         {
             var controller = new VisualsController(_visualRepository, _configuration);
+            controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
             // given
             var fileStream = new MemoryStream(5);
@@ -69,6 +70,7 @@ namespace MemeApi.Test.Controllers
         public async Task GIVEN_TwoDummyFilesWithSameName_WHEN_CreatingMemeVisuals_THEN_SecondMemeVisualIsHasDifferentName()
         {
             var controller = new VisualsController(_visualRepository, _configuration);
+            controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
             // given
             var fileStream = new MemoryStream(5);

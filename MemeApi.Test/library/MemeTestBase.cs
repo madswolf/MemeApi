@@ -3,6 +3,7 @@ using MemeApi.library.Services.Files;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
 using MemeApi.Test.utils;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -61,6 +62,15 @@ namespace MemeApi.Test.library
 
             _configuration = new ConfigurationBuilder()
                 .Build();
+        }
+
+        public static HttpContext GetMockedHttpContext()
+        {
+            var context = new DefaultHttpContext();
+            var mockSession = new Mock<ISession>();
+            context.RequestServices = new Mock<IServiceProvider>().Object;
+            context.Session = mockSession.Object;
+            return context;
         }
         public static UserManager<TUser> TestUserManager<TUser>(IUserStore<TUser> store = null) where TUser : class
         {

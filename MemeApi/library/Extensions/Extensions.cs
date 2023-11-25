@@ -87,7 +87,11 @@ public static class Extensions
 
     public static bool CanUserPost(this Topic topic, string userId = null)
     {
-        return !topic.HasRestrictedPosting || topic.Owner.Id == userId || topic.Moderators.Select(m => m.Id).Contains(userId);
+        var isRestricted = topic.HasRestrictedPosting;
+        var isOwner = topic.Owner != null && topic.Owner?.Id == userId;
+        var isModerator = topic.Moderators.Any(m => m != null &&  m.Id == userId);
+
+        return (!isRestricted || isOwner || isModerator);
     }
 
     public static int SumVotes(this Votable votable)

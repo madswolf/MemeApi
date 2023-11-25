@@ -9,6 +9,9 @@ using System.Collections.Generic;
 using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Microsoft.Extensions.Http;
+using System.Net.Http;
 
 public class MemeOfTheDayService : IMemeOfTheDayService
 {
@@ -41,6 +44,18 @@ public class MemeOfTheDayService : IMemeOfTheDayService
         var topic = await _topicRepository.GetTopicByName("MemeOfTheDay");
 
         var meme = await _memeRepository.UpsertByComponents(visual, toptext, bottomtext, topic);
+        var wekhookUrl = _configuration["MemeOfTheDay.WebHookURL"];
+
+        using (HttpClient httpClient = new HttpClient())
+        {
+            MultipartFormDataContent form = new MultipartFormDataContent();
+            var imageContent = _memeRenderingService.RenderMeme(meme);
+            form.Add(new ByteArrayContent(imageContent, 0, imageContent.Length), "image/png", "shit.png");
+            await httpClient.PostAsync(wekhookUrl, form);
+            httpClient.Dispose();
+        }
+
+
 
         //TODO: add subscribers
         var recipient = new MailAddress("mads_1997@live.dk");

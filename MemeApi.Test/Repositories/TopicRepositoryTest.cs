@@ -31,6 +31,74 @@ namespace MemeApi.Test.Repositories
         }
 
         [Fact]
+        public async Task GIVEN_TopicWithRestrictedPosting_WHEN_NotAllowedUserPosts_THEN_PostDoesNotHaveTopic()
+        {
+            // given
+            var user = new User() { Id = Guid.NewGuid().ToString() };
+            var topic = new Topic { Id = Guid.NewGuid().ToString(), Name = "Testawda", HasRestrictedPosting = true, Moderators = new List<User> {} };
+            var text = "";
+
+            _context.Users.Add(user);
+            _context.Topics.Add(topic);
+            _context.SaveChanges();
+            // When
+            var result = await _textRepository.CreateText(text, MemeTextPosition.TopText, new List<string> { topic.Name }, user.Id);
+
+            // Then
+            result.Topics.Should().NotContain(topic);
+            result.Topics.Count().Should().Be(1);
+        }
+
+        [Fact]
+        public async Task GIVEN_TopicWithRestrictedPosting_WHEN_AllowedUserPosts_THEN_PostDoesHaveTopic()
+        {
+            // given
+            var user = new User() { Id = Guid.NewGuid().ToString() };
+            var topic = new Topic { Id = Guid.NewGuid().ToString(), Name = "Testawda", HasRestrictedPosting = true, Moderators = new List<User> { user } };
+            var text = "";
+
+            _context.Users.Add(user);
+            _context.Topics.Add(topic);
+            _context.SaveChanges();
+            // When
+            var result = await _textRepository.CreateText(text, MemeTextPosition.TopText, new List<string> { topic.Name }, user.Id);
+
+            // Then
+            result.Topics.Should().Contain(topic);
+            result.Topics.Count().Should().Be(1);
+        }
+
+        [Fact]
+        public async Task GIVEN_DefaultTopic_WHEN_AnonymousPosts_THEN_PostDoesHaveDefaultTopic()
+        {
+            var defaultTopic = await _topicRepository.GetDefaultTopic();
+
+            // When
+            var result = await _textRepository.CreateText("test", MemeTextPosition.TopText);
+
+            // Then
+            result.Topics.Should().Contain(defaultTopic);
+            result.Topics.Count().Should().Be(1);
+        }
+
+        [Fact]
+        public async Task GIVEN_DefaultTopic_WHEN_UserPosts_THEN_PostDoesHaveDefaultTopic()
+        {
+            var defaultTopic = await _topicRepository.GetDefaultTopic();
+            var user = new User() { Id = Guid.NewGuid().ToString() };
+
+            _context.Users.Add(user);
+            _context.SaveChanges();
+            // When
+            var result = await _textRepository.CreateText("test", MemeTextPosition.TopText, userId: user.Id);
+
+            // Then
+            result.Topics.Should().Contain(defaultTopic);
+            result.Topics.Count().Should().Be(1);
+        }
+
+
+        [Fact]
         public async Task GIVEN_Votable_WHEN_ModeratorOfTopicDeleting_THEN_VotableDeleted()
         {
             // given
