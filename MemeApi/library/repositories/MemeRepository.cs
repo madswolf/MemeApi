@@ -79,6 +79,7 @@ public class MemeRepository
                 //TODO handle which position they are in in the rendered meme when
                 Toptext = toptext,
                 BottomText = bottomtext,
+                CreatedAt = DateTime.UtcNow,
                 Topics = new List<Topic> { topic }
             };
 
@@ -133,6 +134,15 @@ public class MemeRepository
             .Include(m => m.BottomText);
     }
 
+    public bool HasMemeOfTheDay(DateTime date)
+    {
+        var memes = _context.Memes.
+            Include(m => m.Topics)
+            .Where(m =>
+                m.Topics.Any(t => t.Name == _configuration["Topic.MemeOfTheDay.Topicname"])
+                ).ToList();
+        return memes.Any(m => m.CreatedAt.Date == date.Date);
+    }
     public async Task<Meme?> FindByComponents(MemeVisual visual, MemeText? toptext = null, MemeText? bottomtext = null)
     {
         var memes = _context.Memes
