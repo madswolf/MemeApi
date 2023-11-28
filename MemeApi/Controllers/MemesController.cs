@@ -1,16 +1,12 @@
 ﻿using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
-using MemeApi.library.Services;
 using MemeApi.library.Services.Files;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SkiaSharp;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Mail;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -57,19 +53,6 @@ public class MemesController : ControllerBase
         return Ok(meme.ToMemeDTO());
     }
 
-    [HttpGet("test/{toptext}/{bottomtext}")]
-    public ActionResult RenderImage(string topText, string bottomText)
-    {
-        var testMeme = new Meme()
-        {
-            MemeVisual = new MemeVisual() { Filename = "image0.jpg" },
-            Toptext = new MemeText() { Text = topText },
-            BottomText = new MemeText() { Text = bottomText }
-        };
-
-        return File(_memeRendererService.RenderMeme(testMeme), "image/png");
-    }
-
     //[HttpPut("{id}")]
     //public async Task<IActionResult> PutMeme(int id, Meme meme)
     //{
@@ -111,7 +94,7 @@ public class MemesController : ControllerBase
     /// Get a random meme based on an optional seed
     /// </summary>
     [HttpGet]
-    [Route("random/{seed?}")]
+    [Route("/random/{seed?}")]
     public async Task<ActionResult<Meme>> RandomMeme(string seed = "")
     {
         var list = await _memeRepository.GetMemes();
@@ -122,6 +105,18 @@ public class MemesController : ControllerBase
             .Where(x => x.BottomText == null || x.BottomText.Text.Length < 150)
             .ToList();
         return Ok(list.RandomItem(seed));
+    }
+
+    /// <summary>
+    /// Get a random meme rendered to a png in the response
+    /// Use the optional Query parameters TopText and BottomText to define what the top and bottom text should be
+    /// </summary>
+    [HttpGet("/random/Rendered")]
+    public async Task<ActionResult> RenderImage([FromQuery] string TopText = null, [FromQuery] string BottomText = null)
+    {
+        var meme = await _memeRepository.RandomMemeByComponents(TopText, BottomText);
+
+        return File(_memeRendererService.RenderMeme(meme), "image/png");
     }
 }
 
