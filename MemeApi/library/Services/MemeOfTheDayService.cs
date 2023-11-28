@@ -1,37 +1,27 @@
 ﻿namespace MemeApi.library.Services;
 
+using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Services.Files;
 using MemeApi.Models.Entity;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Net.Mail;
+using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Microsoft.Extensions.Http;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text;
-using MemeApi.library.Extensions;
 
 public class MemeOfTheDayService : IMemeOfTheDayService
 {
     private readonly MemeRepository _memeRepository;
-    private readonly VisualRepository _visualRepository;
-    private readonly TextRepository _textRepository;
-    private readonly TopicRepository _topicRepository;
     private readonly IConfiguration _configuration;
     private readonly IMemeRenderingService _memeRenderingService;
     private readonly IMailSender _mailSender;
 
-    public MemeOfTheDayService(MemeRepository memeRepository, VisualRepository visualRepository, TextRepository textRepository, TopicRepository topicRepository, IConfiguration configuration, IMemeRenderingService memeRenderingService, IMailSender mailSender)
+    public MemeOfTheDayService(MemeRepository memeRepository, IConfiguration configuration, IMemeRenderingService memeRenderingService, IMailSender mailSender)
     {
         _memeRepository = memeRepository;
-        _visualRepository = visualRepository;
-        _textRepository = textRepository;
-        _topicRepository = topicRepository;
         _configuration = configuration;
         _memeRenderingService = memeRenderingService;
         _mailSender = mailSender;
@@ -40,14 +30,9 @@ public class MemeOfTheDayService : IMemeOfTheDayService
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var currentTime = DateTime.UtcNow;
-        if (_memeRepository.HasMemeOfTheDay(currentTime)) return;
+        //if (_memeRepository.HasMemeOfTheDay(currentTime)) return;
 
-        var visual = await _visualRepository.GetRandomVisual();
-        var toptext = await _textRepository.GetRandomText();
-        var bottomtext = await _textRepository.GetRandomText();
-        var topic = await _topicRepository.GetTopicByName("MemeOfTheDay");
-
-        var meme = await _memeRepository.UpsertByComponents(visual, toptext, bottomtext, topic);
+        Meme meme = await _memeRepository.RandomMemeByComponents();
         var wekhookUrl = _configuration["MemeOfTheDay.WebHookURL"];
 
         using (HttpClient httpClient = new HttpClient())
@@ -58,7 +43,7 @@ public class MemeOfTheDayService : IMemeOfTheDayService
                         "\"content\":\"" + message + "\"," +
                         "\"username\":\"Hjerneskade(Meme Of The Day)\"," +
                         "\"avatar_url\":\"https://media.mads.monster/default.jpg\"" +
-                    "}" ,
+                    "}",
                 Encoding.UTF8, "application/json");
 
 

@@ -36,6 +36,18 @@ public class TextRepository
         return await _context.Texts.Include(x => x.Votes).Include(t => t.Topics).FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    public async Task<MemeText> GetTextByContent(string content, MemeTextPosition position)
+    {
+        var existingText = await _context.Texts.FirstOrDefaultAsync(t => t.Text == content);
+        if (existingText != null) return existingText;
+        return new MemeText
+        {
+            Id = Guid.NewGuid().ToString(),
+            Text = content,
+            Position = position
+        };
+    }
+
     public async Task<MemeText> GetRandomText(string seed = "")
     {
         return _context.Texts.RandomItem(seed);
