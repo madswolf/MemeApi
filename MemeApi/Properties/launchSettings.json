@@ -4,7 +4,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:1999",
+      "applicationUrl": "http://localhost:80",
       "sslPort": 443
     }
   },
@@ -12,9 +12,10 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "api/Users",
+      "launchUrl": "memes",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DATABASE_CONNECTION_STRING": "Server=127.0.0.1;Port=5432;Database=memeapi;UserId=postgres;Password=root;"
       }
     },
     "MemeApi": {
@@ -22,9 +23,10 @@
       "dotnetRunMessages": "true",
       "launchBrowser": true,
       "launchUrl": "users",
-      "applicationUrl": "https://localhost:443;http://localhost:1999",
+      "applicationUrl": "https://localhost:443;http://localhost:80",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DATABASE_CONNECTION_STRING": "Server=127.0.0.1;Port=5432;Database=memeapi;UserId=postgres;Password=root;"
       }
     }
   }
