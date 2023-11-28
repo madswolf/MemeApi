@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MemeApi.library.Extensions;
 using MemeApi.library.Services.Files;
@@ -34,7 +35,8 @@ public class VisualRepository
 
     public async Task<MemeVisual> GetRandomVisual(string seed = "")
     {
-        return _context.Visuals.RandomItem(seed);
+        var regex = new Regex("^.*\\.gif$");
+        return _context.Visuals.ToList().Where(x => !regex.IsMatch(x.Filename)).ToList().RandomItem(seed);
     }
 
     public async Task<MemeVisual?> GetVisual(string id)
