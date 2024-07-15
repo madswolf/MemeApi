@@ -12,73 +12,76 @@ using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace MemeApi.Test.Controllers
+namespace MemeApi.Test.Controllers;
+
+public class MemesControllerTest : MemeTestBase
 {
-    public class MemesControllerTest : MemeTestBase
+    public MemesControllerTest(IntegrationTestFactory databaseFixture) : base(databaseFixture)
     {
-        [Fact]
-        public async Task GIVEN_Visual_WHEN_CreatingMeme_THEN_MemeIsCreated()
+    }
+
+    [Fact]
+    public async Task GIVEN_Visual_WHEN_CreatingMeme_THEN_MemeIsCreated()
+    {
+        var controller = new MemesController(_memeRepository, _memeRenderingService);
+
+        // given
+        var filename = "test.png";
+
+        var memeCreationDTO = new MemeCreationDTO()
         {
-            var controller = new MemesController(_memeRepository, _memeRenderingService);
+            VisualFile = CreateFormFile(5, filename),
+        };
 
-            // given
-            var filename = "test.png";
+        // When
+        var creationTask = controller.PostMeme(memeCreationDTO);
 
-            var memeCreationDTO = new MemeCreationDTO()
-            {
-                VisualFile = CreateFormFile(5, filename),
-            };
+        // Then
+        var createdMeme = await ActionResultUtils.ActionResultToValueAndAssertCreated(creationTask);
 
-            // When
-            var creationTask = controller.PostMeme(memeCreationDTO);
+        (await _context.Memes.CountAsync()).Should().Be(1);
+        (await _context.Visuals.CountAsync()).Should().Be(1);
 
-            // Then
-            var createdMeme = await ActionResultUtils.ActionResultToValueAndAssertCreated(creationTask);
+        createdMeme.MemeVisual.Should().Be(filename);
+    }
 
-            (await _context.Memes.CountAsync()).Should().Be(1);
-            (await _context.Visuals.CountAsync()).Should().Be(1);
+    [Fact]
+    public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_GettingMemeBottomText_THEN_MemeBottomTextHasProperValues()
+    {
+        var controller = new MemesController(_memeRepository, _memeRenderingService);
 
-            createdMeme.MemeVisual.Should().Be(filename);
-        }
-
-        [Fact]
-        public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_GettingMemeBottomText_THEN_MemeBottomTextHasProperValues()
+        // given
+        var visual = new MemeVisual()
         {
-            var controller = new MemesController(_memeRepository, _memeRenderingService);
-
-            // given
-            var visual = new MemeVisual()
-            {
-                Id = Guid.NewGuid().ToString(),
-                Filename = "Test"
-            };
-            var meme = new Meme
-            {
-                Id = Guid.NewGuid().ToString(),
-                MemeVisual = visual,
-            };
-            _context.Memes.Add(meme);
-            await _context.SaveChangesAsync();
-
-            // When
-            var response = await controller.GetMeme(meme.Id);
-            var result = response.Result;
-
-            // Then
-
-            result.Should().NotBeNull();
-            result.Should().BeOfType<OkObjectResult>();
-            var foundMemeText = ((OkObjectResult)result).Value as MemeDTO;
-
-            foundMemeText.MemeVisual.Should().Be(visual.Filename);
-            foundMemeText.Id.Should().Be(meme.Id);
-        }
-
-        public static IFormFile CreateFormFile(int size, string filename)
+            Id = Guid.NewGuid().ToString(),
+            Filename = "Test"
+        };
+        var meme = new Meme
         {
-            var fileStream = new MemoryStream(size);
-            var file = new FormFile(fileStream, 0, size, "filestream", filename);
-            return file;
-        }
+            Id = Guid.NewGuid().ToString(),
+            MemeVisual = visual,
+        };
+        _context.Memes.Add(meme);
+        await _context.SaveChangesAsync();
+
+        // When
+        var response = await controller.GetMeme(meme.Id);
+        var result = response.Result;
+
+        // Then
+
+        result.Should().NotBeNull();
+        result.Should().BeOfType<OkObjectResult>();
+        var foundMemeText = ((OkObjectResult)result).Value as MemeDTO;
+
+        foundMemeText.MemeVisual.Should().Be(visual.Filename);
+        foundMemeText.Id.Should().Be(meme.Id);
+    }
+
+    public static IFormFile CreateFormFile(int size, string filename)
+    {
+        var fileStream = new MemoryStream(size);
+        var file = new FormFile(fileStream, 0, size, "filestream", filename);
+        return file;
     }
 }

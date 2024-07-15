@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions;
-using MemeApi.Models.Entity;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace MemeApi.Test.utils
 {

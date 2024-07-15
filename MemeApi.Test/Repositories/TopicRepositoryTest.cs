@@ -4,7 +4,6 @@ using MemeApi.Test.library;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -12,6 +11,10 @@ namespace MemeApi.Test.Repositories
 {
     public class TopicRepositoryTest : MemeTestBase
     {
+        public TopicRepositoryTest(IntegrationTestFactory databaseFixture) : base(databaseFixture)
+        {
+        }
+
         [Fact]
         public async Task GIVEN_Votable_WHEN_OwnerOfTopicDeleting_THEN_VotableDeleted()
         {

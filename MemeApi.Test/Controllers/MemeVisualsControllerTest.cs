@@ -17,6 +17,10 @@ namespace MemeApi.Test.Controllers
 {
     public class MemeVisualsControllerTest : MemeTestBase
     {
+        public MemeVisualsControllerTest(IntegrationTestFactory databaseFixture) : base(databaseFixture)
+        {
+        }
+
         [Fact]
         public async Task GIVEN_DummyFile_WHEN_CreatingMemeVisual_THEN_MemeVisualIsCreatedWithProperValues()
         {
