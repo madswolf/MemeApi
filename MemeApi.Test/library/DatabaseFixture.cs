@@ -1,11 +1,11 @@
 ﻿using DotNet.Testcontainers.Builders;
-using MemeApi.library;
 using MemeApi.Models.Context;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Respawn;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,8 +28,13 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
         .Build();
 
     public MemeContext Db { get; private set; } = null!;
-    public MemeApiSettings Settings { get; private set; } = null!;
+    private Respawner _respawner = null!;
     private DbConnection _connection = null!;
+
+    public async Task ResetDatabase()
+    {
+        await _respawner.ResetAsync(_connection);
+    }
 
     public async Task InitializeAsync()
     {
@@ -38,6 +43,12 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
         Db = scope.ServiceProvider.GetRequiredService<MemeContext>();
         _connection = Db.Database.GetDbConnection();
         await _connection.OpenAsync();
+
+        _respawner = await Respawner.CreateAsync(_connection, new RespawnerOptions
+        {
+            DbAdapter = DbAdapter.Postgres,
+            SchemasToInclude = new[] { "public" }
+        });
     }
 
     public new async Task DisposeAsync()

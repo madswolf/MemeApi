@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
+﻿using MemeApi.library;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using MemeApi.library;
 
 namespace MemeApi;
 public class SwaggerAuthenticationMiddleware

@@ -1,6 +1,4 @@
-﻿using MemeApi.Models.Entity;
-using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
 using System.IO;
 using System.Net;
 using System.Net.Mail;

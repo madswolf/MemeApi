@@ -1,9 +1,8 @@
-﻿using System;
+﻿using MemeApi.Models.DTO;
+using MemeApi.Models.Entity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using MemeApi.Models.DTO;
-using MemeApi.Models.Entity;
-using Microsoft.EntityFrameworkCore;
 
 namespace MemeApi.library.Extensions;
 

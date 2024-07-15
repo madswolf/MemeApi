@@ -1,11 +1,6 @@
-﻿using System.IO;
+﻿using Microsoft.AspNetCore.Http;
+using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Amazon;
-using Amazon.S3;
-using Amazon.S3.Model;
-using System;
 
 namespace MemeApi.library.Services.Files;
 

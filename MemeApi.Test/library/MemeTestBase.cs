@@ -1,8 +1,8 @@
-﻿using MemeApi.library.repositories;
+﻿using MemeApi.library;
+using MemeApi.library.repositories;
 using MemeApi.library.Services.Files;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
-using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -12,13 +12,12 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MemeApi.library;
 using Xunit;
 
 namespace MemeApi.Test.library;
 
 [Collection(nameof(DatabaseTestCollection))]
-public class MemeTestBase
+public class MemeTestBase : IAsyncLifetime
 {
     protected readonly MemeContext _context;
     protected readonly VisualRepository _visualRepository;
@@ -28,25 +27,27 @@ public class MemeTestBase
     protected readonly UserRepository _userRepository;
     protected readonly VotableRepository _votableRepository;
     protected readonly MemeApiSettings _settings;
+    protected readonly IntegrationTestFactory _fixture;
 
     protected readonly MemeRenderingService _memeRenderingService;
-    public MemeTestBase(IntegrationTestFactory databaseFixture)
-    {
 
-        var myConfiguration = new Dictionary<string, string>
+    private Dictionary<string, string> _config = new Dictionary<string, string>
             {
                 {"Topic_Default_Topicname", "Rotte-Grotte"},
                 {"Admin_Username", "test"},
                 {"Admin_Password", "test"},
+                {"Media_Host", "test"}
             };
-
+    public MemeTestBase(IntegrationTestFactory databaseFixture)
+    {
         var config = new ConfigurationBuilder()
-        .AddInMemoryCollection(myConfiguration)
+        .AddInMemoryCollection(_config)
         .Build();
         _settings = new MemeApiSettings(config);
 
         _memeRenderingService = new MemeRenderingService(_settings, new WebFileLoader(_settings));
         _context = databaseFixture.Db;
+        _fixture = databaseFixture;
 
         _userRepository = new UserRepository(_context, TestUserManager<User>(), new FileSaverStub());
         _topicRepository = new TopicRepository(_context, _userRepository, _settings);
@@ -83,5 +84,40 @@ public class MemeTestBase
         validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>()))
             .Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
         return userManager;
+    }
+
+    private async Task SeedDB()
+    {
+
+        var admin = new User
+        {
+            Id = Guid.NewGuid().ToString(),
+            UserName = _config["Admin_Username"],
+            Email = _config["Admin_Password"],
+            SecurityStamp = DateTime.UtcNow.ToString(),
+            CreatedAt = DateTime.UtcNow,
+            LastUpdatedAt = DateTime.UtcNow,
+            LastLoginAt = DateTime.UtcNow,
+        };
+
+        var defaultTopic = new Topic
+        {
+            Id = Guid.NewGuid().ToString(),
+            OwnerId = admin.Id,
+            Name = _config["Topic_Default_Topicname"],
+            Description = "test",
+            CreatedAt = DateTime.UtcNow,
+            LastUpdatedAt = DateTime.UtcNow
+        };
+        _context.Users.Add(admin);  
+        _context.Topics.Add(defaultTopic);
+        await _context.SaveChangesAsync();
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
+    public async Task InitializeAsync(){
+        await _fixture.ResetDatabase();
+        await SeedDB();
     }
 }
