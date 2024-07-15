@@ -1,6 +1,5 @@
 ﻿using MemeApi.library.Extensions;
 using MemeApi.Models.Entity;
-using Microsoft.Extensions.Configuration;
 using SkiaSharp;
 using System.IO;
 using System.Threading.Tasks;

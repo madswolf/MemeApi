@@ -1,15 +1,14 @@
-﻿using MemeApi.library.Extensions;
+﻿using MemeApi.library;
+using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using MemeApi.library;
 
 namespace MemeApi.Controllers;
 

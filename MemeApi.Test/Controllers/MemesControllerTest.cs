@@ -34,10 +34,10 @@ public class MemesControllerTest : MemeTestBase
         };
 
         // When
-        var creationTask = controller.PostMeme(memeCreationDTO);
+        var creationTask = await controller.PostMeme(memeCreationDTO);
 
         // Then
-        var createdMeme = await ActionResultUtils.ActionResultToValueAndAssertCreated(creationTask);
+        var createdMeme = ActionResultUtils.ActionResultToValueAndAssertCreated(creationTask);
 
         (await _context.Memes.CountAsync()).Should().Be(1);
         (await _context.Visuals.CountAsync()).Should().Be(1);

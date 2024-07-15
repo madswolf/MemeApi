@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MemeApi.library.Services.Files;
+﻿using MemeApi.library.Services.Files;
 using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 
-namespace MemeApi.Test.library
+namespace MemeApi.Test.library;
+
+internal class FileSaverStub : IFileSaver
 {
-    internal class FileSaverStub : IFileSaver
+    public Task SaveFile(IFormFile file, string path, string fileName)
     {
-        public Task SaveFile(IFormFile file, string path, string fileName)
-        {
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
     }
 }
