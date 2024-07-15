@@ -1,22 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.library.Extensions;
-using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace MemeApi.Test.Controllers
 {
     public class MemeTextsControllerTest : MemeTestBase
     {
+        public MemeTextsControllerTest(IntegrationTestFactory databaseFixture) : base(databaseFixture)
+        {
+        }
+
         [Theory]
         [InlineData(MemeTextPosition.TopText)]
         [InlineData(MemeTextPosition.BottomText)]
