@@ -1,6 +1,7 @@
-﻿namespace MemeApi.Models.Entity;
+﻿#nullable disable warnings
+namespace MemeApi.Models.Entity;
 
 public class MemeSound : Votable
 {
-    public string Filename { get; set; }
+    public string FileName { get; set; }
 }

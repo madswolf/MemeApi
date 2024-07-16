@@ -9,16 +9,10 @@ using System.Threading.Tasks;
 
 namespace MemeApi.library.repositories;
 
-public class TextRepository
+public class TextRepository(MemeContext context, TopicRepository topicRepository)
 {
-    private readonly MemeContext _context;
-    private readonly TopicRepository _topicRepository;
-
-    public TextRepository(MemeContext context, TopicRepository topicRepository)
-    {
-        _context = context;
-        _topicRepository = topicRepository;
-    }
+    private readonly MemeContext _context = context;
+    private readonly TopicRepository _topicRepository = topicRepository;
 
     public async Task<List<MemeText>> GetTexts(MemeTextPosition? type = null)
     {
@@ -31,7 +25,7 @@ public class TextRepository
         return await texts.ToListAsync();
     }
 
-    public async Task<MemeText> GetText(string id)
+    public async Task<MemeText?> GetText(string id)
     {
         return await _context.Texts.Include(x => x.Votes).Include(t => t.Topics).FirstOrDefaultAsync(t => t.Id == id);
     }
@@ -48,13 +42,13 @@ public class TextRepository
         };
     }
 
-    public async Task<MemeText> GetRandomTextByType(MemeTextPosition type, string seed = "")
+    public MemeText GetRandomTextByType(MemeTextPosition type, string seed = "")
     {
         return _context.Texts.Where(x => x.Position == type).RandomItem();
     }
 
 
-    public async Task<MemeText> GetRandomText(string seed = "")
+    public MemeText GetRandomText(string seed = "")
     {
         return _context.Texts.RandomItem(seed);
     }
@@ -93,7 +87,7 @@ public class TextRepository
         return true;
     }
 
-    public async Task<MemeText> CreateText(string text, MemeTextPosition position, IEnumerable<string> topicNames = null, string userId = null)
+    public async Task<MemeText> CreateText(string text, MemeTextPosition position, IEnumerable<string>? topicNames = null, string? userId = null)
     {
         var topics = await _topicRepository.GetTopicsByNameForUser(topicNames, userId);
         var memeText = new MemeText

@@ -34,24 +34,22 @@ public class TopicRepository
         return topics;
     }
 
-    public async Task<Topic> GetTopic(string id)
+    public async Task<Topic?> GetTopic(string id)
     {
-        var topic = await _context.Topics.FindAsync(id);
-        return topic;
+        return await _context.Topics.FindAsync(id);
     }
 
-    public async Task<Topic> GetTopicByName(string name)
+    public async Task<Topic?> GetTopicByName(string name)
     {
-        var topic = await _context.Topics.Where(t => t.Name == name).FirstOrDefaultAsync();
-        return topic;
+        return await _context.Topics.Where(t => t.Name == name).FirstOrDefaultAsync();
     }
 
-    public async Task<List<Topic>> GetTopicsByNameForUser(IEnumerable<string> topicNames, string userId = null)
+    public async Task<List<Topic>> GetTopicsByNameForUser(IEnumerable<string>? topicNames, string? userId = null)
     {
         return await GetTopicsByNameOrDefault(topicNames, userId);
     }
 
-    public async Task<List<Topic>> GetTopicsByNameOrDefault(IEnumerable<string> topicNames, string userId = null)
+    public async Task<List<Topic>> GetTopicsByNameOrDefault(IEnumerable<string>? topicNames, string? userId = null)
     {
         if(topicNames != null)
         {
@@ -68,7 +66,7 @@ public class TopicRepository
         return await _context.Topics.FirstAsync(t => t.Name == _settings.GetDefaultTopicName());
     }
 
-    public async Task<bool> UpdateTopic(string id, string name = null, string description = null)
+    public async Task<bool> UpdateTopic(string id, string? name = null, string? description = null)
     {
         var topic = await _context.Topics.FindAsync(id);
 
@@ -109,9 +107,10 @@ public class TopicRepository
         return true;
     }
 
-    public async Task<TopicDTO> CreateTopic(TopicCreationDTO topicCreationDTO, string userId)
+    public async Task<TopicDTO?> CreateTopic(TopicCreationDTO topicCreationDTO, string userId)
     {
         var user = await _userRepository.GetUser(userId);
+        if (user == null) return null;
 
         var topic = new Topic()
         {

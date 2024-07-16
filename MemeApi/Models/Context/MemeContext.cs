@@ -41,7 +41,7 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Meme>()
-            .HasOne(m => m.Toptext);
+            .HasOne(m => m.TopText);
 
         modelBuilder.Entity<Meme>()
             .HasOne(m => m.BottomText);

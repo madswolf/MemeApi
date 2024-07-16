@@ -1,4 +1,5 @@
-﻿using MemeApi.Models.Context;
+﻿using MemeApi.library.Extensions;
+using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +28,7 @@ public class MemeRepository
         _settings = settings;
     }
 
-    public async Task<Meme> CreateMeme(MemeCreationDTO memeDTO, string userId = null)
+    public async Task<Meme?> CreateMeme(MemeCreationDTO memeDTO, string? userId = null)
     {
         var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName, memeDTO.Topics, userId);
 
@@ -46,14 +47,14 @@ public class MemeRepository
         //    meme.MemeSound = memeSound;
         //}
 
-        if (memeDTO.Toptext != null)
+        if (memeDTO.TopText != null)
         {
-            meme.Toptext = await _textRepository.CreateText(memeDTO.Toptext, MemeTextPosition.TopText, memeDTO.Topics, userId);
+            meme.TopText = await _textRepository.CreateText(memeDTO.TopText, MemeTextPosition.TopText, memeDTO.Topics, userId);
         }
 
-        if (memeDTO.Bottomtext != null)
+        if (memeDTO.BottomText != null)
         {
-            meme.BottomText = await _textRepository.CreateText(memeDTO.Bottomtext, MemeTextPosition.BottomText, memeDTO.Topics, userId);
+            meme.BottomText = await _textRepository.CreateText(memeDTO.BottomText, MemeTextPosition.BottomText, memeDTO.Topics, userId);
         }
 
         var topics = await _topicRepository.GetTopicsByNameForUser(memeDTO.Topics, userId );
@@ -67,9 +68,10 @@ public class MemeRepository
         return meme;
     }
 
-    public async Task<Meme> UpsertByComponents(MemeVisual visual, MemeText toptext, MemeText bottomtext, Topic topic = null)
+    public async Task<Meme> UpsertByComponents(MemeVisual visual, MemeText? toptext, MemeText? bottomtext, Topic? topic = null)
     {
         var meme = await FindByComponents(visual, toptext, bottomtext);
+        if (topic == null) topic = await _topicRepository.GetDefaultTopic();
         if (meme == null)
         {
             meme = new Meme
@@ -77,10 +79,10 @@ public class MemeRepository
                 Id = Guid.NewGuid().ToString(),
                 MemeVisual = visual,
                 //TODO handle which position they are in in the rendered meme when
-                Toptext = toptext,
+                TopText = toptext,
                 BottomText = bottomtext,
                 CreatedAt = DateTime.UtcNow,
-                Topics = new List<Topic> { topic }
+                Topics = [topic]
             };
 
             await CreateMemeRaw(meme);
@@ -119,33 +121,32 @@ public class MemeRepository
             .ToListAsync();
     }
 
-    public async Task<Meme> GetMeme(string id)
+    public async Task<Meme?> GetMeme(string id)
     {
         return await IncludeParts()
             .FirstOrDefaultAsync(m => m.Id == id);
     }
 
-    private IIncludableQueryable<Meme, MemeText> IncludeParts()
+    private IIncludableQueryable<Meme, MemeText?> IncludeParts()
     {
         return _context.Memes
             .Include(m => m.MemeVisual)
             .Include(m => m.Topics)
-            .Include(m => m.Toptext)
+            .Include(m => m.TopText)
             .Include(m => m.BottomText);
     }
-    public async Task<Meme> RandomMemeByComponents(string topText = null, string bottomText = null, string topicName = null)
+    public async Task<Meme> RandomMemeByComponents(string? topText = null, string? bottomText = null, string? topicName = null)
     {
-        var visual = await _visualRepository.GetRandomVisual();
+        var visual = _visualRepository.GetRandomVisual();
         var toptext = topText == null ? 
-            await _textRepository.GetRandomTextByType(MemeTextPosition.TopText) 
+            _textRepository.GetRandomTextByType(MemeTextPosition.TopText) 
             : await _textRepository.GetTextByContent(topText, MemeTextPosition.TopText);
 
         var bottomtext = bottomText == null ?
-            await _textRepository.GetRandomTextByType(MemeTextPosition.BottomText)
+            _textRepository.GetRandomTextByType(MemeTextPosition.BottomText)
             : await _textRepository.GetTextByContent(bottomText, MemeTextPosition.BottomText);
 
         var topic = topicName != null ? await _topicRepository.GetTopicByName(topicName) : null;
-        if (topic == null) topic = await _topicRepository.GetDefaultTopic();
 
         var meme = await UpsertByComponents(visual, toptext, bottomtext, topic);
         return meme;
@@ -164,17 +165,17 @@ public class MemeRepository
     {
         var memes = _context.Memes
             .Include(meme => meme.MemeVisual)
-            .Include(meme => meme.Toptext)
+            .Include(meme => meme.TopText)
             .Include(meme => meme.BottomText)
             .Include(meme => meme.Topics)
             .Where(meme => meme.MemeVisual.Id == visual.Id);
 
         memes = (toptext, bottomtext) switch
         {
-            (null, null) => memes.Where(meme => meme.Toptext == null && meme.BottomText == null),
-            ({ }, null) => memes.Where(meme => meme.Toptext.Id == toptext.Id && meme.BottomText == null),
-            (null, { }) => memes.Where(meme => meme.BottomText.Id == bottomtext.Id && meme.Toptext == null),
-            ({ }, { }) => memes.Where(meme => meme.Toptext.Id == toptext.Id && meme.BottomText.Id == bottomtext.Id)
+            (null, null) => memes.Where(meme => meme.TopText == null && meme.BottomText == null),
+            ({ }, null) => memes.Where(meme => meme.TopText().Id == toptext.Id && meme.BottomText == null),
+            (null, { }) => memes.Where(meme => meme.BottomText().Id == bottomtext.Id && meme.TopText == null),
+            ({ }, { }) => memes.Where(meme => meme.TopText().Id == toptext.Id && meme.BottomText().Id == bottomtext.Id)
         };
         
         return await memes.FirstOrDefaultAsync();

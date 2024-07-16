@@ -126,12 +126,12 @@ public class UsersController : ControllerBase
     public async Task<bool> RecoverUser([FromForm]string userEmail)
     {
         var user = await _userRepository.FindByEmail(userEmail);
-        if (user == null) return false;
+        if (user == null || user.Email == null) return false;
         try
         {
             var password = await _userRepository.CreateNewPassword(user);
             var body = "Hello gamer, you requested a new password, so here it is: \n" + password;
-            return _mailSender.sendNoReplyMail(new MailAddress(user.Email, user.UserName), "Recovery password", body);
+            return _mailSender.sendNoReplyMail(new MailAddress(user.Email, user?.UserName), "Recovery password", body);
         }
         catch (Exception)
         {
