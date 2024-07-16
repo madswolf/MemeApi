@@ -32,7 +32,7 @@ public class MemeTextsControllerTest : MemeTestBase
         var memeText = new TextCreationDTO()
         {
             Text = "Test",
-            position = memePosition
+            Position = memePosition
         }; 
 
         // When
@@ -42,7 +42,7 @@ public class MemeTextsControllerTest : MemeTestBase
         var createdMemeText = ActionResultUtils.ActionResultToValueAndAssertCreated(createTask);
             
         (await _context.Texts.CountAsync()).Should().Be(1);
-        createdMemeText.Text.Should().Be(memeText.Text);
+        createdMemeText?.Text.Should().Be(memeText.Text);
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class MemeTextsControllerTest : MemeTestBase
             Id = Guid.NewGuid().ToString(),
             Text = "Test",
             Position = MemeTextPosition.BottomText,
-            Topics = new List<Topic>() { await _topicRepository.GetDefaultTopic() }
+            Topics = [await _topicRepository.GetDefaultTopic()]
         };
         _context.Texts.Add(memeText);
         await _context.SaveChangesAsync();
@@ -70,11 +70,11 @@ public class MemeTextsControllerTest : MemeTestBase
 
         result.Should().NotBeNull();
         result.Should().BeOfType<OkObjectResult>();
-        var foundMemeText = ((OkObjectResult)result).Value as TextDTO;
+        var foundMemeText = (result as OkObjectResult)?.Value as TextDTO;
 
-        foundMemeText.Text.Should().Be(expected.Text);
-        foundMemeText.Id.Should().Be(expected.Id);
-        foundMemeText.Position.Should().Be(expected.Position);
+        foundMemeText?.Text.Should().Be(expected.Text);
+        foundMemeText?.Id.Should().Be(expected.Id);
+        foundMemeText?.Position.Should().Be(expected.Position);
     }
 
     //[Theory]

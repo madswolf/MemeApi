@@ -32,10 +32,10 @@ public class MemeRenderingService : IMemeRenderingService
         canvas.DrawBitmap(resized, new SKPoint(0, 0));
 
         float topTextY = resized.Height / 6;
-        DrawText(canvas, meme.ToToptext(), resized.Width, topTextY, SKTypeface.FromFamilyName("Impact"), textSize);
+        DrawText(canvas, meme.ToTopText(), resized.Width, topTextY, SKTypeface.FromFamilyName("Impact"), textSize);
 
         float bottomTextY = resized.Height - resized.Height / 8;
-        DrawText(canvas, meme.ToBottomtext(), resized.Width, bottomTextY, SKTypeface.FromFamilyName("Impact"), textSize);
+        DrawText(canvas, meme.ToBottomText(), resized.Width, bottomTextY, SKTypeface.FromFamilyName("Impact"), textSize);
 
         using (var stream = new MemoryStream())
         {

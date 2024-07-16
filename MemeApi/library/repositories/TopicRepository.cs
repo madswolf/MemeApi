@@ -13,8 +13,8 @@ namespace MemeApi.library.repositories;
 public class TopicRepository
 {
     private readonly MemeContext _context;
-    private UserRepository _userRepository;
-    private MemeApiSettings _settings;
+    private readonly UserRepository _userRepository;
+    private readonly MemeApiSettings _settings;
 
     public TopicRepository(MemeContext context, UserRepository userRepository, MemeApiSettings settings)
     {
@@ -55,11 +55,11 @@ public class TopicRepository
         {
             var topics = await _context.Topics.Where(t => topicNames.Contains(t.Name)).ToListAsync();
             var filteredTopics = topics.Where(t => t.CanUserPost(userId)).ToList();
-            if (!filteredTopics.Any()) return new List<Topic> { await _context.Topics.FirstAsync(t => t.Name == _settings.GetDefaultTopicName()) };
+            if (filteredTopics.Count == 0) return [await _context.Topics.FirstAsync(t => t.Name == _settings.GetDefaultTopicName())];
             return filteredTopics;
         }
 
-        return new List<Topic> { await _context.Topics.FirstAsync(t => t.Name == _settings.GetDefaultTopicName()) };
+        return [await _context.Topics.FirstAsync(t => t.Name == _settings.GetDefaultTopicName())];
     }
     public async Task<Topic> GetDefaultTopic()
     {
@@ -118,7 +118,7 @@ public class TopicRepository
             Owner = user,
             Name = topicCreationDTO.TopicName,
             Description = topicCreationDTO.Description,
-            Moderators = new List<User>(),
+            Moderators = [],
             CreatedAt = DateTime.UtcNow,
             LastUpdatedAt = DateTime.UtcNow
         };

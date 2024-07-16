@@ -6,19 +6,19 @@ namespace MemeApi.Test.utils;
 
 internal class ActionResultUtils
 {
-    public static T ActionResultToValueAndAssertCreated<T>(ActionResult<T> actionResult) where T : class
+    public static T? ActionResultToValueAndAssertCreated<T>(ActionResult<T> actionResult) where T : class
     {
         var result = actionResult.Result;
         result.Should().NotBeNull();
         result.Should().BeOfType<CreatedAtActionResult>();
-        return ((CreatedAtActionResult)result).Value as T;
+        return (result as CreatedAtActionResult)?.Value as T;
     }
-    public static async Task<T> ActionResultToValueAndAssertOk<T>(Task<ActionResult<T>> actionResult) where T : class
+    public static async Task<T?> ActionResultToValueAndAssertOk<T>(Task<ActionResult<T>> actionResult) where T : class
     {
         var result = (await actionResult).Result;
         result.Should().NotBeNull();
         result.Should().BeOfType<OkObjectResult>();
-        return ((OkObjectResult)result).Value as T;
+        return (result as OkObjectResult)?.Value as T;
     }
 
     public static async Task ActionResultAssertNoContent(Task<ActionResult> actionResult)

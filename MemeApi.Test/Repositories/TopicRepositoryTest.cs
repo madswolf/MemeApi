@@ -1,24 +1,18 @@
-﻿using Amazon.S3.Model;
-using FluentAssertions;
+﻿using FluentAssertions;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using MemeApi.Test.library;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace MemeApi.Test.Repositories;
 
-public class TopicRepositoryTest : MemeTestBase
+public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeTestBase(databaseFixture)
 {
-    public TopicRepositoryTest(IntegrationTestFactory databaseFixture) : base(databaseFixture)
-    {
-    }
-    
     [Fact]
     public async Task GIVEN_ExistingTopic_WHEN_CreatingTopicWithSameName_THEN_TopicNotCreated()
     {
@@ -28,14 +22,14 @@ public class TopicRepositoryTest : MemeTestBase
         _context.SaveChanges();
 
         // When
-        var task = (TopicRepository x) => x.CreateTopic(
+        Task<TopicDTO?> task(TopicRepository x) => x.CreateTopic(
             new TopicCreationDTO
             {
                 TopicName = _settings.GetDefaultTopicName(),
                 Description = "test"
             },
            owner.Id);
-        
+
         //Then 
         await _topicRepository.Invoking(task).Should().ThrowAsync<DbUpdateException>();
     }
@@ -48,13 +42,13 @@ public class TopicRepositoryTest : MemeTestBase
         var topic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
-            Name = "Testawda",
+            Name = "Test",
             Description = "test",
             Owner = owner,
             HasRestrictedPosting = true,
-            Moderators = new List<User> { }
+            Moderators = []
         };
-        var votable = new Votable {Id = Guid.NewGuid().ToString(), Topics = new List<Topic>() { topic } };
+        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic] };
         _context.Votables.Add(votable);
         _context.SaveChanges();
 
@@ -74,11 +68,11 @@ public class TopicRepositoryTest : MemeTestBase
         var user = new User() { Id = Guid.NewGuid().ToString() };
         var topic = new Topic {
             Id = Guid.NewGuid().ToString(),
-            Name = "Testawda",
+            Name = "Test",
             Description = "test",
             Owner = owner,
-            HasRestrictedPosting = true, 
-            Moderators = new List<User> {} 
+            HasRestrictedPosting = true,
+            Moderators = []
         };
         var text = "";
 
@@ -88,11 +82,11 @@ public class TopicRepositoryTest : MemeTestBase
         _context.SaveChanges();
         
         // When
-        var result = await _textRepository.CreateText(text, MemeTextPosition.TopText, new List<string> { topic.Name }, user.Id);
+        var result = await _textRepository.CreateText(text, MemeTextPosition.TopText, [topic.Name], user.Id);
 
         // Then
         result.Topics.Should().NotContain(topic);
-        result.Topics.Count().Should().Be(1);
+        result.Topics.Count.Should().Be(1);
     }
 
     [Fact]
@@ -104,11 +98,11 @@ public class TopicRepositoryTest : MemeTestBase
         var topic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
-            Name = "Testawda",
+            Name = "Test",
             Description = "test",
             Owner = owner,
             HasRestrictedPosting = true,
-            Moderators = new List<User> { user }
+            Moderators = [user]
         };
         var text = "";
 
@@ -117,11 +111,11 @@ public class TopicRepositoryTest : MemeTestBase
         _context.SaveChanges();
 
         // When
-        var result = await _textRepository.CreateText(text, MemeTextPosition.TopText, new List<string> { topic.Name }, user.Id);
+        var result = await _textRepository.CreateText(text, MemeTextPosition.TopText, [topic.Name], user.Id);
 
         // Then
         result.Topics.Should().Contain(topic);
-        result.Topics.Count().Should().Be(1);
+        result.Topics.Count.Should().Be(1);
     }
 
     [Fact]
@@ -134,7 +128,7 @@ public class TopicRepositoryTest : MemeTestBase
 
         // Then
         result.Topics.Should().Contain(defaultTopic);
-        result.Topics.Count().Should().Be(1);
+        result.Topics.Count.Should().Be(1);
     }
 
     [Fact]
@@ -151,7 +145,7 @@ public class TopicRepositoryTest : MemeTestBase
 
         // Then
         result.Topics.Should().Contain(defaultTopic);
-        result.Topics.Count().Should().Be(1);
+        result.Topics.Count.Should().Be(1);
     }
 
 
@@ -164,15 +158,15 @@ public class TopicRepositoryTest : MemeTestBase
         var topic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
-            Name = "Testawda",
+            Name = "Test",
             Description = "test",
             Owner = owner,
             HasRestrictedPosting = true,
-            Moderators = new List<User> { user }
+            Moderators = [user]
         };
         var votable = new Votable {
             Id = Guid.NewGuid().ToString(),
-            Topics = new List<Topic>() { topic }
+            Topics = [topic]
         };
         _context.Votables.Add(votable);
         _context.SaveChanges();
@@ -194,13 +188,13 @@ public class TopicRepositoryTest : MemeTestBase
         var topic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
-            Name = "Testawda",
+            Name = "Test",
             Description = "test",
             Owner = owner,
             HasRestrictedPosting = true,
-            Moderators = new List<User> { }
+            Moderators = []
         };
-        var votable = new Votable {Id = Guid.NewGuid().ToString(), Topics = new List<Topic>() { topic }};
+        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic] };
         _context.Votables.Add(votable);
         _context.SaveChanges();
 
@@ -220,22 +214,22 @@ public class TopicRepositoryTest : MemeTestBase
         var topic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
-            Name = "Testawda",
+            Name = "Test",
             Description = "test",
             Owner = owner,
             HasRestrictedPosting = true,
-            Moderators = new List<User> { }
+            Moderators = []
         };
         var topic2 = new Topic
         {
             Id = Guid.NewGuid().ToString(),
-            Name = "Testawda2",
+            Name = "Test2",
             Description = "test",
             Owner = new User() { Id = Guid.NewGuid().ToString() },
             HasRestrictedPosting = true,
-            Moderators = new List<User> { }
+            Moderators = []
         };
-        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = new List<Topic>() { topic, topic2 } };
+        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic, topic2] };
         _context.Votables.Add(votable);
         _context.SaveChanges();
 
@@ -245,8 +239,8 @@ public class TopicRepositoryTest : MemeTestBase
         
         // Then
         result.Should().BeTrue();
-        resultVotable.Topics.Count().Should().Be(1);
-        resultVotable.Topics.Should().NotContain(topic);
+        resultVotable?.Topics.Count.Should().Be(1);
+        resultVotable?.Topics.Should().NotContain(topic);
     }
 
     [Fact]
@@ -258,22 +252,22 @@ public class TopicRepositoryTest : MemeTestBase
         var topic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
-            Name = "Testawda",
+            Name = "Test",
             Description = "test",
             Owner = owner,
             HasRestrictedPosting = true,
-            Moderators = new List<User> { user }
+            Moderators = [user]
         };
         var topic2 = new Topic
         {
             Id = Guid.NewGuid().ToString(),
-            Name = "Testawda2",
+            Name = "Test2",
             Description = "test",
             Owner = new User() { Id = Guid.NewGuid().ToString() },
             HasRestrictedPosting = true,
-            Moderators = new List<User> { }
+            Moderators = []
         };
-        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = new List<Topic>() { topic, topic2 } };
+        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic, topic2] };
         _context.Votables.Add(votable);
         _context.SaveChanges();
 
@@ -282,7 +276,7 @@ public class TopicRepositoryTest : MemeTestBase
         var resultVotable = await _votableRepository.GetVotable(votable.Id);
         // Then
         result.Should().BeTrue();
-        resultVotable.Topics.Count().Should().Be(1);
-        resultVotable.Topics.Should().NotContain(topic);
+        resultVotable?.Topics.Count.Should().Be(1);
+        resultVotable?.Topics.Should().NotContain(topic);
     }
 }

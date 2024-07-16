@@ -77,7 +77,7 @@ public class UserRepository
                 {
                     user.ProfilePicFile = VisualRepository.RandomString(5) + user.ProfilePicFile;
                 }
-                await _fileSaver.SaveFile(updateDto.NewProfilePic, "profilepic/", user.ProfilePicFile);
+                await _fileSaver.SaveFile(updateDto.NewProfilePic, "profilePic/", user.ProfilePicFile);
             }
 
             if (updateDto.NewEmail != null) user.Email = updateDto.NewEmail;

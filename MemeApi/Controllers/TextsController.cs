@@ -65,7 +65,7 @@ public class TextsController : ControllerBase
     public async Task<ActionResult<MemeText>> CreateMemeText([FromBody] TextCreationDTO textCreationDTO)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var memeText = await _textRepository.CreateText(textCreationDTO.Text, textCreationDTO.position, userId: userId);
+        var memeText = await _textRepository.CreateText(textCreationDTO.Text, textCreationDTO.Position, userId: userId);
         return CreatedAtAction("CreateMemeText", new { id = memeText.Id }, memeText);
     }
 

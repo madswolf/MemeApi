@@ -47,20 +47,20 @@ public static class Extensions
 
     public static UserInfoDTO ToUserInfo(this User u, string mediaHost)
     {
-        return new UserInfoDTO(u.UserName(), mediaHost + "profilepic/" + u.ProfilePicFile, u.Topics.Select(t => t.Name).ToList());
+        return new UserInfoDTO(u.UserName(), mediaHost + "profilePic/" + u.ProfilePicFile, u.Topics.Select(t => t.Name).ToList());
     }
     public static string UserName(this User u)
     {
-        return u.UserName == null ? "default username" : u.UserName;
+        return u.UserName ?? "default username";
     }
     public static MemeText TopText(this Meme u)
     {
-        return u.TopText == null ? new MemeText { Id = "", Position = MemeTextPosition.TopText } : u.TopText;
+        return u.TopText ?? new MemeText { Id = "", Position = MemeTextPosition.TopText };
     }
 
     public static MemeText BottomText(this Meme u)
     {
-        return u.BottomText == null ? new MemeText { Id = "", Position = MemeTextPosition.BottomText } : u.BottomText;
+        return u.BottomText ?? new MemeText { Id = "", Position = MemeTextPosition.BottomText };
 
     }
 
@@ -79,8 +79,8 @@ public static class Extensions
         var memeDTO = new MemeDTO(
             meme.Id,
             meme.MemeVisual.Filename,
-            meme.ToToptext(),
-            meme.ToBottomtext(),
+            meme.ToTopText(),
+            meme.ToBottomText(),
             meme.Topics.Select(t => t.Name).ToList(),
             meme.CreatedAt
         );
@@ -88,12 +88,12 @@ public static class Extensions
         return memeDTO;
     }
 
-    public static string ToToptext(this Meme meme)
+    public static string ToTopText(this Meme meme)
     {
         return meme.TopText != null ? meme.TopText.Text : "";
     }
 
-    public static string ToBottomtext(this Meme meme)
+    public static string ToBottomText(this Meme meme)
     {
         return meme.BottomText != null ? meme.BottomText.Text : "";
     }
@@ -109,7 +109,7 @@ public static class Extensions
 
     public static int SumVotes(this Votable votable)
     {
-        var votes = votable.Votes ?? new List<Vote>();
+        var votes = votable.Votes ?? [];
         return votes.Aggregate(0, (acc, item) => acc + (item.Upvote ? 1 : -1));
     }
 }
