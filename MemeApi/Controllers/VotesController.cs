@@ -95,10 +95,10 @@ public class VotesController : ControllerBase
             );
 
             if (texts.Length == 0) return NotFound();
-            var toptext = texts.Length > 0 ? texts[0] : null;
-            var bottomtext = texts.Length > 1 ? texts[1] : null;
+            var topText = texts.Length > 0 ? texts[0] : null;
+            var bottomText = texts.Length > 1 ? texts[1] : null;
 
-            element = await _memeRepository.UpsertByComponents(visual, toptext, bottomtext);
+            element = await _memeRepository.UpsertByComponents(visual, topText, bottomText);
         }
         else
         {

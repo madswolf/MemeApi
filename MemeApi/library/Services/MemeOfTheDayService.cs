@@ -31,40 +31,37 @@ public class MemeOfTheDayService : IMemeOfTheDayService
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         Meme meme = await _memeRepository.RandomMemeByComponents();
-        var wekhookUrl = _settings.GetMemeOfTheDayWehbhook();
+        var webhookUrl = _settings.GetMemeOfTheDayWehbhook();
 
-        using (HttpClient httpClient = new HttpClient())
+        using HttpClient httpClient = new();
+        MultipartFormDataContent form = [];
+        try
         {
-            MultipartFormDataContent form = new MultipartFormDataContent();
-            try
-            {
 
-                var imageContent = await _memeRenderingService.RenderMeme(meme);
-                var message = new Random().Next(10) != 1 ? "Meme Of the Day" : messages.RandomItem();
-                var json_payload = CreateJsonPayload(message);
+            var imageContent = await _memeRenderingService.RenderMeme(meme);
+            var message = new Random().Next(10) != 1 ? "Meme Of the Day" : messages.RandomItem();
+            var json_payload = CreateJsonPayload(message);
 
-                form.Add(new ByteArrayContent(imageContent, 0, imageContent.Length), "image/png", "shit.png");
-                form.Add(json_payload, "payload_json");
-                await httpClient.PostAsync(wekhookUrl, form);
-                httpClient.Dispose();
-            }
-            catch (Exception)
-            {
-                var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO());
+            form.Add(new ByteArrayContent(imageContent, 0, imageContent.Length), "image/png", "shit.png");
+            form.Add(json_payload, "payload_json");
+            await httpClient.PostAsync(webhookUrl, form, stoppingToken);
+            httpClient.Dispose();
+        }
+        catch (Exception)
+        {
+            var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO());
 
-                Console.Error.WriteLine(Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X"));
-                Console.WriteLine(Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X"));
-                Console.WriteLine("Failed meme");
-                Console.Error.WriteLine("Failed meme");
-            }
-
+            Console.Error.WriteLine(Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X"));
+            Console.WriteLine(Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X"));
+            Console.WriteLine("Failed meme");
+            Console.Error.WriteLine("Failed meme");
         }
 
         //TODO: add subscribers
         //_mailSender.sendMemeOfTheDayMail(recipient, _memeRenderingService.RenderMeme(meme));
     }
 
-    private StringContent CreateJsonPayload(string message)
+    private static StringContent CreateJsonPayload(string message)
     {
         return new StringContent(
         "{" +
@@ -76,8 +73,8 @@ public class MemeOfTheDayService : IMemeOfTheDayService
     }
 
     // auto generated text messages
-    private static readonly List<string> messages = new()
-    {
+    private static readonly List<string> messages =
+    [
             "Yo this one is fire 🔥🔥🔥",
             "SHEEEESH i am laughing at this one 😆😆😆😆",
             "This one is making me LOL, LMAO even",
@@ -108,6 +105,6 @@ public class MemeOfTheDayService : IMemeOfTheDayService
             "Bunu coomer over dette billede",
             "Toni... don't hurry up with that 😅",
             "Skaftet",
-        };
+        ];
 }
 

@@ -19,5 +19,5 @@ public record TextCreationDTO
     /// The texts position
     /// </summary>
     [Required]
-    public MemeTextPosition position { get; init; }
+    public MemeTextPosition Position { get; init; }
 }

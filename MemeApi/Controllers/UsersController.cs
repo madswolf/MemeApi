@@ -119,7 +119,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// intiate the recovery of a user
+    /// initiate the recovery of a user
     /// </summary>
     [HttpPost]
     [Route("[controller]/recover")]
@@ -143,7 +143,7 @@ public class UsersController : ControllerBase
     /// Delete the currently logged in user
     /// </summary>
     [HttpDelete]
-    [Route("[controller]/{id}")]
+    [Route("[controller]")]
     public async Task<ActionResult> DeleteUser()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -163,9 +163,8 @@ public class UsersController : ControllerBase
     public async Task<ActionResult<UserInfoDTO>> Login([FromForm]UserLoginDTO loginDTO)
     {
         var user = await _userManager.FindByNameAsync(loginDTO.Username);
-        if (user == null)
-            user = await _userRepository.FindByEmail(loginDTO.Username);
-            if( user == null) return Unauthorized("The entered information was not correct");
+        user ??= await _userRepository.FindByEmail(loginDTO.Username);
+        if( user == null) return Unauthorized("The entered information was not correct");
 
         var result = await _signInManager.PasswordSignInAsync(user, loginDTO.Password, false, false);
         if (!result.Succeeded)

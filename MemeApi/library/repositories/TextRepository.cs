@@ -44,7 +44,7 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
 
     public MemeText GetRandomTextByType(MemeTextPosition type, string seed = "")
     {
-        return _context.Texts.Where(x => x.Position == type).RandomItem();
+        return _context.Texts.Where(x => x.Position == type).RandomItem(seed);
     }
 
 

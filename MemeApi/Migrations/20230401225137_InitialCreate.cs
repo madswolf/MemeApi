@@ -259,12 +259,12 @@ namespace MemeApi.Migrations
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "CreatedAt", "Email", "EmailConfirmed", "LastLoginAt", "LastUpdatedAt", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePicFile", "SecurityStamp", "TopicId", "TwoFactorEnabled", "UserName" },
-                values: new object[] { "fc3e1e27-80d1-4fe6-9855-e5ac38bfe4eb", 0, "78b3232d-1105-4ef0-8006-00f5e33ecd5a", new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2189), "Admin@mads.monster", false, new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2190), new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2190), false, null, null, null, null, null, false, null, "01/04/2023 22.51.37", null, false, "Admin" });
+                columns: ["Id", "AccessFailedCount", "ConcurrencyStamp", "CreatedAt", "Email", "EmailConfirmed", "LastLoginAt", "LastUpdatedAt", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePicFile", "SecurityStamp", "TopicId", "TwoFactorEnabled", "UserName"],
+                values: ["fc3e1e27-80d1-4fe6-9855-e5ac38bfe4eb", 0, "78b3232d-1105-4ef0-8006-00f5e33ecd5a", new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2189), "Admin@mads.monster", false, new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2190), new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2190), false, null, null, null, null, null, false, null, "01/04/2023 22.51.37", null, false, "Admin"]);
 
             migrationBuilder.InsertData(
                 table: "Topics",
-                columns: new[] { "Id", "CreatedAt", "Description", "LastUpdatedAt", "Name", "OwnerId" },
+                columns: ["Id", "CreatedAt", "Description", "LastUpdatedAt", "Name", "OwnerId"],
                 values: new object[,]
                 {
                     { "24d988f7-1065-49eb-93c7-66ed55970e7f", new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2209), "Memes are back baby!", new DateTime(2023, 4, 1, 22, 51, 37, 293, DateTimeKind.Utc).AddTicks(2209), "Swu-reloaded", "fc3e1e27-80d1-4fe6-9855-e5ac38bfe4eb" },

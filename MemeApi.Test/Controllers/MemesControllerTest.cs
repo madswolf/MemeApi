@@ -42,7 +42,7 @@ public class MemesControllerTest : MemeTestBase
         (await _context.Memes.CountAsync()).Should().Be(1);
         (await _context.Visuals.CountAsync()).Should().Be(1);
 
-        createdMeme.MemeVisual.Should().Be(filename);
+        createdMeme?.MemeVisual.Should().Be(filename);
     }
 
     [Fact]
@@ -72,16 +72,16 @@ public class MemesControllerTest : MemeTestBase
 
         result.Should().NotBeNull();
         result.Should().BeOfType<OkObjectResult>();
-        var foundMemeText = ((OkObjectResult)result).Value as MemeDTO;
+        var foundMemeText = (result as OkObjectResult)?.Value as MemeDTO;
 
-        foundMemeText.MemeVisual.Should().Be(visual.Filename);
-        foundMemeText.Id.Should().Be(meme.Id);
+        foundMemeText?.MemeVisual.Should().Be(visual.Filename);
+        foundMemeText?.Id.Should().Be(meme.Id);
     }
 
     public static IFormFile CreateFormFile(int size, string filename)
     {
         var fileStream = new MemoryStream(size);
-        var file = new FormFile(fileStream, 0, size, "filestream", filename);
+        var file = new FormFile(fileStream, 0, size, "fileStream", filename);
         return file;
     }
 }

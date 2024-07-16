@@ -20,7 +20,7 @@ public class SwaggerAuthenticationMiddleware
     {
         if (context.Request.Path.StartsWithSegments("/swagger"))
         {
-            string? authHeader = context.Request.Headers["Authorization"];
+            string? authHeader = context.Request.Headers.Authorization;
             if (authHeader != null)
             {
                 // Get the credentials from request header
@@ -39,7 +39,7 @@ public class SwaggerAuthenticationMiddleware
                     }
                 }
             }
-            context.Response.Headers["WWW-Authenticate"] = "Basic";
+            context.Response.Headers.WWWAuthenticate = "Basic";
             context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
         }
         else

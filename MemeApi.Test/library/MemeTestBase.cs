@@ -31,9 +31,9 @@ public class MemeTestBase : IAsyncLifetime
 
     protected readonly MemeRenderingService _memeRenderingService;
 
-    private Dictionary<string, string> _config = new Dictionary<string, string>
-            {
-                {"Topic_Default_Topicname", "Rotte-Grotte"},
+    private readonly Dictionary<string, string?> _config = new()
+    {
+                {"Topic_Default_TopicName", "Rotte-Grotte"},
                 {"Admin_Username", "test"},
                 {"Admin_Password", "test"},
                 {"Media_Host", "test"}
@@ -65,9 +65,9 @@ public class MemeTestBase : IAsyncLifetime
         context.Session = mockSession.Object;
         return context;
     }
-    public static UserManager<TUser> TestUserManager<TUser>(IUserStore<TUser> store = null) where TUser : class
+    public static UserManager<TUser> TestUserManager<TUser>(IUserStore<TUser>? store = null) where TUser : class
     {
-        store = store ?? new Mock<IUserStore<TUser>>().Object;
+        store ??= new Mock<IUserStore<TUser>>().Object;
         var options = new Mock<IOptions<IdentityOptions>>();
         var idOptions = new IdentityOptions();
         idOptions.Lockout.AllowedForNewUsers = false;
@@ -75,11 +75,10 @@ public class MemeTestBase : IAsyncLifetime
         var userValidators = new List<IUserValidator<TUser>>();
         var validator = new Mock<IUserValidator<TUser>>();
         userValidators.Add(validator.Object);
-        var pwdValidators = new List<PasswordValidator<TUser>>();
-        pwdValidators.Add(new PasswordValidator<TUser>());
+        var pwdValidators = new List<PasswordValidator<TUser>>{new()};
         var userManager = new UserManager<TUser>(store, options.Object, new PasswordHasher<TUser>(),
             userValidators, pwdValidators, new UpperInvariantLookupNormalizer(),
-            new IdentityErrorDescriber(), null,
+            new IdentityErrorDescriber(), new Mock<IServiceProvider>().Object,
             new Mock<ILogger<UserManager<TUser>>>().Object);
         validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>()))
             .Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
@@ -89,6 +88,7 @@ public class MemeTestBase : IAsyncLifetime
     private async Task SeedDB()
     {
 
+#pragma warning disable CS8601 // Possible null reference assignment.
         var admin = new User
         {
             Id = Guid.NewGuid().ToString(),
@@ -104,11 +104,12 @@ public class MemeTestBase : IAsyncLifetime
         {
             Id = Guid.NewGuid().ToString(),
             OwnerId = admin.Id,
-            Name = _config["Topic_Default_Topicname"],
+            Name = _config["Topic_Default_TopicName"],
             Description = "test",
             CreatedAt = DateTime.UtcNow,
             LastUpdatedAt = DateTime.UtcNow
         };
+#pragma warning restore CS8601 // Possible null reference assignment.
         _context.Users.Add(admin);  
         _context.Topics.Add(defaultTopic);
         await _context.SaveChangesAsync();

@@ -23,9 +23,9 @@ var services = appBuilder.Services;
 
 services.AddControllers();
 services.AddDbContext<MemeContext>(options => {
-    var connstr = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING");
-    if (connstr != null)
-        options.UseNpgsql(connstr);
+    var connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING");
+    if (connectionString != null)
+        options.UseNpgsql(connectionString);
     else
         options.UseInMemoryDatabase("Test");
 });
