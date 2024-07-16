@@ -23,10 +23,9 @@ public class VotableRepository
         return await _context.Votes.ToListAsync();
     }
 
-    public async Task<Vote> GetVote(string id)
+    public async Task<Vote?> GetVote(string id)
     {
-        var vote = await _context.Votes.FindAsync(id);
-        return vote;
+        return await _context.Votes.FindAsync(id);
     }
 
     public async Task<List<Votable>> FindMany(IEnumerable<string> ids)
@@ -67,7 +66,7 @@ public class VotableRepository
         return true;
     }
 
-    public async Task<Votable> GetVotable(string id)
+    public async Task<Votable?> GetVotable(string id)
     {
         return await _context.Votables.FindAsync(id);
     }

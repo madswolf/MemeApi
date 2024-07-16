@@ -76,11 +76,19 @@ public class VotesController : ControllerBase
         }
 
         var userId = userIdString;
+        var user = await _userRepository.GetUser(userId);
+
+        if (user == null) return NotFound("User not found");
+
         Votable element;
 
         if (components.Count > 1)
         {
-            var visual = await _visualRepository.GetVisual(components.SingleOrDefault(item => item is MemeVisual).Id);
+            var visual = await _visualRepository.GetVisual(
+                components.SingleOrDefault(item => item is MemeVisual)?.Id
+                );
+            if(visual == null) { return NotFound("Visual in meme is not present"); }
+
             var texts = await Task.WhenAll(
                 components.Where(item => item is MemeText)
                     .Select(async text => await _textRepository.GetText(text.Id))
@@ -122,7 +130,7 @@ public class VotesController : ControllerBase
                 Id = Guid.NewGuid().ToString(),
                 Upvote = voteDTO.UpVote == Upvote.Upvote,
                 Element = element,
-                User = await _userRepository.GetUser(userId),
+                User = user,
                 CreatedAt = DateTime.UtcNow,
                 LastUpdatedAt = DateTime.UtcNow,
             };

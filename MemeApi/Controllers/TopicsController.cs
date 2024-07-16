@@ -21,10 +21,11 @@ public class TopicsController : ControllerBase
     /// <summary>
     /// A controller for creating and managing meme and meme component groupings called topics.
     /// </summary>
-    public TopicsController( UserRepository userRepository, TopicRepository topicRepository)
+    public TopicsController(UserRepository userRepository, TopicRepository topicRepository, VotableRepository votableRepository)
     {
         _userRepository = userRepository;
         _topicRepository = topicRepository;
+        _votableRepository = votableRepository;
     }
 
     /// <summary>
@@ -80,6 +81,8 @@ public class TopicsController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null) return Unauthorized();
         var topic = await _topicRepository.CreateTopic(topicCreationDTO, userId);
+
+        if (topic == null) return NotFound("User not found");
 
         return CreatedAtAction("GetTopic", new { id = topic.Id }, topic);
     }

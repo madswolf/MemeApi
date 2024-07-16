@@ -48,7 +48,7 @@ public class MemeOfTheDayService : IMemeOfTheDayService
                 await httpClient.PostAsync(wekhookUrl, form);
                 httpClient.Dispose();
             }
-            catch (Exception _)
+            catch (Exception)
             {
                 var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO());
 

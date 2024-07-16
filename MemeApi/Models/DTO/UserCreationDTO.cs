@@ -1,18 +1,28 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿#nullable disable warnings
+using System.ComponentModel.DataAnnotations;
 
 namespace MemeApi.Models.DTO;
 
 /// <summary>
-/// A DTO for creating a new user
+/// A DTO for creating a new user.
 /// </summary>
-/// <param name="Username"> Username of the user </param>
-/// <param name="Email"> Email of the user </param>
-/// <param name="Password"> Password of the user </param>
-public record UserCreationDTO {
+public record UserCreationDTO
+{
+    /// <summary>
+    /// Username of the user.
+    /// </summary>
     [Required]
     public string Username { get; init; }
+
+    /// <summary>
+    /// Email of the user.
+    /// </summary>
     [Required]
     public string Email { get; init; }
+
+    /// <summary>
+    /// Password of the user.
+    /// </summary>
     [Required]
     public string Password { get; init; }
 }

@@ -32,7 +32,7 @@ public static class Extensions
 
     public static TopicDTO ToTopicDTO(this Topic t)
     {
-        return new TopicDTO(t.Id, t.Name, t.Description, t.Owner.UserName, t.Moderators.Select(u => u.UserName).ToList(), t.CreatedAt, t.LastUpdatedAt);
+        return new TopicDTO(t.Id, t.Name, t.Description, t.Owner.UserName(), t.Moderators.Select(u => u.UserName()).ToList(), t.CreatedAt, t.LastUpdatedAt);
     }
 
     public static TextDTO ToTextDTO(this MemeText text)
@@ -47,7 +47,21 @@ public static class Extensions
 
     public static UserInfoDTO ToUserInfo(this User u, string mediaHost)
     {
-        return new UserInfoDTO(u.UserName, mediaHost + "profilepic/" + u.ProfilePicFile, u.Topics.Select(t => t.Name).ToList());
+        return new UserInfoDTO(u.UserName(), mediaHost + "profilepic/" + u.ProfilePicFile, u.Topics.Select(t => t.Name).ToList());
+    }
+    public static string UserName(this User u)
+    {
+        return u.UserName == null ? "default username" : u.UserName;
+    }
+    public static MemeText TopText(this Meme u)
+    {
+        return u.TopText == null ? new MemeText { Id = "", Position = MemeTextPosition.TopText } : u.TopText;
+    }
+
+    public static MemeText BottomText(this Meme u)
+    {
+        return u.BottomText == null ? new MemeText { Id = "", Position = MemeTextPosition.BottomText } : u.BottomText;
+
     }
 
     public static RandomComponentDTO ToRandomComponentDTO(this MemeText memeText)
@@ -76,7 +90,7 @@ public static class Extensions
 
     public static string ToToptext(this Meme meme)
     {
-        return meme.Toptext != null ? meme.Toptext.Text : "";
+        return meme.TopText != null ? meme.TopText.Text : "";
     }
 
     public static string ToBottomtext(this Meme meme)
@@ -84,7 +98,7 @@ public static class Extensions
         return meme.BottomText != null ? meme.BottomText.Text : "";
     }
 
-    public static bool CanUserPost(this Topic topic, string userId = null)
+    public static bool CanUserPost(this Topic topic, string? userId = null)
     {
         var isRestricted = topic.HasRestrictedPosting;
         var isOwner = topic.Owner != null && topic.Owner?.Id == userId;

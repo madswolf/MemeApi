@@ -33,13 +33,13 @@ public class VisualRepository
         return await _context.Visuals.Include(x => x.Votes).Include(x => x.Topics).ToListAsync();
     }
 
-    public async Task<MemeVisual> GetRandomVisual(string seed = "")
+    public MemeVisual GetRandomVisual(string seed = "")
     {
         var regex = new Regex("^.*\\.gif$");
         return _context.Visuals.ToList().Where(x => !regex.IsMatch(x.Filename)).ToList().RandomItem(seed);
     }
 
-    public async Task<MemeVisual?> GetVisual(string id)
+    public async Task<MemeVisual?> GetVisual(string? id)
     {
         return await _context.Visuals.Include(x => x.Votes).FirstOrDefaultAsync(v => v.Id == id);
     }
@@ -51,7 +51,7 @@ public class VisualRepository
             .Select(s => s[Random.Next(s.Length)]).ToArray());
     }
 
-    public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename, IEnumerable<string> topicNames = null, string userId = null)
+    public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename, IEnumerable<string>? topicNames = null, string? userId = null)
     {
         var topics = await _topicRepository.GetTopicsByNameForUser(topicNames, userId);
         var memeVisual = new MemeVisual()

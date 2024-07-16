@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿#nullable disable warnings
+using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -18,11 +19,11 @@ public class MemeCreationDTO
     /// <summary>
     /// The textual top component of the meme
     /// </summary>
-    public string Toptext { get; set; }
+    public string TopText { get; set; }
     /// <summary>
     /// The textual bottom component of the meme
     /// </summary>
-    public string Bottomtext { get; set; }
+    public string BottomText { get; set; }
     /// <summary>
     /// Optional name for the visual component
     /// </summary>

@@ -1,4 +1,5 @@
-﻿namespace MemeApi.Models.Entity;
+﻿#nullable disable warnings
+namespace MemeApi.Models.Entity;
 
 public class MemeVisual : Votable
 {

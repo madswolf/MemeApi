@@ -30,12 +30,12 @@ public class UserRepository
         return await _memeContext.Users.Include(u => u.Topics).ToListAsync();
     }
 
-    public async Task<User> GetUser(string id)
+    public async Task<User?> GetUser(string? id)
     {
         return await _memeContext.Users.Include(u => u.Topics).FirstOrDefaultAsync(u => u.Id == id);
     }
 
-    public async Task<User> FindByEmail(string userEmail)
+    public async Task<User?> FindByEmail(string userEmail)
     {
         return await _memeContext.Users.FirstOrDefaultAsync(user => 
             string.Equals(user.Email, userEmail, StringComparison.OrdinalIgnoreCase)
@@ -48,7 +48,7 @@ public class UserRepository
         await _memeContext.SaveChangesAsync();
     }
 
-    public async Task<(bool, Errors)> UpdateUser(string id, UserUpdateDTO updateDto)
+    public async Task<(bool, Errors)> UpdateUser(string? id, UserUpdateDTO updateDto)
     {
         var user = await GetUser(id);
 
@@ -122,7 +122,7 @@ public class UserRepository
         return false;
     }
 
-    private bool UserExists(string id)
+    private bool UserExists(string? id)
     {
         return _memeContext.Users.Any(e => e.Id == id);
     }

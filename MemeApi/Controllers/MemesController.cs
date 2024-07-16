@@ -103,7 +103,7 @@ public class MemesController : ControllerBase
         var regex = new Regex("^.*\\.gif$");
         list = list
             .Where(x => !regex.IsMatch(x.MemeVisual.Filename))
-            .Where(x => x.Toptext == null || x.Toptext.Text.Length < 150)
+            .Where(x => x.TopText == null || x.TopText.Text.Length < 150)
             .Where(x => x.BottomText == null || x.BottomText.Text.Length < 150)
             .ToList();
         return Ok(list.RandomItem(seed));
@@ -114,19 +114,19 @@ public class MemesController : ControllerBase
     /// Use the optional Query parameters TopText and BottomText to define what the top and bottom text should be
     /// </summary>
     [HttpGet("random/Rendered")]
-    public async Task<ActionResult> RenderImage([FromQuery] string TopText = null, [FromQuery] string BottomText = null)
+    public async Task<ActionResult> RenderImage([FromQuery] string? TopText = null, [FromQuery] string? BottomText = null)
     {
         var meme = await _memeRepository.RandomMemeByComponents(TopText, BottomText);
         var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO());
         var cleanedHeaderValue = Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X");
-        Response.Headers.Add("X-File-Info", cleanedHeaderValue);
+        Response.Headers.Append( new ("X-File-Info", cleanedHeaderValue));
 
         var watch = System.Diagnostics.Stopwatch.StartNew();
         var file = File(await _memeRendererService.RenderMeme(meme), "image/png");
         watch.Stop();
         var elapsedMs = watch.ElapsedMilliseconds;
         Console.WriteLine(elapsedMs);
-        Response.Headers.Add("X-File-Render-Time", elapsedMs.ToString() + "ms");
+        Response.Headers.Append(new ("X-File-Render-Time", elapsedMs.ToString() + "ms"));
 
         return file;
     }
