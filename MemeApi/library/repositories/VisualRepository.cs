@@ -75,7 +75,7 @@ public class VisualRepository
         return memeVisual;
     }
 
-    public async Task<bool> RemoveMemeVisual(string id)
+    public async Task<bool> Delete(string id)
     {
         var memeVisual = await _context.Visuals.FindAsync(id);
         if (memeVisual == null)

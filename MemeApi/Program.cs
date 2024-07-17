@@ -68,8 +68,15 @@ services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
-services.AddScoped<IFileSaver, S3FileStorageClient>();
-services.AddScoped<IFileRemover, S3FileStorageClient>();
+if(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    services.AddScoped<IFileRemover, FileRemover>();
+    services.AddScoped<IFileSaver, FileSaver>();
+} else {
+    services.AddScoped<IFileSaver, S3FileStorageClient>();
+    services.AddScoped<IFileRemover, S3FileStorageClient>();
+}
+
 services.AddScoped<IFileLoader, WebFileLoader>();
 services.AddScoped<IMailSender, MailSender>();
 services.AddScoped<IMemeRenderingService, MemeRenderingService>();
