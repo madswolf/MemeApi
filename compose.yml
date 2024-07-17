@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  memeapi:
+    build: .
+    ports:
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - BlobStorage_Access_Key=Development
+      - BlobStorage_Access_Key_Secret=Development
+      - BlobStorage_ServiceUrl=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=memeapi;Username=postgres;Password=yourpassword
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=yourpassword
+      - POSTGRES_DB=memeapi
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

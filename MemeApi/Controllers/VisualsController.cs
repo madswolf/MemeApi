@@ -70,7 +70,7 @@ public class VisualsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMemeVisual(string id)
     {
-        var deleted = await _visualRepository.RemoveMemeVisual(id);
+        var deleted = await _visualRepository.Delete(id);
         if (deleted == false)
         {
             return NotFound();

@@ -75,7 +75,7 @@ public class TextsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMemeText(string id)
     {
-        var removed = await _textRepository.RemoveText(id);
+        var removed = await _textRepository.Delete(id);
 
         if (!removed) return NotFound();
         return NoContent();

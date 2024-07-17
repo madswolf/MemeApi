@@ -115,7 +115,7 @@ public class MemeTestBase : IAsyncLifetime
         await _context.SaveChangesAsync();
     }
 
-    public Task DisposeAsync() => Task.CompletedTask;
+    public async Task DisposeAsync() => await _fixture.ResetDatabase();
 
     public async Task InitializeAsync(){
         await _fixture.ResetDatabase();
