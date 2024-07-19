@@ -108,6 +108,7 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
     public async Task<bool> Delete(string id)
     {
         var memeBottomText = await _context.Texts.FindAsync(id);
+        var test = _context.Database.GetDbConnection();
         if (memeBottomText == null) return false;
         
 

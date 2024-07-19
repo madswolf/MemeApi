@@ -35,9 +35,10 @@ public static class Extensions
         return new TopicDTO(t.Id, t.Name, t.Description, t.Owner.UserName(), t.Moderators.Select(u => u.UserName()).ToList(), t.CreatedAt, t.LastUpdatedAt);
     }
 
-    public static TextDTO ToTextDTO(this MemeText text)
+    public static TextDTO? ToTextDTO(this MemeText text)
     {
-        return new TextDTO(text.Id, text.Text, text.Position, text.Topics.Select(t => t.Name).ToList(), text.CreatedAt);
+        if (text == null) return null;
+        return new TextDTO(text.Id, text.Text, text.Position, text.Topics?.Select(t => t.Name).ToList(), text.CreatedAt);
     }
 
     public static VisualDTO ToVisualDTO(this MemeVisual visual)
@@ -79,8 +80,8 @@ public static class Extensions
         var memeDTO = new MemeDTO(
             meme.Id,
             meme.MemeVisual.Filename,
-            meme.ToTopText(),
-            meme.ToBottomText(),
+            meme.TopText?.ToTextDTO(),
+            meme.BottomText?.ToTextDTO(),
             meme.Topics.Select(t => t.Name).ToList(),
             meme.CreatedAt
         );

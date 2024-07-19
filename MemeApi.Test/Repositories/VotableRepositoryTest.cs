@@ -40,12 +40,18 @@ public class VotableRepositoryTest(IntegrationTestFactory databaseFixture) : Mem
             BottomText = bottomtext
         };
 
+        _context.Visuals.Add(visual);
+        _context.SaveChanges();
+        _context.Texts.Add(bottomtext);
+        _context.SaveChanges();
+        _context.Texts.Add(toptext);
+        _context.SaveChanges();
         _context.Memes.Add(meme);
         _context.SaveChanges();
 
         // When
-        var result0 = await _visualRepository.Delete(visual.Id);
         var result1 = await _textRepository.Delete(toptext.Id);
+        var result0 = await _visualRepository.Delete(visual.Id);
         var result2 = await _textRepository.Delete(bottomtext.Id);
 
         //Then
