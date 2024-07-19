@@ -19,17 +19,17 @@ namespace MemeApi.Test.library;
 [Collection(nameof(DatabaseTestCollection))]
 public class MemeTestBase : IAsyncLifetime
 {
-    protected readonly MemeContext _context;
-    protected readonly VisualRepository _visualRepository;
-    protected readonly TextRepository _textRepository;
-    protected readonly MemeRepository _memeRepository;
-    protected readonly TopicRepository _topicRepository;
-    protected readonly UserRepository _userRepository;
-    protected readonly VotableRepository _votableRepository;
-    protected readonly MemeApiSettings _settings;
-    protected readonly IntegrationTestFactory _fixture;
+    protected MemeContext _context;
+    protected VisualRepository _visualRepository;
+    protected TextRepository _textRepository;
+    protected MemeRepository _memeRepository;
+    protected TopicRepository _topicRepository;
+    protected UserRepository _userRepository;
+    protected VotableRepository _votableRepository;
+    protected MemeApiSettings _settings;
+    protected IntegrationTestFactory _fixture;
 
-    protected readonly MemeRenderingService _memeRenderingService;
+    protected MemeRenderingService _memeRenderingService;
 
     private readonly Dictionary<string, string?> _config = new()
     {
@@ -113,6 +113,20 @@ public class MemeTestBase : IAsyncLifetime
         _context.Users.Add(admin);  
         _context.Topics.Add(defaultTopic);
         await _context.SaveChangesAsync();
+    }
+
+    public void ResetConnection()
+    {
+        _fixture.ResetConnection();
+        _memeRenderingService = new MemeRenderingService(_settings, new WebFileLoader(_settings));
+        _context = _fixture.Db;
+
+        _userRepository = new UserRepository(_context, TestUserManager<User>(), new FileSaverStub());
+        _topicRepository = new TopicRepository(_context, _userRepository, _settings);
+        _visualRepository = new VisualRepository(_context, new FileSaverStub(), new FileRemoverStub(), _topicRepository);
+        _textRepository = new TextRepository(_context, _topicRepository);
+        _memeRepository = new MemeRepository(_context, _visualRepository, _textRepository, _topicRepository, _settings);
+        _votableRepository = new VotableRepository(_context);
     }
 
     public async Task DisposeAsync() => await _fixture.ResetDatabase();

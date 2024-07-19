@@ -73,7 +73,7 @@ public class TextsController : ControllerBase
     /// Delete a meme text
     /// </summary>
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteMemeText(string id)
+    public async Task<ActionResult> DeleteMemeText(string id)
     {
         var removed = await _textRepository.Delete(id);
 

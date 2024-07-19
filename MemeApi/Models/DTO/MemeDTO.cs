@@ -12,4 +12,4 @@ namespace MemeApi.Models.DTO;
 /// <param name="BottomText"> Textual bottom component of the meme </param>
 /// <param name="Topics"> Topics that the meme belongs to </param>
 /// <param name="CreatedAt"></param>
-public record MemeDTO(string Id, string MemeVisual, string Toptext, string BottomText, List<string> Topics, DateTime CreatedAt);
+public record MemeDTO(string Id, string MemeVisual, TextDTO? Toptext, TextDTO? BottomText, List<string> Topics, DateTime CreatedAt);

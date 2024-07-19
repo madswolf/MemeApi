@@ -20,6 +20,7 @@ public class DatabaseTestCollection : ICollectionFixture<IntegrationTestFactory>
 public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
+        .WithImage("postgres:16")
         .WithDatabase("db")
         .WithUsername("postgres")
         .WithPassword("postgres")
@@ -30,6 +31,17 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
     public MemeContext Db { get; private set; } = null!;
     private Respawner _respawner = null!;
     private DbConnection _connection = null!;
+
+    public void ResetConnection()
+    {
+        var test = Db.Database.GetDbConnection();
+        if (Db != null)
+        {
+            var scope = Services.CreateScope();
+            Db =  scope.ServiceProvider.GetRequiredService<MemeContext>();
+        }
+        test = Db.Database.GetDbConnection();
+    }
 
     public async Task ResetDatabase()
     {

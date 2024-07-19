@@ -31,7 +31,7 @@ public class MemeRepository
     public async Task<Meme?> CreateMeme(MemeCreationDTO memeDTO, string? userId = null)
     {
         var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName, memeDTO.Topics, userId);
-
+        var test = _context.Database.GetDbConnection();
         var meme = new Meme
         {
             Id = Guid.NewGuid().ToString(),
