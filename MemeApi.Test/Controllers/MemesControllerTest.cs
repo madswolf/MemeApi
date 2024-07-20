@@ -51,16 +51,34 @@ public class MemesControllerTest : MemeTestBase
         var controller = new MemesController(_memeRepository, _memeRenderingService);
 
         // given
+        var votableVisual = new Votable
+        {
+            Id = Guid.NewGuid().ToString(),
+        };
+
+        var votableMeme = new Votable
+        {
+            Id = Guid.NewGuid().ToString(),
+        };
+
         var visual = new MemeVisual()
         {
             Id = Guid.NewGuid().ToString(),
-            Filename = "Test"
+            Filename = "Test",
+            Votable = votableVisual,
+            VotableId = votableVisual.Id
         };
         var meme = new Meme
         {
             Id = Guid.NewGuid().ToString(),
-            MemeVisual = visual,
+            Visual = visual,
+            VisualId = visual.Id,
+
+            Votable = votableMeme,
+            VotableId = votableMeme.Id
         };
+
+        _context.Visuals.Add(visual);
         _context.Memes.Add(meme);
         await _context.SaveChangesAsync();
 

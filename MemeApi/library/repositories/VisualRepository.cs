@@ -30,7 +30,11 @@ public class VisualRepository
 
     public async Task<List<MemeVisual>> GetVisuals()
     {
-        return await _context.Visuals.Include(x => x.Votes).Include(x => x.Topics).ToListAsync();
+        return await _context.Visuals
+            .Include(x => x.Votable)
+            .Include(x => x.Votable.Votes)
+            .Include(x => x.Votable.Topics)
+            .ToListAsync();
     }
 
     public MemeVisual GetRandomVisual(string seed = "")
@@ -41,7 +45,7 @@ public class VisualRepository
 
     public async Task<MemeVisual?> GetVisual(string? id)
     {
-        return await _context.Visuals.Include(x => x.Votes).FirstOrDefaultAsync(v => v.Id == id);
+        return await _context.Visuals.Include(x => x.Votable.Votes).FirstOrDefaultAsync(v => v.Id == id);
     }
 
     public static string RandomString(int length)
@@ -54,14 +58,21 @@ public class VisualRepository
     public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename, IEnumerable<string>? topicNames = null, string? userId = null)
     {
         var topics = await _topicRepository.GetTopicsByNameForUser(topicNames, userId);
-        var test = _context.Database.GetDbConnection();
+
+        var votable = new Votable
+        {
+            Id = Guid.NewGuid().ToString(),
+            Topics = topics,
+            CreatedAt = DateTime.UtcNow,
+            LastUpdatedAt = DateTime.UtcNow,
+        };
+
         var memeVisual = new MemeVisual()
         {
             Id = Guid.NewGuid().ToString(),
             Filename = filename,
-            Topics = topics,
-            CreatedAt = DateTime.UtcNow,
-            LastUpdatedAt = DateTime.UtcNow,
+            Votable = votable,
+            VotableId = votable.Id,
         };
 
         if (_context.Visuals.Any(x => x.Filename == memeVisual.Filename))
