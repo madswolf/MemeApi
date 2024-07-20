@@ -49,7 +49,9 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
             Moderators = []
         };
         var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic] };
+        var text = new MemeText { Id = Guid.NewGuid().ToString(), Votable = votable, VotableId = votable.Id };
         _context.Votables.Add(votable);
+        _context.Texts.Add(text);
         _context.SaveChanges();
         // When
         var result = await _votableRepository.DeleteVotable(votable, owner);
@@ -84,8 +86,8 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         var result = await _textRepository.CreateText(text, MemeTextPosition.TopText, [topic.Name], user.Id);
 
         // Then
-        result.Topics.Should().NotContain(topic);
-        result.Topics.Count.Should().Be(1);
+        result.Votable.Topics.Should().NotContain(topic);
+        result.Votable.Topics.Count.Should().Be(1);
     }
 
     [Fact]
@@ -113,8 +115,8 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         var result = await _textRepository.CreateText(text, MemeTextPosition.TopText, [topic.Name], user.Id);
 
         // Then
-        result.Topics.Should().Contain(topic);
-        result.Topics.Count.Should().Be(1);
+        result.Votable.Topics.Should().Contain(topic);
+        result.Votable.Topics.Count.Should().Be(1);
     }
 
     [Fact]
@@ -126,8 +128,8 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         var result = await _textRepository.CreateText("test", MemeTextPosition.TopText);
 
         // Then
-        result.Topics.Should().Contain(defaultTopic);
-        result.Topics.Count.Should().Be(1);
+        result.Votable.Topics.Should().Contain(defaultTopic);
+        result.Votable.Topics.Count.Should().Be(1);
     }
 
     [Fact]
@@ -143,8 +145,8 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         var result = await _textRepository.CreateText("test", MemeTextPosition.TopText, userId: user.Id);
 
         // Then
-        result.Topics.Should().Contain(defaultTopic);
-        result.Topics.Count.Should().Be(1);
+        result.Votable.Topics.Should().Contain(defaultTopic);
+        result.Votable.Topics.Count.Should().Be(1);
     }
 
 
@@ -163,10 +165,14 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
             HasRestrictedPosting = true,
             Moderators = [user]
         };
-        var votable = new Votable {
+        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic] };
+        var text = new MemeText
+        {
             Id = Guid.NewGuid().ToString(),
-            Topics = [topic]
+            Votable = votable,
+            VotableId = votable.Id,
         };
+        _context.Texts.Add(text);
         _context.Votables.Add(votable);
         _context.SaveChanges();
 
@@ -194,6 +200,13 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
             Moderators = []
         };
         var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic] };
+        var text = new MemeText
+        {
+            Id = Guid.NewGuid().ToString(),
+            Votable = votable,
+            VotableId = votable.Id,
+        };
+        _context.Texts.Add(text);
         _context.Votables.Add(votable);
         _context.SaveChanges();
 
@@ -228,7 +241,14 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
             HasRestrictedPosting = true,
             Moderators = []
         };
-        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic, topic2] };
+        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic] };
+        var text = new MemeText
+        {
+            Id = Guid.NewGuid().ToString(),
+            Votable = votable,
+            VotableId = votable.Id,
+        };
+        _context.Texts.Add(text);
         _context.Votables.Add(votable);
         _context.SaveChanges();
 
@@ -266,7 +286,14 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
             HasRestrictedPosting = true,
             Moderators = []
         };
-        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic, topic2] };
+        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic] };
+        var text = new MemeText
+        {
+            Id = Guid.NewGuid().ToString(),
+            Votable = votable,
+            VotableId = votable.Id,
+        };
+        _context.Texts.Add(text);
         _context.Votables.Add(votable);
         _context.SaveChanges();
 

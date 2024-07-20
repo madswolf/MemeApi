@@ -102,7 +102,7 @@ public class MemesController : ControllerBase
         var list = await _memeRepository.GetMemes();
         var regex = new Regex("^.*\\.gif$");
         list = list
-            .Where(x => !regex.IsMatch(x.MemeVisual.Filename))
+            .Where(x => !regex.IsMatch(x.Visual.Filename))
             .Where(x => x.TopText == null || x.TopText.Text.Length < 150)
             .Where(x => x.BottomText == null || x.BottomText.Text.Length < 150)
             .ToList();

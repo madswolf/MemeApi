@@ -52,12 +52,20 @@ public class MemeTextsControllerTest : MemeTestBase
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
         // given
+        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [await _topicRepository.GetDefaultTopic()] };
+        var text = new MemeText
+        {
+            Id = Guid.NewGuid().ToString(),
+            Votable = votable,
+            VotableId = votable.Id,
+        };
         var memeText = new MemeText()
         {
             Id = Guid.NewGuid().ToString(),
             Text = "Test",
             Position = MemeTextPosition.BottomText,
-            Topics = [await _topicRepository.GetDefaultTopic()]
+            Votable = votable,
+            VotableId = votable.Id,
         };
         _context.Texts.Add(memeText);
         await _context.SaveChangesAsync();

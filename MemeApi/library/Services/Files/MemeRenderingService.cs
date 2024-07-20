@@ -22,7 +22,7 @@ public class MemeRenderingService : IMemeRenderingService
         var textSize = 40;
         SKImageInfo info = new SKImageInfo(400, 400, SKColorType.Rgba8888, SKAlphaType.Premul);
         
-        var path = Path.Combine("visual/", meme.MemeVisual.Filename);
+        var path = Path.Combine("visual/", meme.Visual.Filename);
         var data = await _loader.LoadFile(path);
         
         var inputImage = SKBitmap.Decode(data);

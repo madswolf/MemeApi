@@ -98,7 +98,8 @@ public class VotesController : ControllerBase
             var topText = texts.Length > 0 ? texts[0] : null;
             var bottomText = texts.Length > 1 ? texts[1] : null;
 
-            element = await _memeRepository.UpsertByComponents(visual, topText, bottomText);
+            var meme = await _memeRepository.UpsertByComponents(visual, topText, bottomText);
+            element = meme.Votable;
         }
         else
         {
