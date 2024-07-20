@@ -34,13 +34,11 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
 
     public void ResetConnection()
     {
-        var test = Db.Database.GetDbConnection();
         if (Db != null)
         {
             var scope = Services.CreateScope();
             Db =  scope.ServiceProvider.GetRequiredService<MemeContext>();
         }
-        test = Db.Database.GetDbConnection();
     }
 
     public async Task ResetDatabase()

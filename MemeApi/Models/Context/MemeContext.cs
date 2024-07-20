@@ -26,53 +26,101 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<User>().HasIndex(u => u.UserName).IsUnique();
-
         modelBuilder.Entity<User>()
+            .ToTable("Users")
             .HasMany(m => m.Votes)
             .WithOne(v => v.User)
+            .HasForeignKey(v => v.UserId)
+            .HasPrincipalKey(u => u.Id)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Meme>()
-            .HasOne(m => m.MemeVisual)
+        modelBuilder.Entity<MemeVisual>().ToTable("MemeVisuals");
+
+        modelBuilder.Entity<MemeText>().ToTable("MemeTexts");
+
+        modelBuilder.Entity<Votable>().ToTable("Votables");
+
+        modelBuilder.Entity<Meme>(entity =>
+        {
+            entity.ToTable("Memes");
+            entity.HasKey(m => m.Id);
+
+            entity.HasOne(m => m.Votable)
             .WithMany()
-            .HasForeignKey("MemeVisualId")
+            .HasForeignKey(v => v.VotableId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Meme>()
-            .HasOne(m => m.TopText);
+            entity.HasOne(m => m.Visual)
+            .WithMany()
+            .HasForeignKey(m => m.VisualId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Meme>()
-            .HasOne(m => m.BottomText);
+            entity.HasOne<MemeText>()
+            .WithMany()
+            .HasForeignKey(m => m.TopTextId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
 
-        modelBuilder.Entity<Vote>()
-            .HasOne(v => v.User)
+            entity.HasOne<MemeText>()
+            .WithMany()
+            .HasForeignKey(m => m.BottomTextId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<Vote>(entity =>
+        {
+            entity.ToTable("Votes");
+            entity.HasOne(v => v.User)
             .WithMany(u => u.Votes)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
+            .HasForeignKey(v => v.UserId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Vote>()
-            .HasOne(v => v.Element)
-            .WithMany(u => u.Votes)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
+            entity.HasOne(v => v.Element)
+            .WithMany(v => v.Votes)
+            .HasForeignKey(v => v.ElementId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+        });
 
-        modelBuilder.Entity<Topic>()
-            .HasOne(t => t.Owner)
+        modelBuilder.Entity<Topic>(entity =>
+        {
+            entity.ToTable("Topics");
+            entity.HasOne(t => t.Owner)
             .WithMany(u => u.Topics)
-            .HasForeignKey(t => t.OwnerId);
-        
-        modelBuilder.Entity<Topic>()
-            .HasMany(t => t.Moderators);
+            .HasForeignKey(t => t.OwnerId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Topic>()
-            .HasIndex(t => t.Name)
+            entity.HasMany(t => t.Moderators)
+            .WithMany()
+            .UsingEntity<TopicModerators>(tm =>
+            {
+                tm.ToTable("TopicModeratos");
+                tm.HasOne(v => v.Topic).WithMany().HasForeignKey(v => v.TopicID)
+                .IsRequired().OnDelete(DeleteBehavior.Cascade);
+                tm.HasOne(v => v.Moderator).WithMany().HasForeignKey(v => v.ModeratorId)
+                .IsRequired().OnDelete(DeleteBehavior.Cascade);
+            });
+
+            entity.HasIndex(t => t.Name)
             .IsUnique();
 
-        modelBuilder.Entity<Votable>()
-            .HasMany(v => v.Topics)
-            .WithMany(t => t.Votables);
+            entity.HasMany(t => t.Votables)
+            .WithMany(v => v.Topics)
+            .UsingEntity<TopicVotable>(j =>
+            {
+                j.ToTable("TopicVotables");
+                j.HasOne(v => v.Topic).WithMany().HasForeignKey(v => v.TopicID)
+                .IsRequired().OnDelete(DeleteBehavior.Cascade);
+                j.HasOne(v => v.Votable).WithMany().HasForeignKey(v => v.VotableId)
+                .IsRequired().OnDelete(DeleteBehavior.Cascade);
+            });
+        });
 
         var admin = new User
         {
@@ -115,7 +163,7 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             LastUpdatedAt = DateTime.UtcNow
         };
 
-        modelBuilder.Entity<Topic>().HasData(defaultTopic, defaultTopic2, memeOfTheDayTopic);
         modelBuilder.Entity<User>().HasData(admin);
+        modelBuilder.Entity<Topic>().HasData(defaultTopic, defaultTopic2, memeOfTheDayTopic);
     }
 }

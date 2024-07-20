@@ -35,7 +35,7 @@ public class VotableRepositoryTest(IntegrationTestFactory databaseFixture) : Mem
 
         var meme = new Meme() {
             Id = Guid.NewGuid().ToString(),
-            MemeVisual = visual,
+            Visual = visual,
             TopText = toptext,
             BottomText = bottomtext
         };
