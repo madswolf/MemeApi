@@ -66,7 +66,7 @@ public class TextsController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var memeText = await _textRepository.CreateText(textCreationDTO.Text, textCreationDTO.Position, userId: userId);
-        return CreatedAtAction("CreateMemeText", new { id = memeText.Id }, memeText);
+        return CreatedAtAction("CreateMemeText", new { id = memeText.VotableId }, memeText);
     }
 
     /// <summary>

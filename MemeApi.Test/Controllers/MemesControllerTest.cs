@@ -63,16 +63,14 @@ public class MemesControllerTest : MemeTestBase
 
         var visual = new MemeVisual()
         {
-            Id = Guid.NewGuid().ToString(),
             Filename = "Test",
             Votable = votableVisual,
             VotableId = votableVisual.Id
         };
         var meme = new Meme
         {
-            Id = Guid.NewGuid().ToString(),
             Visual = visual,
-            VisualId = visual.Id,
+            VisualId = visual.VotableId,
 
             Votable = votableMeme,
             VotableId = votableMeme.Id
@@ -83,7 +81,7 @@ public class MemesControllerTest : MemeTestBase
         await _context.SaveChangesAsync();
 
         // When
-        var response = await controller.GetMeme(meme.Id);
+        var response = await controller.GetMeme(meme.VotableId);
         var result = response.Result;
 
         // Then
@@ -93,7 +91,7 @@ public class MemesControllerTest : MemeTestBase
         var foundMemeText = (result as OkObjectResult)?.Value as MemeDTO;
 
         foundMemeText?.MemeVisual.Should().Be(visual.Filename);
-        foundMemeText?.Id.Should().Be(meme.Id);
+        foundMemeText?.Id.Should().Be(meme.VotableId);
     }
 
     [Fact]

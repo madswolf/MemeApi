@@ -42,7 +42,7 @@ public static class Extensions
         }
         var random = new Random(seed.GetHashCode());
         var skip = random.Next(list.Count());
-        return list.OrderBy(x => x.Id).Skip(skip).First();
+        return list.OrderBy(x => x.VotableId).Skip(skip).First();
     }
 
     public static TopicDTO ToTopicDTO(this Topic t)
@@ -53,12 +53,12 @@ public static class Extensions
     public static TextDTO? ToTextDTO(this MemeText text)
     {
         if (text == null) return null;
-        return new TextDTO(text.Id, text.Text, text.Position, text.Votable.Topics?.Select(t => t.Name).ToList(), text.Votable.CreatedAt);
+        return new TextDTO(text.VotableId, text.Text, text.Position, text.Votable.Topics?.Select(t => t.Name).ToList(), text.Votable.CreatedAt);
     }
 
     public static VisualDTO ToVisualDTO(this MemeVisual visual)
     {
-        return new VisualDTO(visual.Id, visual.Filename, visual.Votable.Topics.Select(t => t.Name).ToList(), visual.Votable.CreatedAt);
+        return new VisualDTO(visual.VotableId, visual.Filename, visual.Votable.Topics.Select(t => t.Name).ToList(), visual.Votable.CreatedAt);
     }
 
     public static UserInfoDTO ToUserInfo(this User u, string mediaHost)
@@ -71,29 +71,29 @@ public static class Extensions
     }
     public static MemeText TopText(this Meme u)
     {
-        return u.TopText ?? new MemeText { Id = "", Position = MemeTextPosition.TopText };
+        return u.TopText ?? new MemeText { VotableId = "", Position = MemeTextPosition.TopText };
     }
 
     public static MemeText BottomText(this Meme u)
     {
-        return u.BottomText ?? new MemeText { Id = "", Position = MemeTextPosition.BottomText };
+        return u.BottomText ?? new MemeText { VotableId = "", Position = MemeTextPosition.BottomText };
 
     }
 
     public static RandomComponentDTO ToRandomComponentDTO(this MemeText memeText)
     {
-        return new RandomComponentDTO(memeText.Text, memeText.Id, memeText.Votable.SumVotes());
+        return new RandomComponentDTO(memeText.Text, memeText.VotableId, memeText.Votable.SumVotes());
     }
 
     public static RandomComponentDTO ToRandomComponentDTO(this MemeVisual visual, string mediaHost)
     {
-        return new RandomComponentDTO(mediaHost + "visual/" + visual.Filename, visual.Id, visual.Votable.SumVotes());
+        return new RandomComponentDTO(mediaHost + "visual/" + visual.Filename, visual.VotableId, visual.Votable.SumVotes());
     }
 
     public static MemeDTO ToMemeDTO(this Meme meme)
     {
         var memeDTO = new MemeDTO(
-            meme.Id,
+            meme.VotableId,
             meme.Visual.Filename,
             meme.TopText?.ToTextDTO(),
             meme.BottomText?.ToTextDTO(),

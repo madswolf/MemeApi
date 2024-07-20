@@ -27,16 +27,25 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
 
     public async Task<MemeText?> GetText(string id)
     {
-        return await _context.Texts.Include(x => x.Votable.Votes).Include(t => t.Votable.Topics).FirstOrDefaultAsync(t => t.Id == id);
+        return await _context.Texts.Include(x => x.Votable.Votes).Include(t => t.Votable.Topics).FirstOrDefaultAsync(t => t.VotableId == id);
     }
 
     public async Task<MemeText> GetTextByContent(string content, MemeTextPosition position)
     {
         var existingText = await _context.Texts.FirstOrDefaultAsync(t => t.Text == content);
         if (existingText != null) return existingText;
-        return new MemeText
+        var votable = new Votable
         {
             Id = Guid.NewGuid().ToString(),
+            Topics = [await _topicRepository.GetDefaultTopic()],
+            CreatedAt = DateTime.UtcNow,
+            LastUpdatedAt = DateTime.UtcNow
+        };
+
+        return new MemeText
+        {
+            VotableId = votable.Id,
+            Votable = votable,
             Text = content,
             Position = position
         };
@@ -100,7 +109,6 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
 
         var memeText = new MemeText
         {
-            Id = Guid.NewGuid().ToString(),
             Votable = votable,
             VotableId = votable.Id,
             Text = text,
@@ -126,6 +134,6 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
 
     private bool MemeBottomTextExists(string id)
     {
-        return _context.Texts.Any(e => e.Id == id);
+        return _context.Texts.Any(e => e.VotableId == id);
     }
 }

@@ -26,25 +26,41 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<User>().HasIndex(u => u.UserName).IsUnique();
+        modelBuilder.Entity<User>().HasKey(u => u.Id);
         modelBuilder.Entity<User>()
             .ToTable("Users")
             .HasMany(m => m.Votes)
             .WithOne(v => v.User)
             .HasForeignKey(v => v.UserId)
-            .HasPrincipalKey(u => u.Id)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<MemeVisual>().ToTable("MemeVisuals");
+        modelBuilder.Entity<MemeVisual>().HasKey(m => m.VotableId);
+        modelBuilder.Entity<MemeVisual>()
+            .HasOne(m => m.Votable)
+            .WithOne()
+            .HasForeignKey<MemeVisual>(m => m.VotableId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
 
         modelBuilder.Entity<MemeText>().ToTable("MemeTexts");
+        modelBuilder.Entity<MemeText>().HasKey(m => m.VotableId);
+        modelBuilder.Entity<MemeText>()
+            .HasOne(m=>m.Votable)
+            .WithOne()
+            .HasForeignKey<MemeText>(m => m.VotableId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Votable>().ToTable("Votables");
+        
 
         modelBuilder.Entity<Meme>(entity =>
         {
             entity.ToTable("Memes");
-            entity.HasKey(m => m.Id);
+            entity.HasKey(m => m.VotableId);
 
             entity.HasOne(m => m.Votable)
             .WithMany()

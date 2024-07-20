@@ -15,26 +15,26 @@ public class VotableRepositoryTest(IntegrationTestFactory databaseFixture) : Mem
         // given
         var visual = new MemeVisual()
         {
-            Id = Guid.NewGuid().ToString(),
+            VotableId = Guid.NewGuid().ToString(),
             Filename = "stuff"
         };
 
         var toptext = new MemeText()
         {
-            Id = Guid.NewGuid().ToString(),
+            VotableId = Guid.NewGuid().ToString(),
             Text = "test",
             Position = MemeTextPosition.TopText,
         };
 
         var bottomtext = new MemeText()
         {
-            Id = Guid.NewGuid().ToString(),
+            VotableId = Guid.NewGuid().ToString(),
             Text = "test",
             Position = MemeTextPosition.BottomText,
         };
 
         var meme = new Meme() {
-            Id = Guid.NewGuid().ToString(),
+            VotableId = Guid.NewGuid().ToString(),
             Visual = visual,
             TopText = toptext,
             BottomText = bottomtext
@@ -50,9 +50,9 @@ public class VotableRepositoryTest(IntegrationTestFactory databaseFixture) : Mem
         _context.SaveChanges();
 
         // When
-        var result1 = await _textRepository.Delete(toptext.Id);
-        var result0 = await _visualRepository.Delete(visual.Id);
-        var result2 = await _textRepository.Delete(bottomtext.Id);
+        var result1 = await _textRepository.Delete(toptext.VotableId);
+        var result0 = await _visualRepository.Delete(visual.VotableId);
+        var result2 = await _textRepository.Delete(bottomtext.VotableId);
 
         //Then
         result0.Should().BeTrue();

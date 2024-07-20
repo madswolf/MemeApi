@@ -39,8 +39,7 @@ public class MemeRepository
         };
         var meme = new Meme
         {
-            Id = Guid.NewGuid().ToString(),
-            VisualId = memeVisual.Id,
+            VisualId = memeVisual.VotableId,
             Visual = memeVisual,
             Votable = votable,
         };
@@ -56,14 +55,14 @@ public class MemeRepository
         {
             var toptext = await _textRepository.CreateText(memeDTO.TopText, MemeTextPosition.TopText, memeDTO.Topics, userId);
             meme.TopText = toptext;
-            meme.TopTextId = toptext.Id;
+            meme.TopTextId = toptext.VotableId;
         }
 
         if (memeDTO.BottomText != null)
         {
             var bottomtext = await _textRepository.CreateText(memeDTO.BottomText, MemeTextPosition.BottomText, memeDTO.Topics, userId);
             meme.BottomText = bottomtext;
-            meme.BottomTextId = bottomtext.Id;
+            meme.BottomTextId = bottomtext.VotableId;
         }
 
         var topics = await _topicRepository.GetTopicsByNameForUser(memeDTO.Topics, userId );
@@ -92,7 +91,6 @@ public class MemeRepository
             };
             meme = new Meme
             {
-                Id = Guid.NewGuid().ToString(),
                 Visual = visual,
                 Votable = votable,
                 //TODO handle which position they are in in the rendered meme when
@@ -140,7 +138,7 @@ public class MemeRepository
     {
         var list = await _context.Memes.Include(x => x.BottomText).ToListAsync();
         return await IncludeParts()
-            .FirstOrDefaultAsync(m => m.Id == id);
+            .FirstOrDefaultAsync(m => m.VotableId == id);
     }
 
     private IIncludableQueryable<Meme, MemeText?> IncludeParts()
@@ -187,14 +185,14 @@ public class MemeRepository
             .Include(meme => meme.BottomText)
             .Include(meme => meme.Votable)
             .Include(meme => meme.Votable.Topics)
-            .Where(meme => meme.Visual.Id == visual.Id);
+            .Where(meme => meme.Visual.VotableId == visual.VotableId);
 
         memes = (topText, bottomText) switch
         {
             (null, null) => memes.Where(meme => meme.TopText == null && meme.BottomText == null),
-            ({ }, null) => memes.Where(meme => meme.TopText().Id == topText.Id && meme.BottomText == null),
-            (null, { }) => memes.Where(meme => meme.BottomText().Id == bottomText.Id && meme.TopText == null),
-            ({ }, { }) => memes.Where(meme => meme.TopText().Id == topText.Id && meme.BottomText().Id == bottomText.Id)
+            (not null, null) => memes.Where(meme => meme.TopText().VotableId == topText.VotableId && meme.BottomText == null),
+            (null, not null) => memes.Where(meme => meme.BottomText().VotableId == bottomText.VotableId && meme.TopText == null),
+            (not null, not null) => memes.Where(meme => meme.TopText().VotableId == topText.VotableId && meme.BottomText().VotableId == bottomText.VotableId)
         };
         
         return await memes.FirstOrDefaultAsync();

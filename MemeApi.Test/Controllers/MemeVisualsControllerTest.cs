@@ -49,7 +49,7 @@ public class MemeVisualsControllerTest : MemeTestBase
         // given
         var visual = new MemeVisual()
         {
-            Id = Guid.NewGuid().ToString(),
+            VotableId = Guid.NewGuid().ToString(),
             Filename = "Test"
         };
         _context.Visuals.Add(visual);
@@ -57,7 +57,7 @@ public class MemeVisualsControllerTest : MemeTestBase
 
         // When
         var expected = visual.ToRandomComponentDTO("test");
-        var result = (await controller.GetMemeVisual(visual.Id)).Result;
+        var result = (await controller.GetMemeVisual(visual.VotableId)).Result;
 
         // Then
 
@@ -125,14 +125,14 @@ public class MemeVisualsControllerTest : MemeTestBase
         // given
         var memeVisual = new MemeVisual()
         {
-            Id = Guid.NewGuid().ToString(),
+            VotableId = Guid.NewGuid().ToString(),
             Filename = "Test"
         };
         _context.Visuals.Add(memeVisual);
 
 
         // When
-        var result = await controller.DeleteMemeVisual(memeVisual.Id);
+        var result = await controller.DeleteMemeVisual(memeVisual.VotableId);
 
         // Then
         result.Should().NotBeNull();

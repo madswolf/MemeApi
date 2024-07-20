@@ -78,7 +78,7 @@ public class MemesController : ControllerBase
         if (!memeCreationDto.VisualFile.FileName.Equals("VisualFile")) memeCreationDto.FileName = memeCreationDto.VisualFile.FileName;
         var meme = await _memeRepository.CreateMeme(memeCreationDto);
         if (meme == null) return NotFound("One of the topics was not found");
-        return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme.ToMemeDTO());
+        return CreatedAtAction(nameof(GetMeme), new { id = meme.VotableId }, meme.ToMemeDTO());
     }
 
     /// <summary>

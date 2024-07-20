@@ -49,7 +49,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
             Moderators = []
         };
         var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic] };
-        var text = new MemeText { Id = Guid.NewGuid().ToString(), Votable = votable, VotableId = votable.Id };
+        var text = new MemeText { Votable = votable, VotableId = votable.Id };
         _context.Votables.Add(votable);
         _context.Texts.Add(text);
         _context.SaveChanges();
@@ -168,7 +168,6 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic] };
         var text = new MemeText
         {
-            Id = Guid.NewGuid().ToString(),
             Votable = votable,
             VotableId = votable.Id,
         };
@@ -202,7 +201,6 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic] };
         var text = new MemeText
         {
-            Id = Guid.NewGuid().ToString(),
             Votable = votable,
             VotableId = votable.Id,
         };
@@ -244,7 +242,6 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic] };
         var text = new MemeText
         {
-            Id = Guid.NewGuid().ToString(),
             Votable = votable,
             VotableId = votable.Id,
         };
@@ -289,7 +286,6 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic] };
         var text = new MemeText
         {
-            Id = Guid.NewGuid().ToString(),
             Votable = votable,
             VotableId = votable.Id,
         };

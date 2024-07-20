@@ -45,7 +45,7 @@ public class VisualRepository
 
     public async Task<MemeVisual?> GetVisual(string? id)
     {
-        return await _context.Visuals.Include(x => x.Votable.Votes).FirstOrDefaultAsync(v => v.Id == id);
+        return await _context.Visuals.Include(x => x.Votable.Votes).FirstOrDefaultAsync(v => v.VotableId == id);
     }
 
     public static string RandomString(int length)
@@ -69,7 +69,6 @@ public class VisualRepository
 
         var memeVisual = new MemeVisual()
         {
-            Id = Guid.NewGuid().ToString(),
             Filename = filename,
             Votable = votable,
             VotableId = votable.Id,

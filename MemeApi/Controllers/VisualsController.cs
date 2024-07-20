@@ -60,7 +60,7 @@ public class VisualsController : ControllerBase
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var memeVisual = await _visualRepository.CreateMemeVisual(visual, visual.FileName, userId:userId);
-        return CreatedAtAction("GetMemeVisual", new { id = memeVisual.Id }, memeVisual);
+        return CreatedAtAction("GetMemeVisual", new { id = memeVisual.VotableId }, memeVisual);
     }
 
     /// <summary>

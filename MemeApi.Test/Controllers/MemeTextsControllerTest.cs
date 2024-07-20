@@ -55,13 +55,11 @@ public class MemeTextsControllerTest : MemeTestBase
         var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [await _topicRepository.GetDefaultTopic()] };
         var text = new MemeText
         {
-            Id = Guid.NewGuid().ToString(),
             Votable = votable,
             VotableId = votable.Id,
         };
         var memeText = new MemeText()
         {
-            Id = Guid.NewGuid().ToString(),
             Text = "Test",
             Position = MemeTextPosition.BottomText,
             Votable = votable,
@@ -72,7 +70,7 @@ public class MemeTextsControllerTest : MemeTestBase
 
         // When
         var expected = memeText.ToTextDTO();
-        var result = (await controller.GetMemeText(memeText.Id)).Result;
+        var result = (await controller.GetMemeText(memeText.VotableId)).Result;
 
         // Then
 
@@ -123,14 +121,14 @@ public class MemeTextsControllerTest : MemeTestBase
 
         var memeText = new MemeText()
         {
-            Id = Guid.NewGuid().ToString(),
+            VotableId = Guid.NewGuid().ToString(),
             Text = "Test",
             Position = MemeTextPosition.BottomText
         };
         _context.Texts.Add(memeText);
 
         // When
-        var result = await controller.DeleteMemeText(memeText.Id);
+        var result = await controller.DeleteMemeText(memeText.VotableId);
 
         // Then
 

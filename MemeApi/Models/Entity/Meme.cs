@@ -3,7 +3,6 @@ namespace MemeApi.Models.Entity;
 
 public class Meme
 {
-    public string Id { get; set; }
     public string VotableId { get; set; }
     public Votable Votable { get; set; }
 
