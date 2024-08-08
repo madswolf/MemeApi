@@ -18,20 +18,20 @@ public record UserUpdateDTO
     /// <summary>
     /// New email
     /// </summary>
-    public string NewEmail { get; init; }
+    public string? NewEmail { get; init; }
 
     /// <summary>
     /// Current password
     /// </summary>
-    public string CurrentPassword { get; init; }
+    public string? CurrentPassword { get; init; }
 
     /// <summary>
     /// New password
     /// </summary>
-    public string NewPassword { get; init; }
+    public string? NewPassword { get; init; }
 
     /// <summary>
     /// New profile picture
     /// </summary>
-    public IFormFile NewProfilePic { get; init; }
+    public IFormFile? NewProfilePic { get; init; }
 }
