@@ -31,18 +31,11 @@ public class MemeRepository
     public async Task<Meme?> CreateMeme(MemeCreationDTO memeDTO, string? userId = null)
     {
         var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName, memeDTO.Topics, userId);
-        var votable = new Votable
-        {
-            Id = Guid.NewGuid().ToString(),
-            CreatedAt = DateTime.UtcNow,
-            LastUpdatedAt = DateTime.UtcNow,
-        };
         var meme = new Meme
         {
             Id = Guid.NewGuid().ToString(),
             VisualId = memeVisual.Id,
             Visual = memeVisual,
-            Votable = votable,
         };
 
         //if (memeDTO.SoundFile != null)
@@ -70,7 +63,7 @@ public class MemeRepository
 
         if (topics.Any(t => t == null)) return null;
 
-        meme.Votable.Topics = topics.ToList();
+        meme.Topics = topics.ToList();
 
         _context.Memes.Add(meme);
         await _context.SaveChangesAsync();
@@ -94,7 +87,6 @@ public class MemeRepository
             {
                 Id = Guid.NewGuid().ToString(),
                 Visual = visual,
-                Votable = votable,
                 //TODO handle which position they are in in the rendered meme when
                 TopText = topText,
                 BottomText = bottomText,
@@ -104,7 +96,7 @@ public class MemeRepository
         }
         else if(topic != null)
         {
-            meme.Votable.Topics.Add(topic);
+            meme.Topics.Add(topic);
             await _context.SaveChangesAsync();
         }
 
@@ -147,8 +139,7 @@ public class MemeRepository
     {
         return _context.Memes
             .Include(m => m.Visual)
-            .Include(m => m.Votable)
-            .Include(m => m.Votable.Topics)
+            .Include(m => m.Topics)
             .Include(m => m.TopText)
             .Include(m => m.BottomText);
     }
@@ -172,12 +163,11 @@ public class MemeRepository
     public bool HasMemeOfTheDay(DateTime date)
     {
         var memes = _context.Memes
-            .Include(m => m.Votable)
-            .Include(m => m.Votable.Topics)
+            .Include(m => m.Topics)
             .Where(m =>
-                m.Votable.Topics.Any(t => t.Name == _settings.GetMemeOfTheDayTopicName())
+                m.Topics.Any(t => t.Name == _settings.GetMemeOfTheDayTopicName())
                 ).ToList();
-        return memes.Any(m => m.Votable.CreatedAt.Date == date.Date);
+        return memes.Any(m => m.CreatedAt.Date == date.Date);
     }
     public async Task<Meme?> FindByComponents(MemeVisual visual, MemeText? topText = null, MemeText? bottomText = null)
     {
@@ -185,8 +175,7 @@ public class MemeRepository
             .Include(meme => meme.Visual)
             .Include(meme => meme.TopText)
             .Include(meme => meme.BottomText)
-            .Include(meme => meme.Votable)
-            .Include(meme => meme.Votable.Topics)
+            .Include(meme => meme.Topics)
             .Where(meme => meme.Visual.Id == visual.Id);
 
         memes = (topText, bottomText) switch

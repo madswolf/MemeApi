@@ -31,7 +31,6 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .HasMany(m => m.Votes)
             .WithOne(v => v.User)
             .HasForeignKey(v => v.UserId)
-            .HasPrincipalKey(u => u.Id)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
@@ -41,30 +40,23 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
 
         modelBuilder.Entity<Votable>().ToTable("Votables");
 
+        modelBuilder.Entity<Votable>().UseTptMappingStrategy().HasKey(v => v.Id);
+        
         modelBuilder.Entity<Meme>(entity =>
         {
-            entity.ToTable("Memes");
-            entity.HasKey(m => m.Id);
-
-            entity.HasOne(m => m.Votable)
-            .WithMany()
-            .HasForeignKey(v => v.VotableId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
-
             entity.HasOne(m => m.Visual)
             .WithMany()
             .HasForeignKey(m => m.VisualId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne<MemeText>()
+            entity.HasOne<MemeText>(m => m.TopText)
             .WithMany()
             .HasForeignKey(m => m.TopTextId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
-            entity.HasOne<MemeText>()
+            entity.HasOne<MemeText>(m => m.BottomText)
             .WithMany()
             .HasForeignKey(m => m.BottomTextId)
             .IsRequired(false)
@@ -98,28 +90,29 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
 
             entity.HasMany(t => t.Moderators)
             .WithMany()
-            .UsingEntity<TopicModerators>(tm =>
-            {
-                tm.ToTable("TopicModeratos");
-                tm.HasOne(v => v.Topic).WithMany().HasForeignKey(v => v.TopicID)
-                .IsRequired().OnDelete(DeleteBehavior.Cascade);
-                tm.HasOne(v => v.Moderator).WithMany().HasForeignKey(v => v.ModeratorId)
-                .IsRequired().OnDelete(DeleteBehavior.Cascade);
-            });
+            .UsingEntity<TopicModerators>(
+                entity => entity.HasOne(tv => tv.Moderator).WithMany().HasForeignKey(tv => tv.ModeratorId), 
+                entity => entity.HasOne(tv => tv.Topic).WithMany().HasForeignKey(tv => tv.TopicID));
 
             entity.HasIndex(t => t.Name)
             .IsUnique();
 
+           // entity.HasMany(t => t.Votables)
+           // .WithMany(v => v.Topics)
+           // .UsingEntity<TopicVotable>(entity =>
+           // {
+           //     entity.ToTable("TopicVotable");
+           //     entity.HasOne(tv => tv.Topic).WithMany().HasForeignKey(tv => tv.TopicID);
+           //     entity.HasOne(tv => tv.Votable).WithMany().HasForeignKey(tv => tv.VotableId);
+           //     entity.HasKey(vt => new { vt.VotableId, vt.TopicID });
+           // });
+            
             entity.HasMany(t => t.Votables)
-            .WithMany(v => v.Topics)
-            .UsingEntity<TopicVotable>(j =>
-            {
-                j.ToTable("TopicVotables");
-                j.HasOne(v => v.Topic).WithMany().HasForeignKey(v => v.TopicID)
-                .IsRequired().OnDelete(DeleteBehavior.Cascade);
-                j.HasOne(v => v.Votable).WithMany().HasForeignKey(v => v.VotableId)
-                .IsRequired().OnDelete(DeleteBehavior.Cascade);
-            });
+                .WithMany(v => v.Topics)
+                .UsingEntity("TopicVotable",
+                entity => entity.HasOne(typeof(Votable)).WithMany().HasForeignKey("VotableId"),
+                entity => entity.HasOne(typeof(Topic)).WithMany().HasForeignKey("TopicID"),
+                entity => entity.HasKey("VotableId","TopicID"));
         });
 
         var admin = new User
@@ -128,8 +121,6 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             UserName = _settings.GetAdminUsername() ,
             Email = _settings.GetAdminPassword(),
             SecurityStamp = DateTime.UtcNow.ToString(),
-            CreatedAt = DateTime.UtcNow,
-            LastUpdatedAt = DateTime.UtcNow,
             LastLoginAt = DateTime.UtcNow,
         };
 
@@ -139,8 +130,6 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             OwnerId = admin.Id,
             Name = "Swu-legacy",
             Description = "Memes created 2020-2023",
-            CreatedAt = DateTime.UtcNow,
-            LastUpdatedAt = DateTime.UtcNow
         };
 
         var defaultTopic2 = new Topic
@@ -149,8 +138,6 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             OwnerId = admin.Id,
             Name = "Rotte-Grotte",
             Description = "Memes are back baby!",
-            CreatedAt = DateTime.UtcNow,
-            LastUpdatedAt = DateTime.UtcNow
         };
 
         var memeOfTheDayTopic = new Topic
@@ -159,8 +146,6 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             OwnerId = admin.Id,
             Name = "MemeOfTheDay",
             Description = "Memes of the day",
-            CreatedAt = DateTime.UtcNow,
-            LastUpdatedAt = DateTime.UtcNow
         };
 
         modelBuilder.Entity<User>().HasData(admin);

@@ -53,12 +53,12 @@ public static class Extensions
     public static TextDTO? ToTextDTO(this MemeText text)
     {
         if (text == null) return null;
-        return new TextDTO(text.Id, text.Text, text.Position, text.Votable.Topics?.Select(t => t.Name).ToList(), text.Votable.CreatedAt);
+        return new TextDTO(text.Id, text.Text, text.Position, text.Topics?.Select(t => t.Name).ToList(), text.CreatedAt);
     }
 
     public static VisualDTO ToVisualDTO(this MemeVisual visual)
     {
-        return new VisualDTO(visual.Id, visual.Filename, visual.Votable.Topics.Select(t => t.Name).ToList(), visual.Votable.CreatedAt);
+        return new VisualDTO(visual.Id, visual.Filename, visual.Topics.Select(t => t.Name).ToList(), visual.CreatedAt);
     }
 
     public static UserInfoDTO ToUserInfo(this User u, string mediaHost)
@@ -82,12 +82,12 @@ public static class Extensions
 
     public static RandomComponentDTO ToRandomComponentDTO(this MemeText memeText)
     {
-        return new RandomComponentDTO(memeText.Text, memeText.Id, memeText.Votable.SumVotes());
+        return new RandomComponentDTO(memeText.Text, memeText.Id, memeText.SumVotes());
     }
 
     public static RandomComponentDTO ToRandomComponentDTO(this MemeVisual visual, string mediaHost)
     {
-        return new RandomComponentDTO(mediaHost + "visual/" + visual.Filename, visual.Id, visual.Votable.SumVotes());
+        return new RandomComponentDTO(mediaHost + "visual/" + visual.Filename, visual.Id, visual.SumVotes());
     }
 
     public static MemeDTO ToMemeDTO(this Meme meme)
@@ -97,8 +97,8 @@ public static class Extensions
             meme.Visual.Filename,
             meme.TopText?.ToTextDTO(),
             meme.BottomText?.ToTextDTO(),
-            meme.Votable.Topics.Select(t => t.Name).ToList(),
-            meme.Votable.CreatedAt
+            meme.Topics.Select(t => t.Name).ToList(),
+            meme.CreatedAt
         );
 
         return memeDTO;

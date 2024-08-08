@@ -22,7 +22,7 @@
       "dotnetRunMessages": "true",
       "launchBrowser": true,
       "launchUrl": "users",
-      "applicationUrl": "http://localhost:80",
+      "applicationUrl": "http://localhost:5001",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "DATABASE_CONNECTION_STRING": "Server=127.0.0.1;Port=5432;Database=memeapi;UserId=postgres;Password=root;"
