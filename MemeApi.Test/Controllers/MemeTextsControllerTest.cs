@@ -55,17 +55,13 @@ public class MemeTextsControllerTest : MemeTestBase
         var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [await _topicRepository.GetDefaultTopic()] };
         var text = new MemeText
         {
-            Id = Guid.NewGuid().ToString(),
-            Votable = votable,
-            VotableId = votable.Id,
+            Id = Guid.NewGuid().ToString()
         };
         var memeText = new MemeText()
         {
             Id = Guid.NewGuid().ToString(),
             Text = "Test",
-            Position = MemeTextPosition.BottomText,
-            Votable = votable,
-            VotableId = votable.Id,
+            Position = MemeTextPosition.BottomText
         };
         _context.Texts.Add(memeText);
         await _context.SaveChangesAsync();

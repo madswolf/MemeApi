@@ -19,17 +19,17 @@ public class MemeCreationDTO
     /// <summary>
     /// The textual top component of the meme
     /// </summary>
-    public string TopText { get; set; }
+    public string? TopText { get; set; }
     /// <summary>
     /// The textual bottom component of the meme
     /// </summary>
-    public string BottomText { get; set; }
+    public string? BottomText { get; set; }
     /// <summary>
     /// Optional name for the visual component
     /// </summary>
-    public string FileName { get; set; }
+    public string? FileName { get; set; }
     /// <summary>
     /// The list of topics that the Meme belongs to.
     /// </summary>
-    public IEnumerable<string> Topics { get; set; }
+    public IEnumerable<string>? Topics { get; set; }
 }

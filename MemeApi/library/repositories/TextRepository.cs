@@ -16,7 +16,7 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
 
     public async Task<List<MemeText>> GetTexts(MemeTextPosition? type = null)
     {
-        var texts = _context.Texts.Include(x => x.Votable.Votes).Include(t => t.Votable.Topics);
+        var texts = _context.Texts.Include(x => x.Votes).Include(t => t.Topics);
         if (type != null)
         {
             return await texts.Where(x => x.Position == type).ToListAsync();
@@ -27,7 +27,7 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
 
     public async Task<MemeText?> GetText(string id)
     {
-        return await _context.Texts.Include(x => x.Votable.Votes).Include(t => t.Votable.Topics).FirstOrDefaultAsync(t => t.Id == id);
+        return await _context.Texts.Include(x => x.Votes).Include(t => t.Topics).FirstOrDefaultAsync(t => t.Id == id);
     }
 
     public async Task<MemeText> GetTextByContent(string content, MemeTextPosition position)
@@ -69,7 +69,6 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
 
         try
         {
-            memeText.Votable.LastUpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
@@ -90,19 +89,11 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
     public async Task<MemeText> CreateText(string text, MemeTextPosition position, IEnumerable<string>? topicNames = null, string? userId = null)
     {
         var topics = await _topicRepository.GetTopicsByNameForUser(topicNames, userId);
-        var votable = new Votable
-        {
-            Id = Guid.NewGuid().ToString(),
-            Topics = topics,
-            CreatedAt = DateTime.UtcNow,
-            LastUpdatedAt = DateTime.UtcNow,
-        };
 
         var memeText = new MemeText
         {
             Id = Guid.NewGuid().ToString(),
-            Votable = votable,
-            VotableId = votable.Id,
+            Topics = topics,
             Text = text,
             Position = position,
         };

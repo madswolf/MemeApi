@@ -51,31 +51,17 @@ public class MemesControllerTest : MemeTestBase
         var controller = new MemesController(_memeRepository, _memeRenderingService);
 
         // given
-        var votableVisual = new Votable
-        {
-            Id = Guid.NewGuid().ToString(),
-        };
-
-        var votableMeme = new Votable
-        {
-            Id = Guid.NewGuid().ToString(),
-        };
-
         var visual = new MemeVisual()
         {
             Id = Guid.NewGuid().ToString(),
             Filename = "Test",
-            Votable = votableVisual,
-            VotableId = votableVisual.Id
         };
+        
         var meme = new Meme
         {
             Id = Guid.NewGuid().ToString(),
             Visual = visual,
             VisualId = visual.Id,
-
-            Votable = votableMeme,
-            VotableId = votableMeme.Id
         };
 
         _context.Visuals.Add(visual);
@@ -140,6 +126,7 @@ public class MemesControllerTest : MemeTestBase
         var deleteTask2 = await controller2.DeleteMemeText(createdMeme?.Toptext?.Id);
         deleteTask2.Should().NotBeNull();
         deleteTask2.Should().BeOfType<NoContentResult>();
+        await controller.GetMeme(createdMeme.Id);
     }
 
     [Fact]
