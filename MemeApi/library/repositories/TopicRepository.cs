@@ -36,7 +36,7 @@ public class TopicRepository
 
     public async Task<Topic?> GetTopic(string id)
     {
-        return await _context.Topics.FindAsync(id);
+        return await _context.Topics.Include(t => t.Moderators).FirstOrDefaultAsync(t => t.Id == id);
     }
 
     public async Task<Topic?> GetTopicByName(string name)

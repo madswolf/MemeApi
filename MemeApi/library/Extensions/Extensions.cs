@@ -63,7 +63,7 @@ public static class Extensions
 
     public static UserInfoDTO ToUserInfo(this User u, string mediaHost)
     {
-        return new UserInfoDTO(u.UserName(), mediaHost + "profilePic/" + u.ProfilePicFile, u.Topics.Select(t => t.Name).ToList());
+        return new UserInfoDTO(u.Id, u.UserName(), mediaHost + "profilePic/" + u.ProfilePicFile, u.Topics?.Select(t => t.Name).ToList());
     }
     public static string UserName(this User u)
     {
