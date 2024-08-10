@@ -90,29 +90,20 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
 
             entity.HasMany(t => t.Moderators)
             .WithMany()
-            .UsingEntity<TopicModerators>(
+            .UsingEntity<TopicModerator>(
                 entity => entity.HasOne(tv => tv.Moderator).WithMany().HasForeignKey(tv => tv.ModeratorId), 
-                entity => entity.HasOne(tv => tv.Topic).WithMany().HasForeignKey(tv => tv.TopicID));
+                entity => entity.HasOne(tv => tv.Topic).WithMany().HasForeignKey(tv => tv.TopicID),
+                entity => entity.HasKey(tm => new {tm.ModeratorId, tm.TopicID}));
 
             entity.HasIndex(t => t.Name)
             .IsUnique();
-
-           // entity.HasMany(t => t.Votables)
-           // .WithMany(v => v.Topics)
-           // .UsingEntity<TopicVotable>(entity =>
-           // {
-           //     entity.ToTable("TopicVotable");
-           //     entity.HasOne(tv => tv.Topic).WithMany().HasForeignKey(tv => tv.TopicID);
-           //     entity.HasOne(tv => tv.Votable).WithMany().HasForeignKey(tv => tv.VotableId);
-           //     entity.HasKey(vt => new { vt.VotableId, vt.TopicID });
-           // });
             
             entity.HasMany(t => t.Votables)
                 .WithMany(v => v.Topics)
-                .UsingEntity("TopicVotable",
-                entity => entity.HasOne(typeof(Votable)).WithMany().HasForeignKey("VotableId"),
-                entity => entity.HasOne(typeof(Topic)).WithMany().HasForeignKey("TopicID"),
-                entity => entity.HasKey("VotableId","TopicID"));
+                .UsingEntity<TopicVotable>(
+                entity => entity.HasOne(tv => tv.Votable).WithMany().HasForeignKey(tv => tv.VotableId),
+                entity => entity.HasOne(tv => tv.Topic).WithMany().HasForeignKey(tv => tv.TopicID),
+                entity => entity.HasKey(tm => new { tm.VotableId, tm.TopicID }));
         });
 
         var admin = new User
