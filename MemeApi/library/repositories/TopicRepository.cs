@@ -53,7 +53,11 @@ public class TopicRepository
     {
         if(topicNames != null)
         {
-            var topics = await _context.Topics.Where(t => topicNames.Contains(t.Name)).ToListAsync();
+            var topics = await _context.Topics
+                .Include(t => t.Owner)
+                .Include(t => t.Moderators)
+                .Where(t => topicNames.Contains(t.Name)).ToListAsync();
+
             var filteredTopics = topics.Where(t => t.CanUserPost(userId)).ToList();
             if (filteredTopics.Count == 0) return [await _context.Topics.FirstAsync(t => t.Name == _settings.GetDefaultTopicName())];
             return filteredTopics;
@@ -119,8 +123,7 @@ public class TopicRepository
             Name = topicCreationDTO.TopicName,
             Description = topicCreationDTO.Description,
             Moderators = [],
-            CreatedAt = DateTime.UtcNow,
-            LastUpdatedAt = DateTime.UtcNow
+            HasRestrictedPosting = topicCreationDTO != null && topicCreationDTO.HasRestrictedPosting,
         };
 
         _context.Topics.Add(topic);
@@ -147,7 +150,8 @@ public class TopicRepository
     {
         var user = await _userRepository.GetUser(userId);
         if (user == null) return false;
-        topic.Moderators.Add(user); // TODO: handle adding the same person twice
+        if(topic.Moderators.Any(t => t.Id == userId) || topic.OwnerId == userId) return false;
+        topic.Moderators.Add(user);
         await _context.SaveChangesAsync();
         return true;
     }

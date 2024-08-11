@@ -35,7 +35,7 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<User>().Property(v => v.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-        modelBuilder.Entity<User>().Property(v => v.LastUpdatedAt).HasComputedColumnSql("CURRENT_TIMESTAMP", stored: true);
+        modelBuilder.Entity<User>().Property(v => v.LastUpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         modelBuilder.Entity<MemeVisual>().ToTable("MemeVisuals");
 
@@ -46,7 +46,7 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
         modelBuilder.Entity<Votable>().UseTptMappingStrategy().HasKey(v => v.Id);
 
         modelBuilder.Entity<Votable>().Property(v => v.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-        modelBuilder.Entity<Votable>().Property(v => v.LastUpdatedAt).HasComputedColumnSql("CURRENT_TIMESTAMP", stored: true);
+        modelBuilder.Entity<Votable>().Property(v => v.LastUpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
 
         modelBuilder.Entity<Meme>(entity =>
@@ -84,6 +84,10 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .HasForeignKey(v => v.ElementId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(v => v.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(v => v.LastUpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
         });
 
         modelBuilder.Entity<Topic>(entity =>
@@ -91,7 +95,7 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             entity.ToTable("Topics");
 
             entity.Property(v => v.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(v => v.LastUpdatedAt).HasComputedColumnSql("CURRENT_TIMESTAMP", stored: true);
+            entity.Property(v => v.LastUpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             entity.HasOne(t => t.Owner)
             .WithMany(u => u.Topics)

@@ -1,4 +1,5 @@
-﻿using MemeApi.library.repositories;
+﻿using MemeApi.library.Extensions;
+using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Mvc;
@@ -65,17 +66,16 @@ public class VotesController : ControllerBase
     /// To vote for a meme that does not exist yet, include the id's of elements it contains.
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<Vote>> PostVote([FromForm]VoteDTO voteDTO)
+    public async Task<ActionResult<Vote>> PostVote([FromForm]PostVoteDTO voteDTO)
     {
         var components = await _votableRepository.FindMany(voteDTO.ElementIDs);
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (userIdString == null || components.Count == 0)
+        if (userId == null || components.Count == 0)
         {
             return NotFound();
         }
 
-        var userId = userIdString;
         var user = await _userRepository.GetUser(userId);
 
         if (user == null) return NotFound("User not found");
@@ -131,14 +131,12 @@ public class VotesController : ControllerBase
                 Upvote = voteDTO.UpVote == Upvote.Upvote,
                 Element = element,
                 User = user,
-                CreatedAt = DateTime.UtcNow,
-                LastUpdatedAt = DateTime.UtcNow,
             };
 
             await _votableRepository.CreateVote(vote);
         }
 
-        return CreatedAtAction("GetVote", new { id = vote.Id }, vote);
+        return CreatedAtAction("GetVote", new { id = vote.Id }, vote.ToVoteDTO());
     }
 
     /// <summary>

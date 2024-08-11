@@ -45,6 +45,16 @@ public static class Extensions
         return list.OrderBy(x => x.Id).Skip(skip).First();
     }
 
+    public static VoteDTO ToVoteDTO(this Vote vote) => new VoteDTO()
+    {
+        Id = vote.Id,
+        VotableId = vote.ElementId,
+        Username = vote.User.UserName,
+        CreatedAt = vote.CreatedAt,
+        LastUpdateAt = vote.LastUpdatedAt
+    };
+
+
     public static TopicDTO ToTopicDTO(this Topic t)
     {
         return new TopicDTO(t.Id, t.Name, t.Description, t.Owner.UserName(), t.Moderators.Select(u => u.UserName()).ToList(), t.CreatedAt, t.LastUpdatedAt);
