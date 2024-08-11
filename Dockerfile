@@ -6,7 +6,7 @@ COPY . ./
 # Restore as distinct layers
 RUN dotnet restore
 # Build and publish a release
-RUN dotnet publish -c Release -o out
+RUN dotnet publish -c Release --property:PublishDir=out
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
@@ -17,5 +17,5 @@ RUN echo "deb http://deb.debian.org/debian/ bookworm main contrib" > /etc/apt/so
 RUN sed -i'.bak' 's/$/ contrib/' /etc/apt/sources.list
 RUN apt-get update; apt-get install -y ttf-mscorefonts-installer fontconfig
 WORKDIR /MemeApi
-COPY --from=build-env /MemeApi/out .
+COPY --from=build-env /MemeApi/MemeApi/out .
 ENTRYPOINT ["dotnet", "MemeApi.dll"]

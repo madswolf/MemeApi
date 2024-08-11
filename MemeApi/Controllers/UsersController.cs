@@ -104,8 +104,6 @@ public class UsersController : ControllerBase
             UserName = userDTO.Username, 
             Email = userDTO.Email,
             ProfilePicFile = "default.jpg",
-            CreatedAt = DateTime.UtcNow,
-            LastUpdatedAt = DateTime.UtcNow,
             LastLoginAt = DateTime.UtcNow,
             Topics = []
         };

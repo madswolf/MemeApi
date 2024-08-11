@@ -34,6 +34,9 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<User>().Property(v => v.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        modelBuilder.Entity<User>().Property(v => v.LastUpdatedAt).HasComputedColumnSql("CURRENT_TIMESTAMP", stored: true);
+
         modelBuilder.Entity<MemeVisual>().ToTable("MemeVisuals");
 
         modelBuilder.Entity<MemeText>().ToTable("MemeTexts");
@@ -41,7 +44,11 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
         modelBuilder.Entity<Votable>().ToTable("Votables");
 
         modelBuilder.Entity<Votable>().UseTptMappingStrategy().HasKey(v => v.Id);
-        
+
+        modelBuilder.Entity<Votable>().Property(v => v.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        modelBuilder.Entity<Votable>().Property(v => v.LastUpdatedAt).HasComputedColumnSql("CURRENT_TIMESTAMP", stored: true);
+
+
         modelBuilder.Entity<Meme>(entity =>
         {
             entity.HasOne(m => m.Visual)
@@ -50,13 +57,13 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne<MemeText>(m => m.TopText)
+            entity.HasOne(m => m.TopText)
             .WithMany()
             .HasForeignKey(m => m.TopTextId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
-            entity.HasOne<MemeText>(m => m.BottomText)
+            entity.HasOne(m => m.BottomText)
             .WithMany()
             .HasForeignKey(m => m.BottomTextId)
             .IsRequired(false)
@@ -82,6 +89,10 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
         modelBuilder.Entity<Topic>(entity =>
         {
             entity.ToTable("Topics");
+
+            entity.Property(v => v.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(v => v.LastUpdatedAt).HasComputedColumnSql("CURRENT_TIMESTAMP", stored: true);
+
             entity.HasOne(t => t.Owner)
             .WithMany(u => u.Topics)
             .HasForeignKey(t => t.OwnerId)
