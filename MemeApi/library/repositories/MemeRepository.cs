@@ -80,7 +80,6 @@ public class MemeRepository
             {
                 Id = Guid.NewGuid().ToString(),
                 Visual = visual,
-                //TODO handle which position they are in in the rendered meme when
                 TopText = topText,
                 BottomText = bottomText,
             };

@@ -85,7 +85,7 @@ public class UsersController : ControllerBase
                 _ => StatusCode(500) // Should never happen
             };
         }
-        return NoContent();
+        return Ok();
     }
 
     /// <summary>
@@ -149,7 +149,7 @@ public class UsersController : ControllerBase
         if (user == null) return NotFound();
         await _userManager.DeleteAsync(user);
 
-        return NoContent();
+        return Ok();
     }
 
     /// <summary>

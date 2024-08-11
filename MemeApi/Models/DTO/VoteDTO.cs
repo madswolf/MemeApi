@@ -1,26 +1,14 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System;
 
-namespace MemeApi.Models.DTO;
-
-
-
-
-/// <param name="ElementIDs"></param>
-/// <param name="UpVote"></param>///<Summary>
-/// A DTO for Votes
-///</Summary>
-public record VoteDTO
+namespace MemeApi.Models.DTO
 {
-    /// <summary>
-    /// Elements(s) to vote on, multiple means it is a vote on a meme.
-    /// </summary>
-    [Required]
-    public List<string> ElementIDs { get; init; }
-
-    /// <summary>
-    /// Represents the status of the vote.
-    /// </summary>
-    [Required]
-    public Upvote UpVote { get; init; }
+    public class VoteDTO
+    {
+        public string Id { get; set; }
+        public string VotableId { get; set; }
+        public Upvote Upvote { get; set; }
+        public string Username { get; set; }
+        public DateTime CreatedAt {  get; set; }
+        public DateTime LastUpdateAt { get; set; }
+    }
 }
