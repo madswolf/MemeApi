@@ -52,11 +52,6 @@ public class MemeTextsControllerTest : MemeTestBase
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
         // given
-        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [await _topicRepository.GetDefaultTopic()] };
-        var text = new MemeText
-        {
-            Id = Guid.NewGuid().ToString()
-        };
         var memeText = new MemeText()
         {
             Id = Guid.NewGuid().ToString(),

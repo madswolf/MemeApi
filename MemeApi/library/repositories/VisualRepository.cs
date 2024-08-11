@@ -61,19 +61,6 @@ public class VisualRepository
         {
             throw new Exception("Default topic 'Swu-legacy' not found");
         }
-
-        // Create a new Votable entity
-        var votable = new Votable
-        {
-            Id = Guid.NewGuid().ToString(),
-            CreatedAt = DateTime.UtcNow,
-            LastUpdatedAt = DateTime.UtcNow,
-            Topics = new List<Topic> { defaultTopic },
-            Votes = new List<Vote>()
-        };
-
-        // Add the new Votable to the context
-        _context.Votables.Add(votable);
         
         var changess = _context.ChangeTracker.Entries();
         // Save changes to the database
@@ -85,14 +72,6 @@ public class VisualRepository
         {
             _context.Entry(topic).State = EntityState.Unchanged;
         }
-        
-        votable = new Votable
-        {
-            Id = Guid.NewGuid().ToString(),
-            Topics = topics.ToList(),
-            CreatedAt = DateTime.UtcNow,
-            LastUpdatedAt = DateTime.UtcNow,
-        };
 
         var memeVisual = new MemeVisual()
         {

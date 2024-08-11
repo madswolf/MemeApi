@@ -76,13 +76,6 @@ public class MemeRepository
         topic ??= await _topicRepository.GetDefaultTopic();
         if (meme == null)
         {
-            var votable = new Votable
-            {
-                Id = Guid.NewGuid().ToString(),
-                CreatedAt = DateTime.UtcNow,
-                LastUpdatedAt = DateTime.UtcNow,
-                Topics = [topic]
-            };
             meme = new Meme
             {
                 Id = Guid.NewGuid().ToString(),

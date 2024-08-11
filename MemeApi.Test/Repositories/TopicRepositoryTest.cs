@@ -236,7 +236,6 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
             HasRestrictedPosting = true,
             Moderators = []
         };
-        var votable = new Votable { Id = Guid.NewGuid().ToString(), Topics = [topic] };
         var text = new MemeText
         {
             Id = Guid.NewGuid().ToString(),
@@ -244,12 +243,11 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
             Topics = [topic]
         };
         _context.Texts.Add(text);
-        _context.Votables.Add(votable);
         await _context.SaveChangesAsync();
 
         // When
-        var result = await _votableRepository.DeleteVotable(votable, owner);
-        var resultVotable = await _votableRepository.GetVotable(votable.Id);
+        var result = await _votableRepository.DeleteVotable(text, owner);
+        var resultVotable = await _votableRepository.GetVotable(text.Id);
         
         // Then
         result.Should().BeTrue();
