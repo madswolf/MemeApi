@@ -82,6 +82,7 @@ public class MemeRepository
                 Visual = visual,
                 TopText = topText,
                 BottomText = bottomText,
+                Topics = [topic]
             };
 
             await CreateMemeRaw(meme);
@@ -173,9 +174,9 @@ public class MemeRepository
         memes = (topText, bottomText) switch
         {
             (null, null) => memes.Where(meme => meme.TopText == null && meme.BottomText == null),
-            ({ }, null) => memes.Where(meme => meme.TopText().Id == topText.Id && meme.BottomText == null),
-            (null, { }) => memes.Where(meme => meme.BottomText().Id == bottomText.Id && meme.TopText == null),
-            ({ }, { }) => memes.Where(meme => meme.TopText().Id == topText.Id && meme.BottomText().Id == bottomText.Id)
+            ({ }, null) => memes.Where(meme => meme.TopTextId == topText.Id && meme.BottomText == null),
+            (null, { }) => memes.Where(meme => meme.BottomTextId == bottomText.Id && meme.TopText == null),
+            ({ }, { }) => memes.Where(meme => meme.BottomTextId == topText.Id && meme.BottomTextId == bottomText.Id)
         };
         
         return await memes.FirstOrDefaultAsync();

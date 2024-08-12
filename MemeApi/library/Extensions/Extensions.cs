@@ -79,16 +79,6 @@ public static class Extensions
     {
         return u.UserName ?? "default username";
     }
-    public static MemeText TopText(this Meme u)
-    {
-        return u.TopText ?? new MemeText { Id = "", Position = MemeTextPosition.TopText };
-    }
-
-    public static MemeText BottomText(this Meme u)
-    {
-        return u.BottomText ?? new MemeText { Id = "", Position = MemeTextPosition.BottomText };
-
-    }
 
     public static RandomComponentDTO ToRandomComponentDTO(this MemeText memeText)
     {

@@ -1,5 +1,5 @@
-﻿#nullable disable warnings
-using MemeApi.Models.Entity;
+﻿using MemeApi.Models.Entity;
+using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -8,22 +8,20 @@ namespace MemeApi.Models.DTO;
 /// <summary>
 /// A DTO for creating text
 /// </summary>
-public record TextCreationDTO
+public record VisualCreationDTO
 {
     /// <summary>
     /// The textual content
     /// </summary>
     [Required]
-    public string Text { get; init; }
+    public IFormFile File { get; init; }
 
     /// <summary>
     /// The texts position
     /// </summary>
-    [Required]
-    public MemeTextPosition Position { get; init; }
 
     /// <summary>
-    /// The list of topics that the Text belongs to.
+    /// The list of topics that the Visual belongs to.
     /// </summary>
     public IEnumerable<string>? Topics { get; set; }
 }
