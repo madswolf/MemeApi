@@ -42,7 +42,7 @@ public class MemeOfTheDayService : IMemeOfTheDayService
             var message = new Random().Next(10) != 1 ? "Meme Of the Day" : messages.RandomItem();
             var json_payload = CreateJsonPayload(message);
 
-            form.Add(new ByteArrayContent(imageContent, 0, imageContent.Length), "image/png", "shit.png");
+            form.Add(new ByteArrayContent(imageContent, 0, imageContent.Length), "image/png", meme.ToFilenameString());
             form.Add(json_payload, "payload_json");
             await httpClient.PostAsync(webhookUrl, form, stoppingToken);
             httpClient.Dispose();
