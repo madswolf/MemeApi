@@ -123,6 +123,7 @@ public class MemesController : ControllerBase
 
         var watch = System.Diagnostics.Stopwatch.StartNew();
         var file = File(await _memeRendererService.RenderMeme(meme), "image/png");
+        file.FileDownloadName = meme.ToFilenameString();
         watch.Stop();
         var elapsedMs = watch.ElapsedMilliseconds;
         Console.WriteLine(elapsedMs);

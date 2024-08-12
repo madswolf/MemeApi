@@ -90,6 +90,11 @@ public static class Extensions
         return new RandomComponentDTO(mediaHost + "visual/" + visual.Filename, visual.Id, visual.SumVotes());
     }
 
+    public static string ToFilenameString(this Meme meme)
+    {
+        return $"memeId {meme.Id} visualId {meme.VisualId} toptextId {meme.TopTextId} bottomtextId {meme.BottomTextId}.png";
+    }
+
     public static MemeDTO ToMemeDTO(this Meme meme)
     {
         var memeDTO = new MemeDTO(
