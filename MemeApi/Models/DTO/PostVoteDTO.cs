@@ -8,6 +8,7 @@ namespace MemeApi.Models.DTO;
 
 /// <param name="ElementIDs"></param>
 /// <param name="UpVote"></param>///<Summary>
+/// <param name="VoteNumber"></param>///<Summary>
 /// A DTO for Votes
 ///</Summary>
 public record PostVoteDTO
@@ -21,6 +22,12 @@ public record PostVoteDTO
     /// <summary>
     /// Represents the status of the vote.
     /// </summary>
-    [Required]
-    public Upvote UpVote { get; init; }
+    public Upvote? UpVote { get; set; }
+
+    /// <summary>
+    /// Represents the integer value of the vote. Either This or Upvote needs to be set.
+    /// </summary>
+    [Range(0, 9, ErrorMessage = "VoteNumber must be between 0 and 9.")]
+    public int? VoteNumber { get; set; }
+
 }

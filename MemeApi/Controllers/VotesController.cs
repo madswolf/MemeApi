@@ -66,8 +66,16 @@ public class VotesController : ControllerBase
     /// To vote for a meme that does not exist yet, include the id's of elements it contains.
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<Vote>> PostVote([FromForm]PostVoteDTO voteDTO)
+    public async Task<ActionResult<VoteDTO>> PostVote([FromForm]PostVoteDTO voteDTO)
     {
+        if ((voteDTO.UpVote == null && voteDTO.VoteNumber == null) || 
+            (voteDTO.UpVote != null && voteDTO.VoteNumber != null)) 
+            return BadRequest("Supply either an Upvote or VoteNumber value");
+
+
+        if (voteDTO.VoteNumber == null) voteDTO.VoteNumber = voteDTO.UpVote == Upvote.Upvote ? 9 : 0;
+        if (voteDTO.UpVote == null) voteDTO.UpVote = voteDTO.VoteNumber < 5 ? Upvote.Upvote : Upvote.Downvote;
+
         var components = await _votableRepository.FindMany(voteDTO.ElementIDs);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -107,12 +115,12 @@ public class VotesController : ControllerBase
 
         Vote vote;
         var existingVote = _votableRepository.FindByElementAndUser(element, userId);
-
+        
         if (existingVote != null)
         {
             if (voteDTO.UpVote != Upvote.Unvote)
             { 
-                return await _votableRepository.ChangeVote(existingVote, voteDTO.UpVote);
+                return await _votableRepository.ChangeVote(existingVote, (Upvote)voteDTO.UpVote, (int)voteDTO.VoteNumber);
             }
             else
             {
@@ -131,6 +139,7 @@ public class VotesController : ControllerBase
                 Upvote = voteDTO.UpVote == Upvote.Upvote,
                 Element = element,
                 User = user,
+                VoteNumber = (int)voteDTO.VoteNumber,
             };
 
             await _votableRepository.CreateVote(vote);

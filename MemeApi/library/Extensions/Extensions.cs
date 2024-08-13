@@ -49,6 +49,8 @@ public static class Extensions
     {
         Id = vote.Id,
         VotableId = vote.ElementId,
+        Upvote = vote.Upvote ? Upvote.Upvote : Upvote.Downvote,
+        VoteNumber = vote.VoteNumber,
         Username = vote.User.UserName,
         CreatedAt = vote.CreatedAt,
         LastUpdateAt = vote.LastUpdatedAt
@@ -63,7 +65,7 @@ public static class Extensions
     public static TextDTO? ToTextDTO(this MemeText text)
     {
         if (text == null) return null;
-        return new TextDTO(text.Id, text.Text, text.Position, text.Topics?.Select(t => t.Name).ToList(), text.CreatedAt);
+        return new TextDTO(text.Id, text.Text, Enum.GetName(text.Position), text.Topics?.Select(t => t.Name).ToList(), text.CreatedAt);
     }
 
     public static VisualDTO ToVisualDTO(this MemeVisual visual)
@@ -92,7 +94,7 @@ public static class Extensions
 
     public static string ToFilenameString(this Meme meme)
     {
-        return $"memeId {meme.Id} visualId {meme.VisualId} toptextId {meme.TopTextId} bottomtextId {meme.BottomTextId}.png";
+        return $"memeId_{meme.Id}_visualId_{meme.VisualId}_toptextId_{meme.TopTextId}_bottomtextId_{meme.BottomTextId}.png";
     }
 
     public static MemeDTO ToMemeDTO(this Meme meme)

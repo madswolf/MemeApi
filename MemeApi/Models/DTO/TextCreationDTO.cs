@@ -1,5 +1,6 @@
 ﻿#nullable disable warnings
 using MemeApi.Models.Entity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -26,4 +27,8 @@ public record TextCreationDTO
     /// The list of topics that the Text belongs to.
     /// </summary>
     public IEnumerable<string>? Topics { get; set; }
+    /// <summary>
+    /// An optional datetime for migrations.
+    /// </summary>
+    public DateTime? CreatedAt { get; set; }
 }
