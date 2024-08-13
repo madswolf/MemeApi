@@ -24,54 +24,54 @@ meme_ids = []
 visuals_filenames = []
 toptext_texts = []
 bottomtext_texts = []
-#for meme in data:
-#    visual_filename = meme["memeVisual"]
-#    if(not visual_filename):
-#        #Not an actual meme
-#        continue
-#
-#    
-#    visuals_filenames.append(visual_filename)
-#    visual_file = requests.get(mediaurl + visual_filename, allow_redirects=True)
-#    meme_ids.append(meme["id"])
-#
-#    toptext = meme["toptext"]
-#    if(toptext):
-#        toptext_texts.append(toptext)
-#        toptext = toptext
-#
-#    bottomtext = meme["bottomText"]
-#    if(bottomtext):
-#        bottomtext_texts.append(bottomtext)
-#        bottomtext = bottomtext
-#
-#    data = {"Toptext": toptext,"Bottomtext": bottomtext, "FileName":visual_filename, "Topics":meme["topics"]}
-#    session = requests.Session()
-#    session.verify = False
-#    response = session.post(meme_url,files = {"VisualFile": visual_file.content}, data = data)
-#    if(not response.ok):
-#        print(visual_file, response)
-#    else:
-#        print("okay", meme["id"])
+for meme in data:
+    visual_filename = meme["memeVisual"]
+    if(not visual_filename):
+        #Not an actual meme
+        continue
+
+    
+    visuals_filenames.append(visual_filename)
+    visual_file = requests.get(mediaurl + visual_filename, allow_redirects=True)
+    meme_ids.append(meme["id"])
+
+    toptext = meme["toptext"]
+    if(toptext):
+        toptext_texts.append(toptext)
+        toptext = toptext
+
+    bottomtext = meme["bottomText"]
+    if(bottomtext):
+        bottomtext_texts.append(bottomtext)
+        bottomtext = bottomtext
+
+    data = {"Toptext": toptext,"Bottomtext": bottomtext, "FileName":visual_filename, "Topics":meme["topics"], "CreatedAt":meme["CreatedAt"]}
+    session = requests.Session()
+    session.verify = False
+    response = session.post(meme_url,files = {"VisualFile": visual_file.content}, data = data)
+    if(not response.ok):
+        print(visual_file, response)
+    else:
+        print("okay", meme["id"])
 
   
-#for visual in data_visuals:
-#    if visual["id"] not in visuals_filenames:
-#        session = requests.Session()
-#        session.verify = False
-#        visual_file = requests.get(mediaurl + visual["filename"], allow_redirects=True)
-#        data = {"Toptext": "","Bottomtext": "", "FileName":visual["filename"], "Topics":visual["topics"]}
-#        response = session.post(meme_url,files = {"VisualFile": visual_file.content}, data = data)
-#        if(not response.ok):
-#            print(visual, response)
-#        else:
-#            print("okay visual: ", visual)
+for visual in data_visuals:
+    if visual["id"] not in visuals_filenames:
+        session = requests.Session()
+        session.verify = False
+        visual_file = requests.get(mediaurl + visual["filename"], allow_redirects=True)
+        data = {"Toptext": "","Bottomtext": "", "FileName":visual["filename"], "Topics":visual["topics"], "CreatedAt":visual["CreatedAt"]}
+        response = session.post(meme_url,files = {"VisualFile": visual_file.content}, data = data)
+        if(not response.ok):
+            print(visual, response)
+        else:
+            print("okay visual: ", visual)
 
 for toptext in data_toptexts:
     if toptext not in toptext_texts:
         session = requests.Session()
         session.verify = False
-        response = session.post(text_url, data = json.dumps({"Text":toptext["text"], "Position": "TopText", "Topics":toptext["topics"]}), headers={'content-type': 'application/json'})
+        response = session.post(text_url, data = json.dumps({"Text":toptext["text"], "Position": "TopText", "Topics":toptext["topics"], "CreatedAt":toptext["CreatedAt"]}), headers={'content-type': 'application/json'})
         if(not response.ok):
             print(toptext, response)
         else:
@@ -81,7 +81,7 @@ for bottomtext in data_bottomtexts:
     if bottomtext not in bottomtext_texts:
         session = requests.Session()
         session.verify = False
-        response = session.post(text_url, data = json.dumps({"Text":bottomtext["text"], "Position": "BottomText", "Topics":bottomtext["topics"]}), headers={'content-type': 'application/json'})
+        response = session.post(text_url, data = json.dumps({"Text":bottomtext["text"], "Position": "BottomText", "Topics":bottomtext["topics"], "CreatedAt":toptext["CreatedAt"]}), headers={'content-type': 'application/json'})
         if(not response.ok):
             print(bottomtext, response)
         else:

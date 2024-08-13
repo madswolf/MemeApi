@@ -136,9 +136,19 @@ public class MemeRepository
             .Include(m => m.TopText)
             .Include(m => m.BottomText);
     }
-    public async Task<Meme> RandomMemeByComponents(string? topText = null, string? bottomText = null, string? topicName = null)
+    public async Task<Meme> RandomMemeByComponents(string? visualId = null, string? topText = null, string? bottomText = null, string? topicName = null)
     {
-        var visual = _visualRepository.GetRandomVisual();
+        MemeVisual? visual = null;
+
+        if (visualId != null) {
+            visual = await _visualRepository.GetVisual(visualId);
+        }
+
+        if (visual == null)
+        {
+            visual = _visualRepository.GetRandomVisual();
+        }
+        
         var topTextComponent = topText == null ? 
             _textRepository.GetRandomTextByType(MemeTextPosition.TopText) 
             : await _textRepository.GetTextByContent(topText, MemeTextPosition.TopText);

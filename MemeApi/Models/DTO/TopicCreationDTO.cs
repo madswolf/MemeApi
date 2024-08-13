@@ -1,4 +1,5 @@
 ﻿#nullable disable warnings
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace MemeApi.Models.DTO;

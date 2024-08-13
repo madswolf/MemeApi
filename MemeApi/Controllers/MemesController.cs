@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System;
+using Microsoft.Net.Http.Headers;
 
 namespace MemeApi.Controllers;
 
@@ -113,20 +114,27 @@ public class MemesController : ControllerBase
     /// Get a random meme rendered to a png in the response
     /// Use the optional Query parameters TopText and BottomText to define what the top and bottom text should be
     /// </summary>
-    [HttpGet("random/Rendered")]
-    public async Task<ActionResult> RenderImage([FromQuery] string? TopText = null, [FromQuery] string? BottomText = null)
+    [HttpGet("Rendered")]
+    public async Task<ActionResult> RenderImage([FromQuery] string? VisualId = null, [FromQuery] string? TopText = null, [FromQuery] string? BottomText = null)
     {
-        var meme = await _memeRepository.RandomMemeByComponents(TopText, BottomText);
+        var meme = await _memeRepository.RandomMemeByComponents(VisualId, TopText, BottomText);
         var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO());
         var cleanedHeaderValue = Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X");
-        Response.Headers.Append( new ("X-File-Info", cleanedHeaderValue));
 
         var watch = System.Diagnostics.Stopwatch.StartNew();
+
         var file = File(await _memeRendererService.RenderMeme(meme), "image/png");
-        file.FileDownloadName = meme.ToFilenameString();
+
         watch.Stop();
         var elapsedMs = watch.ElapsedMilliseconds;
         Console.WriteLine(elapsedMs);
+
+
+        Response.Headers.Append(new("X-File-Info", cleanedHeaderValue));
+        Response.Headers[HeaderNames.ContentDisposition] = new ContentDispositionHeaderValue("inline")
+        {
+            FileNameStar = meme.ToFilenameString()
+        }.ToString();
         Response.Headers.Append(new ("X-File-Render-Time", elapsedMs.ToString() + "ms"));
 
         return file;

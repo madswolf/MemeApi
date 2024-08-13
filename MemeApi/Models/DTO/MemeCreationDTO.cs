@@ -1,5 +1,6 @@
 ﻿#nullable disable warnings
 using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -32,4 +33,9 @@ public class MemeCreationDTO
     /// The list of topics that the Meme belongs to.
     /// </summary>
     public IEnumerable<string>? Topics { get; set; }
+
+    /// <summary>
+    /// An optional datetime for migrations.
+    /// </summary>
+    public DateTime? CreatedAt { get; set; }
 }

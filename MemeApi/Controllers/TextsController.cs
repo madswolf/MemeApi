@@ -62,11 +62,11 @@ public class TextsController : ControllerBase
     /// Create a meme text
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<MemeText>> CreateMemeText([FromBody] TextCreationDTO textCreationDTO)
+    public async Task<ActionResult<TextDTO>> CreateMemeText([FromBody] TextCreationDTO textCreationDTO)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var memeText = await _textRepository.CreateText(textCreationDTO.Text, textCreationDTO.Position, userId: userId);
-        return CreatedAtAction("CreateMemeText", new { id = memeText.Id }, memeText);
+        return CreatedAtAction("CreateMemeText", new { id = memeText.Id }, memeText.ToTextDTO());
     }
 
     /// <summary>
