@@ -116,6 +116,37 @@ public class UsersController : ControllerBase
         return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user.ToUserInfo(_settings.GetMediaHost()));
     }
 
+
+    /// <summary>
+    /// Get the current count of dubloons that a user has.
+    /// </summary>
+    [HttpGet]
+    [Route("[controller]/{id}/Dubloons")]
+    public async Task<ActionResult<UserInfoDTO>> Dubloons(string id)
+    {
+        var user = await _userRepository.GetUser(id, includeDubloons: true);
+
+        if (user == null)
+            return NotFound();
+
+        return Ok(user.DubloonEvents.CountDubloons());
+    }
+
+    /// <summary>
+    /// Get the current log of dubloon events that a user has.
+    /// </summary>
+    [HttpGet]
+    [Route("[controller]/{id}/DubloonEvents")]
+    public async Task<ActionResult<UserInfoDTO>> DubloonEvents(string id)
+    {
+        var user = await _userRepository.GetUser(id, includeDubloons: true);
+
+        if (user == null)
+            return NotFound();
+
+        return Ok(user.DubloonEvents);
+    }
+
     /// <summary>
     /// initiate the recovery of a user
     /// </summary>

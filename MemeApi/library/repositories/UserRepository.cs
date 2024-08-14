@@ -30,9 +30,14 @@ public class UserRepository
         return await _memeContext.Users.Include(u => u.Topics).ToListAsync();
     }
 
-    public async Task<User?> GetUser(string? id)
+    public async Task<User?> GetUser(string? id, bool includeDubloons = false)
     {
-        return await _memeContext.Users.Include(u => u.Topics).FirstOrDefaultAsync(u => u.Id == id);
+        IQueryable<User> queryable = _memeContext.Users.Include(u => u.Topics);
+
+        if(includeDubloons) 
+            queryable = queryable.Include(u => u.DubloonEvents);
+
+        return await queryable.FirstOrDefaultAsync(u => u.Id == id);
     }
 
     public async Task<User?> FindByEmail(string userEmail)

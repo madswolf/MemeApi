@@ -16,11 +16,12 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
     }
     public DbSet<Meme> Memes { get; set; }
     public DbSet<MemeVisual> Visuals { get; set; }
-    public DbSet<MemeSound> Sounds { get; set; }
+    //public DbSet<MemeSound> Sounds { get; set; }
     public DbSet<MemeText> Texts { get; set; }
     public DbSet<Vote> Votes { get; set; }
     public DbSet<Votable> Votables { get; set; }
     public DbSet<Topic> Topics { get; set; }
+    public DbSet<DubloonEvent> DubloonEvents { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -33,6 +34,17 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .HasForeignKey(v => v.UserId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.DubloonEvents)
+            .WithOne(d => d.Owner)
+            .HasForeignKey(u => u.UserId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DubloonEvent>()
+            .Property(u => u.EventTimestamp)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         modelBuilder.Entity<User>().Property(v => v.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         modelBuilder.Entity<User>().Property(v => v.LastUpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -52,38 +64,43 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
         modelBuilder.Entity<Meme>(entity =>
         {
             entity.HasOne(m => m.Visual)
-            .WithMany()
-            .HasForeignKey(m => m.VisualId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
+                .WithMany()
+                .HasForeignKey(m => m.VisualId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(m => m.TopText)
-            .WithMany()
-            .HasForeignKey(m => m.TopTextId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.SetNull);
+                .WithMany()
+                .HasForeignKey(m => m.TopTextId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasOne(m => m.BottomText)
-            .WithMany()
-            .HasForeignKey(m => m.BottomTextId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.SetNull);
+                .WithMany()
+                .HasForeignKey(m => m.BottomTextId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Vote>(entity =>
         {
             entity.ToTable("Votes");
             entity.HasOne(v => v.User)
-            .WithMany(u => u.Votes)
-            .HasForeignKey(v => v.UserId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
+                .WithMany(u => u.Votes)
+                .HasForeignKey(v => v.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(v => v.Element)
-            .WithMany(v => v.Votes)
-            .HasForeignKey(v => v.ElementId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
+                .WithMany(v => v.Votes)
+                .HasForeignKey(v => v.ElementId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(v => v.DubloonEvent)
+                .WithOne()
+                .HasForeignKey<Vote>(v => v.DubloonEventId)
+                .IsRequired(false);
 
             entity.Property(v => v.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(v => v.LastUpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");

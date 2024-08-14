@@ -18,5 +18,6 @@ public class User : IdentityUser<string>
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime LastUpdatedAt { get; set; }
     public DateTime LastLoginAt { get; set; }
+    public List<DubloonEvent> DubloonEvents { get; set; }
 }
 
