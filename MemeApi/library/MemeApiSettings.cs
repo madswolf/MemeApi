@@ -101,6 +101,11 @@ public class MemeApiSettings
         return TryGetConfig("BlobStorage_Access_Key_Secret");
     }
 
+    public string GetBotSecret()
+    {
+        return TryGetConfig("Bot_Secret");
+    }
+
     private string TryGetConfig(string key)
     {
         var value = _config[key];
