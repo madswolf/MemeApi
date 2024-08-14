@@ -1,4 +1,5 @@
-﻿using MemeApi.library.Extensions;
+﻿using MemeApi.library;
+using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
@@ -7,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace MemeApi.Controllers;
@@ -23,16 +26,18 @@ public class VotesController : ControllerBase
     private readonly VisualRepository _visualRepository;
     private readonly MemeRepository _memeRepository;
     private readonly UserRepository _userRepository;
+    private readonly MemeApiSettings _settings;
     /// <summary>
     /// A controller for creating managing votes
     /// </summary>
-    public VotesController(VotableRepository votableRepository, TextRepository textRepository, VisualRepository visualRepository, MemeRepository memeRepository, UserRepository userRepository)
+    public VotesController(VotableRepository votableRepository, TextRepository textRepository, VisualRepository visualRepository, MemeRepository memeRepository, UserRepository userRepository, MemeApiSettings settings)
     {
         _votableRepository = votableRepository;
         _textRepository = textRepository;
         _visualRepository = visualRepository;
         _memeRepository = memeRepository;
         _userRepository = userRepository;
+        _settings = settings;
     }
 
     /// <summary>
@@ -79,12 +84,33 @@ public class VotesController : ControllerBase
         var components = await _votableRepository.FindMany(voteDTO.ElementIDs);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (userId == null || components.Count == 0)
+        if ((userId == null && voteDTO.ExternalUserID == null) || components.Count == 0)
         {
             return NotFound();
         }
 
-        var user = await _userRepository.GetUser(userId);
+        User? user = null;
+        if (Request.Headers["Bot_Secret"] == _settings.GetBotSecret())
+        {
+            if (voteDTO.ExternalUserID == null || voteDTO.ExternalUserName == null) return BadRequest("Please include an external user whe voting on behalf of someone else");
+            var byt = Encoding.UTF8.GetBytes(voteDTO.ExternalUserID);
+            var hash = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(voteDTO.ExternalUserID));
+            userId = new Guid(hash).ToString();
+            user = await _userRepository.GetUser(userId);
+            if (user == null) {
+                user = new User()
+                {
+                    Id = userId,
+                    UserName = voteDTO.ExternalUserName,
+                    ProfilePicFile = "default.jpg",
+                    LastLoginAt = DateTime.UtcNow,
+                };
+            }
+        }
+        else
+        {
+            user = await _userRepository.GetUser(userId);
+        }
 
         if (user == null) return NotFound("User not found");
 

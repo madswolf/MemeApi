@@ -30,4 +30,15 @@ public record PostVoteDTO
     [Range(0, 9, ErrorMessage = "VoteNumber must be between 0 and 9.")]
     public int? VoteNumber { get; set; }
 
+    /// <summary>
+    /// An Identifier supplied from an external provider.
+    /// Only applicable for ingegrations where an application is voting on behalf of a user.
+    /// </summary>
+    public string? ExternalUserID { get; set; }
+    /// <summary>
+    /// Username used on the external provider.
+    /// Only applicable for ingegrations where an application is voting on behalf of a user.
+    /// </summary>
+    public string? ExternalUserName { get; set; }
+
 }
