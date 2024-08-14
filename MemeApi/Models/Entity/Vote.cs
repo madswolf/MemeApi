@@ -13,6 +13,8 @@ public class Vote
     public string UserId { get; set; }
     public Votable Element { get; set; }
     public string ElementId { get; set; }
+    public string? DubloonEventId { get; set; }
+    public DubloonEvent? DubloonEvent { get; set; }
 
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime CreatedAt { get; set; }

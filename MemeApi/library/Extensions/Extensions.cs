@@ -8,6 +8,11 @@ namespace MemeApi.library.Extensions;
 
 public static class Extensions
 {
+    public static double CountDubloons(this IEnumerable<DubloonEvent> dubloonEvents)
+    {
+        return dubloonEvents.Select(d => d.Dubloons).Sum();
+    }
+
     public static T RandomItem<T>(this List<T> list, string seed = "")
     {
         if (seed == "")
@@ -134,5 +139,22 @@ public static class Extensions
     {
         var votes = votable.Votes ?? [];
         return votes.Aggregate(0, (acc, item) => acc + (item.Upvote ? 1 : -1));
+    }
+
+    public static double CalculateDubloons(this Votable element, DateTime timestamp2)
+    {
+        var secondsDifference = (element.CreatedAt - timestamp2).Duration().TotalSeconds;
+
+        const double initialDubloonCount = 100.0;
+        const double dubloonCountAfterOneMInute = 10.0;
+        const double firstMinute = 60.0; 
+        const double threeDaysInSeconds = 3 * 24 * 60 * 60; 
+
+        if (secondsDifference <= firstMinute)
+            return initialDubloonCount - ((initialDubloonCount - dubloonCountAfterOneMInute) * (secondsDifference / firstMinute));
+        else if (secondsDifference <= (firstMinute + threeDaysInSeconds))
+            return dubloonCountAfterOneMInute - (dubloonCountAfterOneMInute * (secondsDifference - firstMinute / threeDaysInSeconds));
+        else
+            return 0;
     }
 }
