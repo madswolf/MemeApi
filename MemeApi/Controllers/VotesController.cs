@@ -79,7 +79,7 @@ public class VotesController : ControllerBase
 
 
         if (voteDTO.VoteNumber == null) voteDTO.VoteNumber = voteDTO.UpVote == Upvote.Upvote ? 9 : 0;
-        if (voteDTO.UpVote == null) voteDTO.UpVote = voteDTO.VoteNumber < 5 ? Upvote.Upvote : Upvote.Downvote;
+        if (voteDTO.UpVote == null) voteDTO.UpVote = voteDTO.VoteNumber < 5 ? Upvote.Downvote : Upvote.Upvote;
 
         var components = await _votableRepository.FindMany(voteDTO.ElementIDs);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -93,9 +93,8 @@ public class VotesController : ControllerBase
         if (Request.Headers["Bot_Secret"] == _settings.GetBotSecret())
         {
             if (voteDTO.ExternalUserID == null || voteDTO.ExternalUserName == null) return BadRequest("Please include an external user whe voting on behalf of someone else");
-            var byt = Encoding.UTF8.GetBytes(voteDTO.ExternalUserID);
-            var hash = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(voteDTO.ExternalUserID));
-            userId = new Guid(hash).ToString();
+
+            userId = voteDTO.ExternalUserID?.ToGuid();
             user = await _userRepository.GetUser(userId);
             if (user == null) {
                 user = new User()
@@ -146,7 +145,7 @@ public class VotesController : ControllerBase
         {
             if (voteDTO.UpVote != Upvote.Unvote)
             { 
-                return await _votableRepository.ChangeVote(existingVote, (Upvote)voteDTO.UpVote, (int)voteDTO.VoteNumber);
+                return Ok(await _votableRepository.ChangeVote(existingVote, (Upvote)voteDTO.UpVote, (int)voteDTO.VoteNumber));
             }
             else
             {
