@@ -30,7 +30,7 @@ public class MemeOfTheDayService : IMemeOfTheDayService
 
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        Meme meme = await _memeRepository.RandomMemeByComponents();
+        Meme meme = await _memeRepository.RandomMemeByComponents(topicName: _settings.GetMemeOfTheDayTopicName());
         var webhookUrl = _settings.GetMemeOfTheDayWehbhook();
 
         using HttpClient httpClient = new();

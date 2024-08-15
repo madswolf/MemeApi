@@ -240,7 +240,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         {
             Id = Guid.NewGuid().ToString(),
             Text = "test",
-            Topics = [topic]
+            Topics = [topic, topic2]
         };
         _context.Texts.Add(text);
         await _context.SaveChangesAsync();
@@ -251,6 +251,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         
         // Then
         result.Should().BeTrue();
+        resultVotable.Should().NotBeNull();
         resultVotable?.Topics.Count.Should().Be(1);
         resultVotable?.Topics.Should().NotContain(topic);
     }
@@ -283,7 +284,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         {
             Id = Guid.NewGuid().ToString(),
             Text = "test",
-            Topics = [topic]
+            Topics = [topic, topic2]
         };
         _context.Texts.Add(text);
         await _context.SaveChangesAsync();
@@ -293,6 +294,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         var resultVotable = await _votableRepository.GetVotable(text.Id);
         // Then
         result.Should().BeTrue();
+        resultVotable.Should().NotBeNull();
         resultVotable?.Topics.Count.Should().Be(1);
         resultVotable?.Topics.Should().NotContain(topic);
     }

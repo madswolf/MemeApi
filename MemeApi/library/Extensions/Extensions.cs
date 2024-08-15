@@ -3,6 +3,8 @@ using MemeApi.Models.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace MemeApi.library.Extensions;
 
@@ -11,6 +13,11 @@ public static class Extensions
     public static double CountDubloons(this IEnumerable<DubloonEvent> dubloonEvents)
     {
         return dubloonEvents.Select(d => d.Dubloons).Sum();
+    }
+
+    public static string ToGuid(this string externalUserId)
+    {
+        return new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(externalUserId))).ToString();
     }
 
     public static T RandomItem<T>(this List<T> list, string seed = "")
@@ -145,16 +152,21 @@ public static class Extensions
     {
         var secondsDifference = (element.CreatedAt - timestamp2).Duration().TotalSeconds;
 
-        const double initialDubloonCount = 100.0;
-        const double dubloonCountAfterOneMInute = 10.0;
-        const double firstMinute = 60.0; 
-        const double threeDaysInSeconds = 3 * 24 * 60 * 60; 
+        double initialDubloonCount = 100.0;
+        double lowerBoundAfterFirstDecayPhase = 10.0;
+        double endOfFirstDecayPhase = TimeSpan.FromMinutes(1).TotalSeconds; 
+        double endOfSecondDecayPhase = TimeSpan.FromDays(3).TotalSeconds;
 
-        if (secondsDifference <= firstMinute)
-            return initialDubloonCount - ((initialDubloonCount - dubloonCountAfterOneMInute) * (secondsDifference / firstMinute));
-        else if (secondsDifference <= (firstMinute + threeDaysInSeconds))
-            return dubloonCountAfterOneMInute - (dubloonCountAfterOneMInute * (secondsDifference - firstMinute / threeDaysInSeconds));
+        if (secondsDifference <= endOfFirstDecayPhase)
+            return initialDubloonCount - ((initialDubloonCount - lowerBoundAfterFirstDecayPhase) * CalculatePortotionalDecay(secondsDifference, endOfFirstDecayPhase));
+        else if (secondsDifference <= ( endOfSecondDecayPhase))
+            return lowerBoundAfterFirstDecayPhase - (lowerBoundAfterFirstDecayPhase * CalculatePortotionalDecay(secondsDifference, endOfSecondDecayPhase));
         else
             return 0;
+    }
+
+    public static double CalculatePortotionalDecay(double secondsDifference, double maxDecay)
+    {
+        return (secondsDifference / maxDecay);
     }
 }

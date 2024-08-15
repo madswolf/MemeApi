@@ -34,6 +34,8 @@ public class MemeTestBase : IAsyncLifetime
     private readonly Dictionary<string, string?> _config = new()
     {
                 {"Topic_Default_TopicName", "Rotte-Grotte"},
+                {"Topic_MemeOfTheDay_Topicname", "MemeOfTheDay"},
+                {"Bot_Secret", "lol"},
                 {"Admin_Username", "test"},
                 {"Admin_Password", "test"},
                 {"Media_Host", "test"}
@@ -54,7 +56,7 @@ public class MemeTestBase : IAsyncLifetime
         _visualRepository = new VisualRepository(_context, new FileSaverStub(), new FileRemoverStub(), _topicRepository);
         _textRepository = new TextRepository(_context, _topicRepository);
         _memeRepository = new MemeRepository(_context, _visualRepository, _textRepository, _topicRepository, _settings);
-        _votableRepository = new VotableRepository(_context);
+        _votableRepository = new VotableRepository(_context, _settings) ;
     }
 
     public static HttpContext GetMockedHttpContext()
@@ -109,9 +111,20 @@ public class MemeTestBase : IAsyncLifetime
             CreatedAt = DateTime.UtcNow,
             LastUpdatedAt = DateTime.UtcNow
         };
+
+        var memeOfTheDayTopic = new Topic
+        {
+            Id = Guid.NewGuid().ToString(),
+            OwnerId = admin.Id,
+            Name = _config["Topic_MemeOfTheDay_Topicname"],
+            Description = "test",
+            CreatedAt = DateTime.UtcNow,
+            LastUpdatedAt = DateTime.UtcNow
+        };
 #pragma warning restore CS8601 // Possible null reference assignment.
         _context.Users.Add(admin);  
         _context.Topics.Add(defaultTopic);
+        _context.Topics.Add(memeOfTheDayTopic);
         await _context.SaveChangesAsync();
     }
 
@@ -126,7 +139,7 @@ public class MemeTestBase : IAsyncLifetime
         _visualRepository = new VisualRepository(_context, new FileSaverStub(), new FileRemoverStub(), _topicRepository);
         _textRepository = new TextRepository(_context, _topicRepository);
         _memeRepository = new MemeRepository(_context, _visualRepository, _textRepository, _topicRepository, _settings);
-        _votableRepository = new VotableRepository(_context);
+        _votableRepository = new VotableRepository(_context, _settings);
     }
 
     public async Task DisposeAsync() => await _fixture.ResetDatabase();
