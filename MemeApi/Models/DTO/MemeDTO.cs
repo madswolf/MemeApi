@@ -12,4 +12,5 @@ namespace MemeApi.Models.DTO;
 /// <param name="BottomText"> Textual bottom component of the meme </param>
 /// <param name="Topics"> Topics that the meme belongs to </param>
 /// <param name="CreatedAt"></param>
-public record MemeDTO(string Id, string MemeVisual, TextDTO? Toptext, TextDTO? BottomText, List<string> Topics, DateTime CreatedAt);
+/// <param name="RenderedMeme"> Rendered meme, only returned if the renderMeme query parameter is set</param>
+public record MemeDTO(string Id, VisualDTO MemeVisual, TextDTO? Toptext, TextDTO? BottomText, List<string> Topics, DateTime CreatedAt, byte[]? RenderedMeme = null);

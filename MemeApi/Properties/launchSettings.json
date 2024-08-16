@@ -13,7 +13,7 @@
       "launchBrowser": true,
       "launchUrl": "memes/random/Rendered",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_ENVIRONMENT": "Production",
         "DATABASE_CONNECTION_STRING": "Server=127.0.0.1;Port=5432;Database=memeapi;UserId=postgres;Password=root;"
       }
     },
@@ -24,7 +24,7 @@
       "launchUrl": "users",
       "applicationUrl": "http://localhost:5001",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_ENVIRONMENT": "Production",
         "DATABASE_CONNECTION_STRING": "Server=127.0.0.1;Port=5432;Database=memeapi;UserId=postgres;Password=root;"
       }
     }

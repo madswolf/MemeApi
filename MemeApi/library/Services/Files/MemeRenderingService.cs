@@ -19,12 +19,17 @@ public class MemeRenderingService : IMemeRenderingService
 
     public async Task<byte[]> RenderMeme(Meme meme)
     {
-        var textSize = 40;
-        SKImageInfo info = new SKImageInfo(400, 400, SKColorType.Rgba8888, SKAlphaType.Premul);
-        
         var path = Path.Combine("visual/", meme.Visual.Filename);
         var data = await _loader.LoadFile(path);
-        
+
+        return RenderMemeFromData(data, meme.ToTopText(), meme.ToBottomText());
+    }
+
+    public byte[] RenderMemeFromData(byte[] data, string? toptext = null, string? bottomtext = null)
+    {
+        var textSize = 40;
+        SKImageInfo info = new SKImageInfo(400, 400, SKColorType.Rgba8888, SKAlphaType.Premul);
+
         var inputImage = SKBitmap.Decode(data);
         var resized = inputImage.Resize(info, SKFilterQuality.High);
         var canvas = new SKCanvas(resized);
@@ -32,10 +37,10 @@ public class MemeRenderingService : IMemeRenderingService
         canvas.DrawBitmap(resized, new SKPoint(0, 0));
 
         float topTextY = resized.Height / 6;
-        DrawText(canvas, meme.ToTopText(), resized.Width, topTextY, SKTypeface.FromFamilyName("Impact"), textSize);
+        DrawText(canvas, toptext, resized.Width, topTextY, SKTypeface.FromFamilyName("Impact"), textSize);
 
         float bottomTextY = resized.Height - resized.Height / 8;
-        DrawText(canvas, meme.ToBottomText(), resized.Width, bottomTextY, SKTypeface.FromFamilyName("Impact"), textSize);
+        DrawText(canvas, bottomtext, resized.Width, bottomTextY, SKTypeface.FromFamilyName("Impact"), textSize);
 
         using (var stream = new MemoryStream())
         {
@@ -47,8 +52,11 @@ public class MemeRenderingService : IMemeRenderingService
             return stream.ToArray();
         }
     }
-    private SKCanvas DrawText(SKCanvas canvas, string text, int canvasWidth, float centerY, SKTypeface font, int textSize)
+ 
+
+    private SKCanvas DrawText(SKCanvas canvas, string? text, int canvasWidth, float centerY, SKTypeface font, int textSize)
     {
+        if (text == null) return canvas;
         using var textPaint = new SKPaint();
         textPaint.Color = SKColors.White;
         textPaint.TextSize = textSize;
@@ -63,7 +71,7 @@ public class MemeRenderingService : IMemeRenderingService
         outlinePaint.IsAntialias = true;
         outlinePaint.StrokeWidth = 4; // Width of the outline
         outlinePaint.Style = SKPaintStyle.Stroke;
-
+        
         float centerX = (canvasWidth - textPaint.MeasureText(text)) / 2;
 
         canvas.DrawText(text, centerX, centerY, outlinePaint);
