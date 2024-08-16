@@ -74,12 +74,14 @@ public class MemesController : ControllerBase
     /// </summary>
     [HttpPost]
     [AllowAnonymous]
-    public async Task<ActionResult<MemeDTO>> PostMeme([FromForm]MemeCreationDTO memeCreationDto)
+    public async Task<ActionResult<MemeDTO>> PostMeme([FromForm]MemeCreationDTO memeCreationDto, [FromQuery] bool? renderMeme = false)
     {
         if (!memeCreationDto.VisualFile.FileName.Equals("VisualFile")) memeCreationDto.FileName = memeCreationDto.VisualFile.FileName;
         var meme = await _memeRepository.CreateMeme(memeCreationDto);
         if (meme == null) return NotFound("One of the topics was not found");
-        return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme.ToMemeDTO());
+
+        var renderedMeme = renderMeme == true ? await _memeRendererService.RenderMeme(meme) : null;  
+        return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme.ToMemeDTO(renderedMeme));
     }
 
     /// <summary>
@@ -114,7 +116,7 @@ public class MemesController : ControllerBase
     /// Get a random meme rendered to a png in the response
     /// Use the optional Query parameters TopText and BottomText to define what the top and bottom text should be
     /// </summary>
-    [HttpGet("Rendered")]
+    [HttpGet("random/Rendered")]
     public async Task<ActionResult> RenderImage([FromQuery] string? VisualId = null, [FromQuery] string? TopText = null, [FromQuery] string? BottomText = null)
     {
         var meme = await _memeRepository.RandomMemeByComponents(VisualId, TopText, BottomText);
@@ -138,6 +140,16 @@ public class MemesController : ControllerBase
         Response.Headers.Append(new ("X-File-Render-Time", elapsedMs.ToString() + "ms"));
 
         return file;
+    }
+
+    /// <summary>
+    /// Get a random meme rendered to a png in the response
+    /// Use the optional Query parameters TopText and BottomText to define what the top and bottom text should be
+    /// </summary>
+    [HttpGet("Render")]
+    public async Task<ActionResult> RenderImage([FromForm] MemeCreationDTO memeDTO)
+    {
+        return File(_memeRendererService.RenderMemeFromData(await memeDTO.VisualFile.GetBytes(), memeDTO.TopText, memeDTO.BottomText), "image/png");
     }
 }
 

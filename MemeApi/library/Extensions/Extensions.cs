@@ -1,15 +1,25 @@
-﻿using MemeApi.Models.DTO;
+﻿using MemeApi.library.Services.Files;
+using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace MemeApi.library.Extensions;
 
 public static class Extensions
 {
+    public static async Task<byte[]> GetBytes(this IFormFile formFile)
+    {
+        await using var memoryStream = new MemoryStream();
+        await formFile.CopyToAsync(memoryStream);
+        return memoryStream.ToArray();
+    }
     public static double CountDubloons(this IEnumerable<DubloonEvent> dubloonEvents)
     {
         return dubloonEvents.Select(d => d.Dubloons).Sum();
@@ -82,7 +92,7 @@ public static class Extensions
 
     public static VisualDTO ToVisualDTO(this MemeVisual visual)
     {
-        return new VisualDTO(visual.Id, visual.Filename, visual.Topics.Select(t => t.Name).ToList(), visual.CreatedAt);
+        return new VisualDTO(visual.Id, visual.Filename, visual.Topics?.Select(t => t.Name).ToList(), visual.CreatedAt);
     }
 
     public static UserInfoDTO ToUserInfo(this User u, string mediaHost)
@@ -109,15 +119,16 @@ public static class Extensions
         return $"memeId_{meme.Id}_visualId_{meme.VisualId}_toptextId_{meme.TopTextId}_bottomtextId_{meme.BottomTextId}.png";
     }
 
-    public static MemeDTO ToMemeDTO(this Meme meme)
+    public static MemeDTO ToMemeDTO(this Meme meme, byte[]? renderedMeme = null)
     {
         var memeDTO = new MemeDTO(
             meme.Id,
-            meme.Visual.Filename,
+            meme.Visual.ToVisualDTO(),
             meme.TopText?.ToTextDTO(),
             meme.BottomText?.ToTextDTO(),
             meme.Topics.Select(t => t.Name).ToList(),
-            meme.CreatedAt
+            meme.CreatedAt,
+            renderedMeme
         );
 
         return memeDTO;
