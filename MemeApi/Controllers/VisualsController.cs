@@ -54,13 +54,13 @@ public class VisualsController : ControllerBase
     /// Create a visual
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<MemeVisual>> PostMemeVisual([FromForm]VisualCreationDTO visual)
+    public async Task<ActionResult<VisualDTO>> PostMemeVisual([FromForm]VisualCreationDTO visual)
     {
         if (visual.File.Length > 5000000) return StatusCode(413);
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var memeVisual = await _visualRepository.CreateMemeVisual(visual.File, visual.File.FileName, visual.Topics, userId);
-        return CreatedAtAction("GetMemeVisual", new { id = memeVisual.Id }, memeVisual);
+        var memeVisual = await _visualRepository.CreateMemeVisual(visual.File, visual.FileName ?? visual.File.FileName, visual.Topics, userId);
+        return CreatedAtAction("GetMemeVisual", new { id = memeVisual.Id }, memeVisual.ToVisualDTO());
     }
 
     /// <summary>

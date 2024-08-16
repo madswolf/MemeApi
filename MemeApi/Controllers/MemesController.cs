@@ -84,6 +84,16 @@ public class MemesController : ControllerBase
         return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme.ToMemeDTO(renderedMeme));
     }
 
+    [HttpPost("ById")]
+    [AllowAnonymous]
+    public async Task<ActionResult<MemeDTO>> PostMemeById([FromBody] MemeCreationByIdDTO memeCreationDto)
+    {     
+        var meme = await _memeRepository.CreateMemeById(memeCreationDto);
+        if (meme == null) return NotFound("One of the topics was not found");
+
+        return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme.ToMemeDTO());
+    }
+
     /// <summary>
     /// Delete a meme
     /// </summary>
