@@ -70,6 +70,20 @@ public class MemeRepository
         return meme;
     }
 
+    public async Task<Meme?> CreateMemeById(MemeCreationByIdDTO memeDTO, string? userId = null)
+    {
+        var memeVisual = await _visualRepository.GetVisual(memeDTO.VisualId);
+        if (memeVisual == null) return null;
+
+        var toptext = memeDTO.TopTextId != null ? await _textRepository.GetText(memeDTO.TopTextId) : null;
+        var bottomtext = memeDTO.BottomTextId != null ? await _textRepository.GetText(memeDTO.BottomTextId) : null;
+        var topics = await _topicRepository.GetTopicsByNameForUser(memeDTO.Topics, userId);
+
+        if (topics.Any(t => t == null)) return null;
+
+        return await UpsertByComponents(memeVisual,toptext, bottomtext);
+    }
+
     public async Task<Meme> UpsertByComponents(MemeVisual visual, MemeText? topText, MemeText? bottomText, Topic? topic = null)
     {
         var meme = await FindByComponents(visual, topText, bottomText);
