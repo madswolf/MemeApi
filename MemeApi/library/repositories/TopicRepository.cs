@@ -39,8 +39,9 @@ public class TopicRepository
         return await _context.Topics.Include(t => t.Moderators).FirstOrDefaultAsync(t => t.Id == id);
     }
 
-    public async Task<Topic?> GetTopicByName(string name)
+    public async Task<Topic?> GetTopicByName(string? name)
     {
+        if (string.IsNullOrEmpty(name)) return null;
         return await _context.Topics.Where(t => t.Name == name).FirstOrDefaultAsync();
     }
 

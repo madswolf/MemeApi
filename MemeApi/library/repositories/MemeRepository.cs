@@ -153,6 +153,9 @@ public class MemeRepository
     public async Task<Meme> RandomMemeByComponents(string? visualId = null, string? topText = null, string? bottomText = null, string? topicName = null)
     {
         MemeVisual? visual = null;
+        var defaultTopic = await _topicRepository.GetTopicByName(_settings.GetDefaultTopicName());
+
+        if (defaultTopic == null) throw new ArgumentException("Default topic cannot be found");
 
         if (visualId != null) {
             visual = await _visualRepository.GetVisual(visualId);
@@ -160,18 +163,18 @@ public class MemeRepository
 
         if (visual == null)
         {
-            visual = _visualRepository.GetRandomVisual();
+            visual = _visualRepository.GetRandomVisualInTopic(defaultTopic);
         }
         
         var topTextComponent = topText == null ? 
-            _textRepository.GetRandomTextByType(MemeTextPosition.TopText) 
+            _textRepository.GetRandomTextByTypeInTopic(MemeTextPosition.TopText, defaultTopic) 
             : await _textRepository.GetTextByContent(topText, MemeTextPosition.TopText);
 
         var bottomTextComponent = bottomText == null ?
-            _textRepository.GetRandomTextByType(MemeTextPosition.BottomText)
+            _textRepository.GetRandomTextByTypeInTopic(MemeTextPosition.BottomText, defaultTopic)
             : await _textRepository.GetTextByContent(bottomText, MemeTextPosition.BottomText);
-
-        var topic = topicName != null ? await _topicRepository.GetTopicByName(topicName) : null;
+        var topic = await _topicRepository.GetTopicByName(topicName);
+        if (topic == null) topic = defaultTopic;
 
         var meme = await UpsertByComponents(visual, topTextComponent, bottomTextComponent, topic);
         return meme;
