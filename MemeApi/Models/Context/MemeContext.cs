@@ -163,6 +163,14 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             Description = "Memes are back baby!",
         };
 
+        var defaultTopic3 = new Topic
+        {
+            Id = Guid.NewGuid().ToString(),
+            OwnerId = admin.Id,
+            Name = "Bean-den",
+            Description = "Memes are back baby!",
+        };
+
         var memeOfTheDayTopic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
@@ -172,6 +180,6 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
         };
 
         modelBuilder.Entity<User>().HasData(admin);
-        modelBuilder.Entity<Topic>().HasData(defaultTopic, defaultTopic2, memeOfTheDayTopic);
+        modelBuilder.Entity<Topic>().HasData(defaultTopic, defaultTopic2, defaultTopic3, memeOfTheDayTopic);
     }
 }

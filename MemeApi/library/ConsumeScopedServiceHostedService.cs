@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NCrontab;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,15 +13,17 @@ namespace MemeApi.library;
 public class ConsumeScopedServiceHostedService : BackgroundService
 {
 
-    private readonly CrontabSchedule _crontabSchedule;
     private DateTime _nextRun;
-    private const string Schedule = "30 12 * * *"; // run day at 1 am
+    private static readonly List<string> Schedule =
+    [
+            "00 10 * * *",
+            "00 20 * * *",
+    ];
 
     public IServiceProvider Services { get; }
     public ConsumeScopedServiceHostedService(IServiceProvider services)
     {
-        _crontabSchedule = CrontabSchedule.Parse(Schedule);
-        _nextRun = _crontabSchedule.GetNextOccurrence(DateTime.UtcNow);
+        _nextRun = CalCulateNextRun();
         Services = services;
     }
 
@@ -38,10 +42,18 @@ public class ConsumeScopedServiceHostedService : BackgroundService
                 await scopedProcessingService.ExecuteAsync(stoppingToken);
             }
 
-            _nextRun = _crontabSchedule.GetNextOccurrence(DateTime.UtcNow);
+            _nextRun = CalCulateNextRun();
         }
     }
-    private int UntilNextExecution() => Math.Max(0, (int)_nextRun.Subtract(DateTime.UtcNow).TotalMilliseconds);
+
+    private DateTime CalCulateNextRun()
+    {
+        var occurrences = Schedule.Select(s => CrontabSchedule.Parse(s).GetNextOccurrence(DateTime.Now)).ToList();
+        occurrences.Sort(DateTime.Compare);
+        return occurrences.First();
+    }
+
+    private int UntilNextExecution() => Math.Max(0, (int)_nextRun.Subtract(DateTime.Now).TotalMilliseconds);
 
 
     public override async Task StopAsync(CancellationToken stoppingToken)

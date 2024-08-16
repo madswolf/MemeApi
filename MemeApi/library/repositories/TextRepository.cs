@@ -47,6 +47,12 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
         return _context.Texts.Where(x => x.Position == type).RandomItem(seed);
     }
 
+    public MemeText GetRandomTextByTypeInTopic(MemeTextPosition type, Topic topic, string seed = "")
+    {
+        var list = _context.Texts.Include(t => t.Topics).Where(t => t.Topics.Contains(topic));
+        return _context.Texts.Include(t => t.Topics).Where(t => t.Topics.Contains(topic)).Where(x => x.Position == type).RandomItem(seed);
+    }
+
 
     public MemeText GetRandomText(string seed = "")
     {
