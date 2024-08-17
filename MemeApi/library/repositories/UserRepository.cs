@@ -1,4 +1,5 @@
-﻿using MemeApi.library.Services.Files;
+﻿using MemeApi.library.Extensions;
+using MemeApi.library.Services.Files;
 using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
@@ -32,12 +33,12 @@ public class UserRepository
 
     public async Task<User?> GetUser(string? id, bool includeDubloons = false)
     {
+        if (id == null) return null;
         IQueryable<User> queryable = _memeContext.Users.Include(u => u.Topics);
 
         if(includeDubloons) 
             queryable = queryable.Include(u => u.DubloonEvents);
-
-        return await queryable.FirstOrDefaultAsync(u => u.Id == id);
+        return await queryable.FirstOrDefaultAsync(u => u.Id == id || u.Id == id.ToGuid());
     }
 
     public async Task<User?> FindByEmail(string userEmail)
