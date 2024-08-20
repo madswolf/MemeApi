@@ -15,9 +15,9 @@ public class ConsumeScopedServiceHostedService : BackgroundService
 
     private DateTime _nextRun;
     private static readonly List<string> Schedule =
-    [
-            "00 10 * * *",
-            "00 20 * * *",
+    [	    //"* * * * *",
+            "00 08 * * *",
+            "00 18 * * *",
     ];
 
     public IServiceProvider Services { get; }
