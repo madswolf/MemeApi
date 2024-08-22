@@ -1,8 +1,8 @@
-using MemeApi;
 using MemeApi.library;
 using MemeApi.library.repositories;
 using MemeApi.library.Services;
 using MemeApi.library.Services.Files;
+using MemeApi.MIddleware;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Builder;
@@ -123,6 +123,7 @@ using (var serviceScope = factory.CreateScope())
 }
 
 app.UseMiddleware<SwaggerAuthenticationMiddleware>();
+app.UseMiddleware<ExternalUserMiddleware>();
 app.UseSwaggerUI();
 app.UseSwagger();
 app.UseRouting();
