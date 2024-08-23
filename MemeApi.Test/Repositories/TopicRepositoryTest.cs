@@ -123,7 +123,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         var defaultTopic = await _topicRepository.GetDefaultTopic();
 
         // When
-        var result = await _textRepository.CreateText("test", MemeTextPosition.TopText);
+        var result = await _textRepository.CreateText("test", MemeTextPosition.TopText, userId: null);
 
         // Then
         result.Topics.Should().Contain(defaultTopic);

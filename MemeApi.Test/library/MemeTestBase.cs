@@ -53,9 +53,9 @@ public class MemeTestBase : IAsyncLifetime
 
         _userRepository = new UserRepository(_context, TestUserManager<User>(), new FileSaverStub());
         _topicRepository = new TopicRepository(_context, _userRepository, _settings);
-        _visualRepository = new VisualRepository(_context, new FileSaverStub(), new FileRemoverStub(), _topicRepository);
-        _textRepository = new TextRepository(_context, _topicRepository);
-        _memeRepository = new MemeRepository(_context, _visualRepository, _textRepository, _topicRepository, _settings);
+        _visualRepository = new VisualRepository(_context, new FileSaverStub(), new FileRemoverStub(), _topicRepository, _userRepository);
+        _textRepository = new TextRepository(_context, _topicRepository, _userRepository);
+        _memeRepository = new MemeRepository(_context, _visualRepository, _textRepository, _topicRepository, _settings, _userRepository);
         _votableRepository = new VotableRepository(_context, _settings) ;
     }
 
@@ -136,9 +136,9 @@ public class MemeTestBase : IAsyncLifetime
 
         _userRepository = new UserRepository(_context, TestUserManager<User>(), new FileSaverStub());
         _topicRepository = new TopicRepository(_context, _userRepository, _settings);
-        _visualRepository = new VisualRepository(_context, new FileSaverStub(), new FileRemoverStub(), _topicRepository);
-        _textRepository = new TextRepository(_context, _topicRepository);
-        _memeRepository = new MemeRepository(_context, _visualRepository, _textRepository, _topicRepository, _settings);
+        _visualRepository = new VisualRepository(_context, new FileSaverStub(), new FileRemoverStub(), _topicRepository, _userRepository);
+        _textRepository = new TextRepository(_context, _topicRepository, _userRepository);
+        _memeRepository = new MemeRepository(_context, _visualRepository, _textRepository, _topicRepository, _settings, _userRepository);
         _votableRepository = new VotableRepository(_context, _settings);
     }
 

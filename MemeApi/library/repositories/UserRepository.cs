@@ -38,7 +38,7 @@ public class UserRepository
 
         if(includeDubloons) 
             queryable = queryable.Include(u => u.DubloonEvents);
-        return await queryable.FirstOrDefaultAsync(u => u.Id == id || u.Id == id.ToGuid());
+        return await queryable.FirstOrDefaultAsync(u => u.Id == id || u.Id == id.ExternalUserIdToGuid());
     }
 
     public async Task<User?> FindByEmail(string userEmail)
