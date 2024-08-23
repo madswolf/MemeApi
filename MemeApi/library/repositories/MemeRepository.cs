@@ -75,6 +75,11 @@ public class MemeRepository
         return meme;
     }
 
+    public async Task<bool> HasMemeCreatedInTimeSpan(DateTime start, DateTime end) 
+    {
+        return await _context.Memes.AnyAsync(m => start < m.CreatedAt && m.CreatedAt < end);
+    }
+
     public async Task<Meme?> CreateMemeById(MemeCreationByIdDTO memeDTO, string? userId = null)
     {
         var memeVisual = await _visualRepository.GetVisual(memeDTO.VisualId);

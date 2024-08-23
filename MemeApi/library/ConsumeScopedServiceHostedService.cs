@@ -1,4 +1,5 @@
-﻿using MemeApi.library.Services;
+﻿using MemeApi.library.repositories;
+using MemeApi.library.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NCrontab;
@@ -12,7 +13,6 @@ namespace MemeApi.library;
 
 public class ConsumeScopedServiceHostedService : BackgroundService
 {
-
     private DateTime _nextRun;
     private static readonly List<string> Schedule =
     [	    //"* * * * *",
@@ -23,7 +23,7 @@ public class ConsumeScopedServiceHostedService : BackgroundService
     public IServiceProvider Services { get; }
     public ConsumeScopedServiceHostedService(IServiceProvider services)
     {
-        _nextRun = CalCulateNextRun();
+        _nextRun = CalCulateNextRun(DateTime.UtcNow);
         Services = services;
     }
 
@@ -31,29 +31,43 @@ public class ConsumeScopedServiceHostedService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await Task.Delay(UntilNextExecution(), stoppingToken); // wait until next time
-
-            using (var scope = Services.CreateScope())
+            var occurencePast = CalCulateNextRun(DateTime.UtcNow.AddMinutes(-15));
+            var occurenceNow = CalCulateNextRun(DateTime.UtcNow);
+            using var scope = Services.CreateScope();
+            if (occurencePast != occurenceNow)
             {
-                var scopedProcessingService =
-                    scope.ServiceProvider
-                        .GetRequiredService<IMemeOfTheDayService>();
-
-                await scopedProcessingService.ExecuteAsync(stoppingToken);
+                var service = scope.ServiceProvider.GetRequiredService<MemeRepository>();
+                var memeCreated = await service.HasMemeCreatedInTimeSpan(occurencePast, occurenceNow);
+                if (!memeCreated)
+                {
+                    await InvokeMemeOfTheDayService(scope, stoppingToken);
+                }
             }
 
-            _nextRun = CalCulateNextRun();
+            await Task.Delay(UntilNextExecution(), stoppingToken); // wait until next time
+            await InvokeMemeOfTheDayService(scope, stoppingToken);
+
+            _nextRun = CalCulateNextRun(DateTime.UtcNow);
         }
     }
 
-    private DateTime CalCulateNextRun()
+    private static async Task InvokeMemeOfTheDayService(IServiceScope scope, CancellationToken stoppingToken)
     {
-        var occurrences = Schedule.Select(s => CrontabSchedule.Parse(s).GetNextOccurrence(DateTime.Now)).ToList();
+        var scopedProcessingService =
+            scope.ServiceProvider
+                .GetRequiredService<IMemeOfTheDayService>();
+
+        await scopedProcessingService.ExecuteAsync(stoppingToken);
+    }
+
+    private DateTime CalCulateNextRun(DateTime time)
+    {
+        var occurrences = Schedule.Select(s => CrontabSchedule.Parse(s).GetNextOccurrence(time)).ToList();
         occurrences.Sort(DateTime.Compare);
         return occurrences.First();
     }
 
-    private int UntilNextExecution() => Math.Max(0, (int)_nextRun.Subtract(DateTime.Now).TotalMilliseconds);
+    private int UntilNextExecution() => Math.Max(0, (int)_nextRun.Subtract(DateTime.UtcNow).TotalMilliseconds);
 
 
     public override async Task StopAsync(CancellationToken stoppingToken)
