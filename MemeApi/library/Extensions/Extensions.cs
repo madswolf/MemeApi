@@ -25,7 +25,7 @@ public static class Extensions
         return dubloonEvents.Select(d => d.Dubloons).Sum();
     }
 
-    public static string ToGuid(this string externalUserId)
+    public static string ExternalUserIdToGuid(this string externalUserId)
     {
         return new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(externalUserId))).ToString();
     }
@@ -84,19 +84,20 @@ public static class Extensions
         return new TopicDTO(t.Id, t.Name, t.Description, t.Owner.UserName(), t.Moderators.Select(u => u.UserName()).ToList(), t.CreatedAt, t.LastUpdatedAt);
     }
 
-    public static TextDTO? ToTextDTO(this MemeText text)
+    public static TextDTO? ToTextDTO(this MemeText text, string mediaHost)
     {
         if (text == null) return null;
-        return new TextDTO(text.Id, text.Text, Enum.GetName(text.Position), text.Topics?.Select(t => t.Name).ToList(), text.CreatedAt);
+        return new TextDTO(text.Id, text.Text, Enum.GetName(text.Position), text.Owner.ToUserInfo(mediaHost), text.Topics?.Select(t => t.Name).ToList(), text.CreatedAt);
     }
 
-    public static VisualDTO ToVisualDTO(this MemeVisual visual)
+    public static VisualDTO ToVisualDTO(this MemeVisual visual, string mediaHost)
     {
-        return new VisualDTO(visual.Id, visual.Filename, visual.Topics?.Select(t => t.Name).ToList(), visual.CreatedAt);
+        return new VisualDTO(visual.Id, visual.Filename, visual.Owner.ToUserInfo(mediaHost), visual.Topics?.Select(t => t.Name).ToList(), visual.CreatedAt);
     }
 
-    public static UserInfoDTO ToUserInfo(this User u, string mediaHost)
+    public static UserInfoDTO? ToUserInfo(this User? u, string mediaHost)
     {
+        if (u == null) return null;
         return new UserInfoDTO(u.Id, u.UserName(), mediaHost + "profilePic/" + u.ProfilePicFile, u.Topics?.Select(t => t.Name).ToList());
     }
     public static string UserName(this User u)
@@ -119,13 +120,14 @@ public static class Extensions
         return $"memeId_{meme.Id}_visualId_{meme.VisualId}_toptextId_{meme.TopTextId}_bottomtextId_{meme.BottomTextId}.png";
     }
 
-    public static MemeDTO ToMemeDTO(this Meme meme, byte[]? renderedMeme = null)
+    public static MemeDTO ToMemeDTO(this Meme meme, string mediaHost, byte[]? renderedMeme = null)
     {
         var memeDTO = new MemeDTO(
             meme.Id,
-            meme.Visual.ToVisualDTO(),
-            meme.TopText?.ToTextDTO(),
-            meme.BottomText?.ToTextDTO(),
+            meme.Visual.ToVisualDTO(mediaHost),
+            meme.TopText?.ToTextDTO(mediaHost),
+            meme.BottomText?.ToTextDTO(mediaHost),
+            meme.Owner.ToUserInfo(mediaHost),
             meme.Topics.Select(t => t.Name).ToList(),
             meme.CreatedAt,
             renderedMeme

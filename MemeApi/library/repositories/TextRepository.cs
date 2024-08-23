@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 
 namespace MemeApi.library.repositories;
 
-public class TextRepository(MemeContext context, TopicRepository topicRepository)
+public class TextRepository(MemeContext context, TopicRepository topicRepository, UserRepository userRepository)
 {
     private readonly MemeContext _context = context;
     private readonly TopicRepository _topicRepository = topicRepository;
+    private readonly UserRepository _userRepository = userRepository;
 
     public async Task<List<MemeText>> GetTexts(MemeTextPosition? type = null)
     {
@@ -21,7 +22,7 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
         {
             return await texts.Where(x => x.Position == type).ToListAsync();
         }
-        
+
         return await texts.ToListAsync();
     }
 
@@ -94,7 +95,13 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
 
     public async Task<MemeText> CreateText(string text, MemeTextPosition position, IEnumerable<string>? topicNames = null, string? userId = null)
     {
-        var topics = await _topicRepository.GetTopicsByNameForUser(topicNames, userId);
+        var user = await _userRepository.GetUser(userId);
+        return await CreateText(text, position, topicNames, user);
+    }
+
+    public async Task<MemeText> CreateText(string text, MemeTextPosition position, IEnumerable<string>? topicNames = null, User? user = null)
+    {
+        var topics = await _topicRepository.GetTopicsByNameForUser(topicNames, user?.Id);
 
         var memeText = new MemeText
         {
@@ -103,6 +110,8 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
             Text = text,
             Position = position,
         };
+
+        if (user != null) memeText.Owner = user;
 
         _context.Texts.Add(memeText);
         await _context.SaveChangesAsync();
@@ -113,7 +122,7 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
     {
         var memeBottomText = await _context.Texts.FindAsync(id);
         if (memeBottomText == null) return false;
-        
+
 
         _context.Texts.Remove(memeBottomText);
         await _context.SaveChangesAsync();

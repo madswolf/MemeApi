@@ -36,7 +36,7 @@ public class VisualsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<VisualDTO>>> GetVisuals() {
         var visuals = await _visualRepository.GetVisuals();
-        return Ok(visuals.Select(v => v.ToVisualDTO()));
+        return Ok(visuals.Select(v => v.ToVisualDTO(_settings.GetMediaHost())));
     }
     /// <summary>
     /// Get a specific visual by ID
@@ -60,7 +60,7 @@ public class VisualsController : ControllerBase
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var memeVisual = await _visualRepository.CreateMemeVisual(visual.File, visual.FileName ?? visual.File.FileName, visual.Topics, userId);
-        return CreatedAtAction("GetMemeVisual", new { id = memeVisual.Id }, memeVisual.ToVisualDTO());
+        return CreatedAtAction("GetMemeVisual", new { id = memeVisual.Id }, memeVisual.ToVisualDTO(_settings.GetMediaHost()));
     }
 
     /// <summary>

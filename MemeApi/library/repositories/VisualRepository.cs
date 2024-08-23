@@ -19,13 +19,15 @@ public class VisualRepository
     private readonly TopicRepository _topicRepository;
     private readonly IFileSaver _fileSaver;
     private readonly IFileRemover _fileRemover;
+    private readonly UserRepository _userRepository;
     private static readonly Random Random = Random.Shared;
-    public VisualRepository(MemeContext context, IFileSaver fileSaver, IFileRemover fileRemover, TopicRepository topicRepository)
+    public VisualRepository(MemeContext context, IFileSaver fileSaver, IFileRemover fileRemover, TopicRepository topicRepository, UserRepository userRepository)
     {
         _context = context;
         _fileSaver = fileSaver;
         _fileRemover = fileRemover;
         _topicRepository = topicRepository;
+        _userRepository = userRepository;
     }
 
     public async Task<List<MemeVisual>> GetVisuals()
@@ -62,9 +64,15 @@ public class VisualRepository
             .Select(s => s[Random.Next(s.Length)]).ToArray());
     }
 
-    public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename, IEnumerable<string>? topicNames = null, string? userId = null)
+    public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename, IEnumerable<string>? topicNames = null, string? userId = null) 
+    { 
+        var user = await _userRepository.GetUser(userId);
+        return await CreateMemeVisual(visual, filename, topicNames, user);
+    }
+
+    public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename, IEnumerable<string>? topicNames = null, User? user = null)
     {   
-        var topics = await _topicRepository.GetTopicsByNameForUser(topicNames, userId);
+        var topics = await _topicRepository.GetTopicsByNameForUser(topicNames, user?.Id);
 
         var memeVisual = new MemeVisual()
         {
@@ -72,6 +80,8 @@ public class VisualRepository
             Filename = filename,
             Topics = topics,
         };
+
+        if(user != null) memeVisual.Owner = user;
 
         if (_context.Visuals.Any(x => x.Filename == memeVisual.Filename))
         {

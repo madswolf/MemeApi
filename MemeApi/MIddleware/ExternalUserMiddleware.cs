@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MemeApi.library.Extensions;
+using Microsoft.AspNetCore.Http;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ public class ExternalUserMiddleware
             var first = userIdHeaderValue.FirstOrDefault();
             if(first != null)
             {
-                var claims = new[] { new Claim(ClaimTypes.NameIdentifier, first) };
+                var claims = new[] { new Claim(ClaimTypes.NameIdentifier, first.ExternalUserIdToGuid()) };
                 var identity = new ClaimsIdentity(claims, "Custom");
                 context.User = new ClaimsPrincipal(identity);
             }
