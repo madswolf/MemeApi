@@ -18,25 +18,30 @@ public class MemeRepository
     private readonly VisualRepository _visualRepository;
     private readonly TextRepository _textRepository;
     private readonly TopicRepository _topicRepository;
+    private readonly UserRepository _userRepository;
     private readonly MemeApiSettings _settings;
-    public MemeRepository(MemeContext context, VisualRepository visualRepository, TextRepository textRepository, TopicRepository topicRepository, MemeApiSettings settings)
+    public MemeRepository(MemeContext context, VisualRepository visualRepository, TextRepository textRepository, TopicRepository topicRepository, MemeApiSettings settings, UserRepository userRepository)
     {
         _context = context;
         _visualRepository = visualRepository;
         _textRepository = textRepository;
         _topicRepository = topicRepository;
         _settings = settings;
+        _userRepository = userRepository;
     }
 
     public async Task<Meme?> CreateMeme(MemeCreationDTO memeDTO, string? userId = null)
     {
-        var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName, memeDTO.Topics, userId);
+        var user = await _userRepository.GetUser(userId);
+        var memeVisual = await _visualRepository.CreateMemeVisual(memeDTO.VisualFile, memeDTO.FileName, memeDTO.Topics, user);
         var meme = new Meme
         {
             Id = Guid.NewGuid().ToString(),
             VisualId = memeVisual.Id,
             Visual = memeVisual,
         };
+
+        if (user != null) meme.Owner = user;
 
         //if (memeDTO.SoundFile != null)
         //{
@@ -47,14 +52,14 @@ public class MemeRepository
 
         if (memeDTO.TopText != null)
         {
-            var toptext = await _textRepository.CreateText(memeDTO.TopText, MemeTextPosition.TopText, memeDTO.Topics, userId);
+            var toptext = await _textRepository.CreateText(memeDTO.TopText, MemeTextPosition.TopText, memeDTO.Topics, user);
             meme.TopText = toptext;
             meme.TopTextId = toptext.Id;
         }
 
         if (memeDTO.BottomText != null)
         {
-            var bottomtext = await _textRepository.CreateText(memeDTO.BottomText, MemeTextPosition.BottomText, memeDTO.Topics, userId);
+            var bottomtext = await _textRepository.CreateText(memeDTO.BottomText, MemeTextPosition.BottomText, memeDTO.Topics, user);
             meme.BottomText = bottomtext;
             meme.BottomTextId = bottomtext.Id;
         }

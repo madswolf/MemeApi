@@ -64,7 +64,7 @@ public class VotesControllerTest : MemeTestBase
         (await _context.DubloonEvents.CountAsync()).Should().Be(1);
 
         var users = await _context.Users.ToListAsync();
-        var externalUser = users.FirstOrDefault(x => x.Id == postVoteDTO.ExternalUserID.ToGuid());
+        var externalUser = users.FirstOrDefault(x => x.Id == postVoteDTO.ExternalUserID.ExternalUserIdToGuid());
 
         createdVote.Should().NotBeNull();
         createdVote?.Upvote.Should().Be(expected);
@@ -94,7 +94,7 @@ public class VotesControllerTest : MemeTestBase
         {
             // External users take use the has of a string to create their Guid
             // so we must create it already with that conversion
-            Id = userId.ToGuid(),
+            Id = userId.ExternalUserIdToGuid(),
             UserName = "Test",
         };
 
@@ -121,7 +121,7 @@ public class VotesControllerTest : MemeTestBase
         (await _context.Users.CountAsync()).Should().Be(2);
 
         var users = await _context.Users.ToListAsync();
-        var externalUser = users.FirstOrDefault(x => x.Id == postVoteDTO.ExternalUserID.ToGuid());
+        var externalUser = users.FirstOrDefault(x => x.Id == postVoteDTO.ExternalUserID.ExternalUserIdToGuid());
         externalUser.Should().NotBeNull();
     }
 
@@ -148,7 +148,7 @@ public class VotesControllerTest : MemeTestBase
         {
             // External users take use the has of a string to create their Guid
             // so we must create it already with that conversion
-            Id = userId.ToGuid(),
+            Id = userId.ExternalUserIdToGuid(),
             UserName = "Test",
         };
 

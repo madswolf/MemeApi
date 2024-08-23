@@ -23,7 +23,7 @@ public class MemesControllerTest : MemeTestBase
     [Fact]
     public async Task GIVEN_Visual_WHEN_CreatingMeme_THEN_MemeIsCreated()
     {
-        var controller = new MemesController(_memeRepository, _memeRenderingService);
+        var controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
 
         // given
         var filename = "test.png";
@@ -48,7 +48,7 @@ public class MemesControllerTest : MemeTestBase
     [Fact]
     public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_GettingMemeBottomText_THEN_MemeBottomTextHasProperValues()
     {
-        var controller = new MemesController(_memeRepository, _memeRenderingService);
+        var controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
 
         // given
         var visual = new MemeVisual()
@@ -85,8 +85,8 @@ public class MemesControllerTest : MemeTestBase
     [Fact]
     public async Task Test_Votable_Deletion_With_Connection_Reset()
     {
-        var controller = new MemesController(_memeRepository, _memeRenderingService);
-        var controller2 = new TextsController(_textRepository);
+        var controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
+        var controller2 = new TextsController(_textRepository, _settings);
 
         // given
         var filename = "test.png";
@@ -110,8 +110,8 @@ public class MemesControllerTest : MemeTestBase
         createdMeme?.MemeVisual.Filename.Should().Be(filename);
 
         ResetConnection();
-        controller = new MemesController(_memeRepository, _memeRenderingService);
-        controller2 = new TextsController(_textRepository);
+        controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
+        controller2 = new TextsController(_textRepository, _settings);
 
         //with the connection reset, this fails
         var deleteTask = await controller2.DeleteMemeText(createdMeme?.BottomText?.Id);
@@ -119,8 +119,8 @@ public class MemesControllerTest : MemeTestBase
         deleteTask.Should().BeOfType<NoContentResult>();
 
         ResetConnection();
-        controller = new MemesController(_memeRepository, _memeRenderingService);
-        controller2 = new TextsController(_textRepository);
+        controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
+        controller2 = new TextsController(_textRepository, _settings);
 
         //with the connection reset, this fails
         var deleteTask2 = await controller2.DeleteMemeText(createdMeme?.Toptext?.Id);
@@ -132,8 +132,8 @@ public class MemesControllerTest : MemeTestBase
     [Fact]
     public async Task Test_Votable_Deletion_Without_Connection_Reset()
     {
-        var controller = new MemesController(_memeRepository, _memeRenderingService);
-        var controller2 = new TextsController(_textRepository);
+        var controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
+        var controller2 = new TextsController(_textRepository, _settings);
 
         // given
         var filename = "test.png";

@@ -94,7 +94,7 @@ public class VotesController : ControllerBase
         {
             if (voteDTO.ExternalUserID == null || voteDTO.ExternalUserName == null) return BadRequest("Please include an external user whe voting on behalf of someone else");
 
-            userId = voteDTO.ExternalUserID?.ToGuid();
+            userId = voteDTO.ExternalUserID?.ExternalUserIdToGuid();
             user = await _userRepository.GetUser(userId);
             if (user == null) {
                 user = new User()

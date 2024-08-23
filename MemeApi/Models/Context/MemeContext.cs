@@ -36,6 +36,13 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<User>()
+            .HasMany(u => u.Votables)
+            .WithOne(v => v.Owner)
+            .IsRequired(false)
+            .HasForeignKey(v => v.OwnerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<User>()
             .HasMany(u => u.DubloonEvents)
             .WithOne(d => d.Owner)
             .HasForeignKey(u => u.UserId)
@@ -59,7 +66,6 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
 
         modelBuilder.Entity<Votable>().Property(v => v.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         modelBuilder.Entity<Votable>().Property(v => v.LastUpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-
 
         modelBuilder.Entity<Meme>(entity =>
         {

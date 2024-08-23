@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System;
 using Microsoft.Net.Http.Headers;
+using System.Runtime;
+using MemeApi.library;
+using System.Security.Claims;
 
 namespace MemeApi.Controllers;
 
@@ -25,14 +28,16 @@ public class MemesController : ControllerBase
 {
     private readonly IMemeRenderingService _memeRendererService;
     private readonly MemeRepository _memeRepository;
+    private readonly MemeApiSettings _settings;
 
     /// <summary>
     /// A controller for creating memes made of visuals and textual components.
     /// </summary>
-    public MemesController(MemeRepository memeRepository, IMemeRenderingService memeRendererService)
+    public MemesController(MemeRepository memeRepository, IMemeRenderingService memeRendererService, MemeApiSettings settings)
     {
         _memeRepository = memeRepository;
         _memeRendererService = memeRendererService;
+        _settings = settings;
     }
     /// <summary>
     /// Get all memes
@@ -41,7 +46,7 @@ public class MemesController : ControllerBase
     public async Task<ActionResult<IEnumerable<MemeDTO>>> GetMemes()
     {
         var memes = await _memeRepository.GetMemes();
-        return Ok(memes.Select(m => m.ToMemeDTO()));
+        return Ok(memes.Select(m => m.ToMemeDTO(_settings.GetMediaHost())));
     }
 
     /// <summary>
@@ -53,7 +58,7 @@ public class MemesController : ControllerBase
         var meme = await _memeRepository.GetMeme(id);
         if (meme == null) return NotFound();
 
-        return Ok(meme.ToMemeDTO());
+        return Ok(meme.ToMemeDTO(_settings.GetMediaHost()));
     }
 
     //[HttpPut("{id}")]
@@ -77,11 +82,12 @@ public class MemesController : ControllerBase
     public async Task<ActionResult<MemeDTO>> PostMeme([FromForm]MemeCreationDTO memeCreationDto, [FromQuery] bool? renderMeme = false)
     {
         if (!memeCreationDto.VisualFile.FileName.Equals("VisualFile")) memeCreationDto.FileName = memeCreationDto.VisualFile.FileName;
-        var meme = await _memeRepository.CreateMeme(memeCreationDto);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var meme = await _memeRepository.CreateMeme(memeCreationDto, userId);
         if (meme == null) return NotFound("One of the topics was not found");
 
         var renderedMeme = renderMeme == true ? await _memeRendererService.RenderMeme(meme) : null;  
-        return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme.ToMemeDTO(renderedMeme));
+        return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme.ToMemeDTO(_settings.GetMediaHost(), renderedMeme));
     }
 
     [HttpPost("ById")]
@@ -91,7 +97,7 @@ public class MemesController : ControllerBase
         var meme = await _memeRepository.CreateMemeById(memeCreationDto);
         if (meme == null) return NotFound("One of the topics was not found");
 
-        return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme.ToMemeDTO());
+        return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme.ToMemeDTO(_settings.GetMediaHost()));
     }
 
     /// <summary>
@@ -130,7 +136,7 @@ public class MemesController : ControllerBase
     public async Task<ActionResult> RenderImage([FromQuery] string? VisualId = null, [FromQuery] string? TopText = null, [FromQuery] string? BottomText = null)
     {
         var meme = await _memeRepository.RandomMemeByComponents(VisualId, TopText, BottomText);
-        var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO());
+        var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO(_settings.GetMediaHost()));
         var cleanedHeaderValue = Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X");
 
         var watch = System.Diagnostics.Stopwatch.StartNew();

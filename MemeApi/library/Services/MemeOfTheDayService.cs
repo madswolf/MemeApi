@@ -49,7 +49,7 @@ public class MemeOfTheDayService : IMemeOfTheDayService
         }
         catch (Exception)
         {
-            var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO());
+            var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO(_settings.GetMediaHost()));
 
             Console.Error.WriteLine(Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X"));
             Console.WriteLine(Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X"));
