@@ -158,6 +158,7 @@ public class MemeRepository
             .Include(m => m.Visual)
             .Include(m => m.Topics)
             .Include(m => m.TopText)
+            .Include(m => m.Owner)
             .Include(m => m.BottomText);
     }
     public async Task<Meme> RandomMemeByComponents(string? visualId = null, string? topText = null, string? bottomText = null, string? topicName = null)
