@@ -35,6 +35,7 @@ public class VisualRepository
         return await _context.Visuals
             .Include(x => x.Votes)
             .Include(x => x.Topics)
+            .Include(x => x.Owner)
             .ToListAsync();
     }
 
@@ -54,7 +55,7 @@ public class VisualRepository
 
     public async Task<MemeVisual?> GetVisual(string? id)
     {
-        return await _context.Visuals.Include(x => x.Votes).FirstOrDefaultAsync(v => v.Id == id);
+        return await _context.Visuals.Include(x => x.Votes).Include(v => v.Owner).FirstOrDefaultAsync(v => v.Id == id);
     }
 
     public static string RandomString(int length)

@@ -17,7 +17,7 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
 
     public async Task<List<MemeText>> GetTexts(MemeTextPosition? type = null)
     {
-        var texts = _context.Texts.Include(x => x.Votes).Include(t => t.Topics);
+        var texts = _context.Texts.Include(x => x.Votes).Include(t => t.Topics).Include(t => t.Owner);
         if (type != null)
         {
             return await texts.Where(x => x.Position == type).ToListAsync();
@@ -28,7 +28,7 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
 
     public async Task<MemeText?> GetText(string id)
     {
-        return await _context.Texts.Include(x => x.Votes).Include(t => t.Topics).FirstOrDefaultAsync(t => t.Id == id);
+        return await _context.Texts.Include(x => x.Votes).Include(t => t.Topics).Include(t => t.Owner).FirstOrDefaultAsync(t => t.Id == id);
     }
 
     public async Task<MemeText> GetTextByContent(string content, MemeTextPosition position)
