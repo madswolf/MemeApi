@@ -166,14 +166,21 @@ public static class Extensions
         var secondsDifference = (element.CreatedAt - timestamp2).Duration().TotalSeconds;
 
         double initialDubloonCount = 100.0;
-        double lowerBoundAfterFirstDecayPhase = 10.0;
-        double endOfFirstDecayPhase = TimeSpan.FromMinutes(1).TotalSeconds; 
-        double endOfSecondDecayPhase = TimeSpan.FromDays(3).TotalSeconds;
+        double lowerBoundAfterFirstDecayPhase = 75.0;
+        double lowerBoundAfterSecondDecayPhase = 10.0;
+        double beginningOfFirstDecayPhase = TimeSpan.FromHours(1).TotalSeconds;
+        double endOfFirstDecayPhase = TimeSpan.FromHours(2).TotalSeconds; 
+        double endOfSecondDecayPhase = TimeSpan.FromHours(3).TotalSeconds;
+        double endOfThirdDecayPhase = TimeSpan.FromDays(3).TotalSeconds;
 
-        if (secondsDifference <= endOfFirstDecayPhase)
+        if (secondsDifference <= beginningOfFirstDecayPhase)
+            return initialDubloonCount;
+        else if (secondsDifference <= endOfFirstDecayPhase)
             return initialDubloonCount - ((initialDubloonCount - lowerBoundAfterFirstDecayPhase) * CalculatePortotionalDecay(secondsDifference, endOfFirstDecayPhase));
-        else if (secondsDifference <= ( endOfSecondDecayPhase))
-            return lowerBoundAfterFirstDecayPhase - (lowerBoundAfterFirstDecayPhase * CalculatePortotionalDecay(secondsDifference, endOfSecondDecayPhase));
+        else if (secondsDifference <= (endOfSecondDecayPhase))
+            return lowerBoundAfterFirstDecayPhase - (lowerBoundAfterSecondDecayPhase * CalculatePortotionalDecay(secondsDifference, endOfSecondDecayPhase));
+        else if (secondsDifference <= (endOfThirdDecayPhase))
+            return lowerBoundAfterFirstDecayPhase - (lowerBoundAfterSecondDecayPhase * CalculatePortotionalDecay(secondsDifference, endOfThirdDecayPhase));
         else
             return 0;
     }

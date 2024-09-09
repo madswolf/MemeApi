@@ -131,9 +131,10 @@ public class VotableRepositoryTest(IntegrationTestFactory databaseFixture) : Mem
 
     [Theory]
     [InlineData(0, 100.0, 99.9)]
-    [InlineData(-30.0, 55.0, 54.8)]
-    [InlineData(-60.0, 10.0, 9.8)]
-    [InlineData(-24*60.0*60, 6.7, 6.46)]
+    [InlineData(-60*59, 100.0, 99.9)]
+    [InlineData(-60*59*2, 75.0, 74.9)]
+    [InlineData(-60*59*3, 10.0, 9.8)]
+    [InlineData(-(60 * 59 * 3 + 24 * 60.0*60), 6.7, 6.46)]
     public async Task GIVEN_ExistingMemeOfTheDayMeme_WHEN_VotingAfterAMinute_THEN_DubloonEventCreatedRewarding10Dubloons(double seconds, double upperBound, double lowerBound)
     {
         var memeOfTheDayTopic = await _topicRepository.GetTopicByName(_settings.GetMemeOfTheDayTopicName());
