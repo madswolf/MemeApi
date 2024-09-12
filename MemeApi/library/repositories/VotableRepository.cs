@@ -59,10 +59,10 @@ public class VotableRepository
     {
         if (vote.Element.Topics.Any(x => x.Name == _settings.GetMemeOfTheDayTopicName()) && 
             DateTime.Now < vote.Element.CreatedAt.AddDays(3))
-            vote.DubloonEvent = new DubloonEvent
+            vote.DubloonEvent = new DailyVote
             {
                 Id = Guid.NewGuid().ToString(),
-                ReferenceEntityId = vote.Id,
+                Vote = vote,
                 Owner = vote.User,
                 Dubloons = vote.Element.CalculateDubloons(DateTime.UtcNow)
             };

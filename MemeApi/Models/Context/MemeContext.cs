@@ -53,6 +53,16 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .Property(u => u.EventTimestamp)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+        modelBuilder.Entity<DubloonEvent>().UseTptMappingStrategy().HasKey(d => d.Id);
+
+        modelBuilder.Entity<DailyVote>().ToTable("DailyVotes");
+
+        modelBuilder.Entity<DailyVote>()
+            .HasOne(d => d.Vote)
+            .WithOne()
+            .HasForeignKey<DailyVote>(d => d.VoteId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<User>().Property(v => v.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         modelBuilder.Entity<User>().Property(v => v.LastUpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
