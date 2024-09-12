@@ -24,7 +24,7 @@ public class MemesControllerTest : MemeTestBase
     public async Task GIVEN_Visual_WHEN_CreatingMeme_THEN_MemeIsCreated()
     {
         var controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
-
+        controller.ControllerContext.HttpContext = GetMockedHttpContext();
         // given
         var filename = "test.png";
 
@@ -87,6 +87,8 @@ public class MemesControllerTest : MemeTestBase
     {
         var controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
         var controller2 = new TextsController(_textRepository, _settings);
+        controller.ControllerContext.HttpContext = GetMockedHttpContext();
+        controller2.ControllerContext.HttpContext = GetMockedHttpContext();
 
         // given
         var filename = "test.png";
@@ -112,6 +114,8 @@ public class MemesControllerTest : MemeTestBase
         ResetConnection();
         controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
         controller2 = new TextsController(_textRepository, _settings);
+        controller.ControllerContext.HttpContext = GetMockedHttpContext();
+        controller2.ControllerContext.HttpContext = GetMockedHttpContext();
 
         //with the connection reset, this fails
         var deleteTask = await controller2.DeleteMemeText(createdMeme?.BottomText?.Id);
@@ -134,6 +138,8 @@ public class MemesControllerTest : MemeTestBase
     {
         var controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
         var controller2 = new TextsController(_textRepository, _settings);
+        controller.ControllerContext.HttpContext = GetMockedHttpContext();
+        controller2.ControllerContext.HttpContext = GetMockedHttpContext();
 
         // given
         var filename = "test.png";
