@@ -148,6 +148,17 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
+    /// Transfer dubloons from the current user to another user
+    /// </summary>
+    [HttpPost]
+    [Route("[controller]/Transfer")]
+    public async Task<bool> TransferDubloons([FromForm] DubloonTransferDTO dubloonTransferDTO)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+    }
+
+    /// <summary>
     /// initiate the recovery of a user
     /// </summary>
     [HttpPost]
