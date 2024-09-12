@@ -137,14 +137,14 @@ public class UsersController : ControllerBase
     /// </summary>
     [HttpGet]
     [Route("[controller]/{id}/DubloonEvents")]
-    public async Task<ActionResult<UserInfoDTO>> DubloonEvents(string id)
+    public async Task<ActionResult<DubloonEventInfoDTO>> DubloonEvents(string id)
     {
         var user = await _userRepository.GetUser(id, includeDubloons: true);
 
         if (user == null)
             return NotFound();
 
-        return Ok(user.DubloonEvents);
+        return Ok(user.DubloonEvents.Select(d => d.ToDubloonEventInfoDTO()));
     }
 
     /// <summary>
