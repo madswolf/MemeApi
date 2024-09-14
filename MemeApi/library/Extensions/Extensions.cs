@@ -176,17 +176,49 @@ public static class Extensions
         if (secondsDifference <= beginningOfFirstDecayPhase)
             return initialDubloonCount;
         else if (secondsDifference <= endOfFirstDecayPhase)
-            return initialDubloonCount - ((initialDubloonCount - lowerBoundAfterFirstDecayPhase) * CalculatePortotionalDecay(secondsDifference, endOfFirstDecayPhase));
+        {
+            return Interpolate(
+                secondsDifference,
+                upperDubloonBound: initialDubloonCount,
+                lowerDubloonBound: lowerBoundAfterFirstDecayPhase,
+                lowerDecayBound: beginningOfFirstDecayPhase,
+                upperDecayBound: endOfFirstDecayPhase);
+        }
         else if (secondsDifference <= (endOfSecondDecayPhase))
-            return lowerBoundAfterFirstDecayPhase - (lowerBoundAfterSecondDecayPhase * CalculatePortotionalDecay(secondsDifference, endOfSecondDecayPhase));
+        {
+            return Interpolate(
+                secondsDifference,
+                upperDubloonBound: lowerBoundAfterFirstDecayPhase,
+                lowerDubloonBound: lowerBoundAfterSecondDecayPhase,
+                lowerDecayBound: endOfFirstDecayPhase,
+                upperDecayBound: endOfSecondDecayPhase);
+        }
         else if (secondsDifference <= (endOfThirdDecayPhase))
-            return lowerBoundAfterFirstDecayPhase - (lowerBoundAfterSecondDecayPhase * CalculatePortotionalDecay(secondsDifference, endOfThirdDecayPhase));
+        {
+            return Interpolate(
+                secondsDifference,
+                upperDubloonBound: lowerBoundAfterSecondDecayPhase,
+                lowerDubloonBound: 0,
+                lowerDecayBound: endOfSecondDecayPhase,
+                upperDecayBound: endOfThirdDecayPhase);
+        }
         else
             return 0;
     }
 
-    public static double CalculatePortotionalDecay(double secondsDifference, double maxDecay)
+    private static double Interpolate(double secondsDifference, double upperDubloonBound, double lowerDubloonBound, double lowerDecayBound, double upperDecayBound)
     {
-        return (secondsDifference / maxDecay);
+        var porpotion = CalculatePortotionalDecay(secondsDifference, lowerDecayBound, upperDecayBound);
+
+        return LinearInterpolation(upperDubloonBound, lowerDubloonBound, porpotion);
+    }
+
+    public static double LinearInterpolation(double start, double end, double porpotion)
+    {
+        return start + (end - start) * porpotion;
+    }
+    public static double CalculatePortotionalDecay(double secondsDifference, double lowerDecayBound, double maxDecayBound)
+    {
+        return ((secondsDifference - lowerDecayBound) / (maxDecayBound - lowerDecayBound));
     }
 }
