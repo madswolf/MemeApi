@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MemeApi.Controllers;
+using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Services;
 using MemeApi.Models.DTO;
@@ -53,6 +54,67 @@ namespace MemeApi.Test.Controllers
             var foundUser = ActionResultUtils.ActionResultToValueAndAssertOk(getTask);
 
             foundUser?.UserName.Should().Be(user.UserName);
+        }
+
+        [Fact]
+        public async Task GIVEN_TwoUsersWithDubloons_WHEN_TransferingDubloons_THEN_SucessWithDubloonsMoved()
+        {
+            var controller = new UsersController(_signInManager, _userManager, _userRepository, new Mock<IMailSender>().Object, _settings);
+            controller.ControllerContext.HttpContext = GetMockedHttpContext();
+
+            // given
+            var user = new User
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserName = "Test",
+            };
+
+            var user2 = new User
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserName = "Test2",
+            };
+            var meme = new Meme
+            {
+                Id = Guid.NewGuid().ToString(),
+                Visual = new MemeVisual { Id = Guid.NewGuid().ToString(), Filename = "test" }
+            };
+            var vote = new Vote
+            {
+                Id = Guid.NewGuid().ToString(),
+                User = user,
+                Element = meme,
+            };
+
+            var dailyVote = new DailyVote() {
+                Id = Guid.NewGuid().ToString(),
+                Dubloons = 100,
+                Vote = vote,
+                Owner = user
+            };
+
+            vote.DubloonEvent = dailyVote;
+
+            _context.Users.Add(user);
+            _context.Users.Add(user2);
+            _context.Votes.Add(vote);
+            _context.DubloonEvents.Add(dailyVote);
+            _context.SaveChanges();
+
+            // When
+            SetUserNameIdentifier(controller, user.Id);
+            var result = await controller.TransferDubloons(new DubloonTransferDTO
+            {
+                OtherUserId = user2.Id,
+                DubloonsToTransfer = 100,
+            });
+
+            // Then
+            result.Should().BeOfType<OkResult>();
+            var resultUser = _context.Users.Include(u => u.DubloonEvents).First(u => u.Id == user.Id);
+            var resultUser2 = _context.Users.Include(u => u.DubloonEvents).First(u => u.Id == user2.Id);
+            resultUser.DubloonEvents.CountDubloons().Should().Be(0);
+            resultUser2.DubloonEvents.CountDubloons().Should().Be(100);
         }
 
         [Fact]
