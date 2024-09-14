@@ -50,7 +50,7 @@ public class UserRepository
         {
             Id = Guid.NewGuid().ToString(),
             Owner = sender,
-            Dubloons = amount,
+            Dubloons = -amount,
             Other = reveiver,
         };
 
@@ -58,7 +58,7 @@ public class UserRepository
         {
             Id = Guid.NewGuid().ToString(),
             Owner = reveiver,
-            Dubloons = -amount,
+            Dubloons = amount,
             Other = sender,
         };
 
