@@ -7,5 +7,5 @@
 public class DubloonTransferDTO
 {
     public string OtherUserId { get; set; }
-    public int DubloonsToTransfer { get; set; }
+    public uint DubloonsToTransfer { get; set; }
 }
