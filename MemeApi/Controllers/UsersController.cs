@@ -152,10 +152,20 @@ public class UsersController : ControllerBase
     /// </summary>
     [HttpPost]
     [Route("[controller]/Transfer")]
-    public async Task<bool> TransferDubloons([FromForm] DubloonTransferDTO dubloonTransferDTO)
+    public async Task<ActionResult<bool>> TransferDubloons([FromForm] DubloonTransferDTO dubloonTransferDTO)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == dubloonTransferDTO.OtherUserId) return BadRequest("Transfer to same user: You cannot transfer dubloons to yourself");
+
+        var sender = await _userRepository.GetUser(userId, true);
+        var receiver = await _userRepository.GetUser(dubloonTransferDTO.OtherUserId, true);
+
+        if (sender == null || receiver == null) return NotFound("User not found"); 
+
+
+        var success = await _userRepository.TransferDubloons(sender, receiver, dubloonTransferDTO.DubloonsToTransfer);
         
+        return success ? Ok(success) : BadRequest("Not enough dubloons");
     }
 
     /// <summary>

@@ -41,6 +41,34 @@ public class UserRepository
         return await queryable.FirstOrDefaultAsync(u => u.Id == id || u.Id == id.ExternalUserIdToGuid());
     }
 
+    public async Task<bool> TransferDubloons(User sender, User reveiver, uint amount)
+    {
+        var senderDubloonCount = sender.DubloonEvents.CountDubloons();
+        if(senderDubloonCount < amount) return false;
+        
+        var sendEvent = new Transaction
+        {
+            Id = Guid.NewGuid().ToString(),
+            Owner = sender,
+            Dubloons = amount,
+            Other = reveiver,
+        };
+
+        var  receiveEvent = new Transaction
+        {
+            Id = Guid.NewGuid().ToString(),
+            Owner = reveiver,
+            Dubloons = -amount,
+            Other = sender,
+        };
+
+        _memeContext.DubloonEvents.Add(sendEvent);
+        _memeContext.DubloonEvents.Add(receiveEvent);
+        await _memeContext.SaveChangesAsync();
+
+        return true;
+    }
+
     public async Task<User?> FindByEmail(string userEmail)
     {
         return await _memeContext.Users.FirstOrDefaultAsync(user => 
