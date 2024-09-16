@@ -155,10 +155,22 @@ public class UsersController : ControllerBase
     public async Task<ActionResult> TransferDubloons([FromForm] DubloonTransferDTO dubloonTransferDTO)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        dubloonTransferDTO.OtherUserId = dubloonTransferDTO.OtherUserId.ExternalUserIdToGuid();
         if (userId == dubloonTransferDTO.OtherUserId) return BadRequest("Transfer to same user: You cannot transfer dubloons to yourself");
 
         var sender = await _userRepository.GetUser(userId, true);
         var receiver = await _userRepository.GetUser(dubloonTransferDTO.OtherUserId, true);
+
+        if (receiver == null)
+        {
+            receiver = new User()
+            {
+                Id = dubloonTransferDTO.OtherUserId,
+                UserName = dubloonTransferDTO.OtherUserName,
+                ProfilePicFile = "default.jpg",
+                LastLoginAt = DateTime.UtcNow,
+            };
+        }
 
         if (sender == null || receiver == null) return NotFound("User not found"); 
 
