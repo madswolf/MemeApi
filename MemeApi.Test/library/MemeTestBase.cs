@@ -1,5 +1,6 @@
 ﻿using MemeApi.Controllers;
 using MemeApi.library;
+using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Services.Files;
 using MemeApi.Models.Context;
@@ -81,7 +82,7 @@ public class MemeTestBase : IAsyncLifetime
     {
         var claims = new List<Claim>()
             {
-                new Claim(ClaimTypes.NameIdentifier, userId),
+                new Claim(ClaimTypes.NameIdentifier, userId.ExternalUserIdToGuid()),
             };
         var identity = new ClaimsIdentity(claims, "Test");
         var claimsPrincipal = new ClaimsPrincipal(identity);

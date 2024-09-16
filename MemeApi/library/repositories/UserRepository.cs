@@ -41,7 +41,7 @@ public class UserRepository
         return await queryable.FirstOrDefaultAsync(u => u.Id == id || u.Id == id.ExternalUserIdToGuid());
     }
 
-    public async Task<bool> TransferDubloons(User sender, User reveiver, uint amount)
+    public async Task<bool> TransferDubloons(User sender, User receiver, uint amount)
     {
         var senderDubloonCount = sender.DubloonEvents.CountDubloons();
         if(senderDubloonCount < amount) return false;
@@ -51,13 +51,13 @@ public class UserRepository
             Id = Guid.NewGuid().ToString(),
             Owner = sender,
             Dubloons = -amount,
-            Other = reveiver,
+            Other = receiver,
         };
 
         var  receiveEvent = new Transaction
         {
             Id = Guid.NewGuid().ToString(),
-            Owner = reveiver,
+            Owner = receiver,
             Dubloons = amount,
             Other = sender,
         };

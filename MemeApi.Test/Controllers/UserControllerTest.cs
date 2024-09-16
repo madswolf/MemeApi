@@ -64,15 +64,17 @@ namespace MemeApi.Test.Controllers
             controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
             // given
+            var userId = Guid.NewGuid().ToString();
+            var userId2 = Guid.NewGuid().ToString();
             var user = new User
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = userId.ExternalUserIdToGuid(),
                 UserName = "Test",
             };
 
             var user2 = new User
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = userId2.ExternalUserIdToGuid(),
                 UserName = "Test2",
             };
             var meme = new Meme
@@ -103,10 +105,10 @@ namespace MemeApi.Test.Controllers
             _context.SaveChanges();
 
             // When
-            SetUserNameIdentifier(controller, user.Id);
+            SetUserNameIdentifier(controller, userId);
             var result = await controller.TransferDubloons(new DubloonTransferDTO
             {
-                OtherUserId = user2.Id,
+                OtherUserId = userId2,
                 DubloonsToTransfer = 100,
             });
 
@@ -125,15 +127,17 @@ namespace MemeApi.Test.Controllers
             controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
             // given
+            var userId = Guid.NewGuid().ToString();
+            var userId2 = Guid.NewGuid().ToString();
             var user = new User
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = userId.ExternalUserIdToGuid(),
                 UserName = "Test",
             };
 
             var user2 = new User
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = userId2.ExternalUserIdToGuid(),
                 UserName = "Test2",
             };
             var meme = new Meme
@@ -165,10 +169,10 @@ namespace MemeApi.Test.Controllers
             _context.SaveChanges();
 
             // When
-            SetUserNameIdentifier(controller, user.Id);
+            SetUserNameIdentifier(controller, userId);
             var result = await controller.TransferDubloons(new DubloonTransferDTO
             {
-                OtherUserId = user2.Id,
+                OtherUserId = userId2,
                 DubloonsToTransfer = 100,
             });
 
@@ -245,9 +249,10 @@ namespace MemeApi.Test.Controllers
             controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
             // given
+            var userId = Guid.NewGuid().ToString();
             var user = new User
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = userId.ExternalUserIdToGuid(),
                 UserName = "Test",
                 Email = "Test",
                 PasswordHash = "Test"
@@ -261,7 +266,7 @@ namespace MemeApi.Test.Controllers
                 NewEmail = "Test2",
                 NewPassword = "Test2",
             };
-            SetUserNameIdentifier(controller, user.Id);
+            SetUserNameIdentifier(controller, userId);
 
             // When
             await controller.UpdateUser(updateDto);
