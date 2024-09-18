@@ -147,19 +147,21 @@ public class MemeRepository
 
     public async Task<Meme?> GetMeme(string id)
     {
-        var list = await _context.Memes.Include(x => x.BottomText).ToListAsync();
         return await IncludeParts()
             .FirstOrDefaultAsync(m => m.Id == id);
     }
 
-    private IIncludableQueryable<Meme, MemeText?> IncludeParts()
+    private IIncludableQueryable<Meme, User?> IncludeParts()
     {
+        //EF core handles the optional relation causing the null reference when translatting to SQL
+        #pragma warning disable CS8602 // Dereference of a possibly null reference.
         return _context.Memes
-            .Include(m => m.Visual)
+            .Include(m => m.Visual).ThenInclude(v => v.Owner)
             .Include(m => m.Topics)
-            .Include(m => m.TopText)
-            .Include(m => m.Owner)
-            .Include(m => m.BottomText);
+            .Include(m => m.TopText).ThenInclude(t => t.Owner)
+            .Include(m => m.BottomText).ThenInclude(b => b.Owner)
+            .Include(m => m.Owner);
+        #pragma warning restore CS8602 // Dereference of a possibly null reference.
     }
     public async Task<Meme> RandomMemeByComponents(string? visualId = null, string? topText = null, string? bottomText = null, string? topicName = null)
     {
