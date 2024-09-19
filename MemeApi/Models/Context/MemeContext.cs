@@ -22,6 +22,8 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
     public DbSet<Votable> Votables { get; set; }
     public DbSet<Topic> Topics { get; set; }
     public DbSet<DubloonEvent> DubloonEvents { get; set; }
+    public DbSet<MemePlace> MemePlaces { get; set; }
+    public DbSet<PlaceSubmission> PlaceSubmissions { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -48,6 +50,24 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .HasForeignKey(u => u.UserId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.PlaceSubmissions)
+            .WithOne(p => p.Owner)
+            .IsRequired(true)
+            .HasForeignKey(p => p.OwnerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MemePlace>()
+            .ToTable("MemePlaces")
+            .HasMany(m => m.PlaceSubmissions)
+            .WithOne(p => p.Place)
+            .IsRequired(true)
+            .HasForeignKey(p => p.PlaceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PlaceSubmission>()
+            .ToTable("PlaceSubmissions");
 
         modelBuilder.Entity<DubloonEvent>()
             .Property(u => u.EventTimestamp)
