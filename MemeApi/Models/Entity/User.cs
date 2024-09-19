@@ -20,5 +20,7 @@ public class User : IdentityUser<string>
     public DateTime LastUpdatedAt { get; set; }
     public DateTime LastLoginAt { get; set; }
     public List<DubloonEvent> DubloonEvents { get; set; }
+    public List<PlaceSubmission> PlaceSubmissions { get; set; }
+
 }
 
