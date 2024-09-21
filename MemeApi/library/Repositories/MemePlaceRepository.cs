@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System;
 using Microsoft.EntityFrameworkCore;
 using System.Drawing;
+using MemeApi.Models.DTO;
 
 namespace MemeApi.library.Repositories
 {
@@ -29,6 +30,13 @@ namespace MemeApi.library.Repositories
                 .ToListAsync();
         }
 
+        public async Task<MemePlace?> GetMemePlace(string placeId)
+        {
+            return await _context.MemePlaces
+                .Include(m => m.PlaceSubmissions)
+                .FirstOrDefaultAsync(p => p.Id == placeId);
+        }
+
         public async Task<List<PlaceSubmission>> GetMemePlaceSubmissions(string placeId)
         {
             return await _context.PlaceSubmissions
@@ -37,9 +45,12 @@ namespace MemeApi.library.Repositories
                 .ToListAsync();
         }
 
-        public async Task<PlaceSubmission> CreatePlaceSubmission(string placeId, IFormFile file)
+        public async Task<PlaceSubmission> CreatePlaceSubmission(MemePlace place, User submitter, IFormFile file)
         {
+            var place = new MemePlace
+            {
 
+            }
         }
     }
 }

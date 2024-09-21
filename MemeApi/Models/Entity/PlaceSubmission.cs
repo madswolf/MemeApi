@@ -1,16 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MemeApi.Models.Entity;
 
 public class PlaceSubmission
 {
-    public string id { get; set; }
+    public string Id { get; set; }
 
     public string OwnerId { get; set; }
     public User Owner { get; set; }
 
     public string PlaceId { get; set; }
     public MemePlace Place { get; set; }
+
+    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+    public DateTime CreatedAt { get; set; }
 
     public List<Pixel> SubmissionPixelChanges { get; set; }
 }
