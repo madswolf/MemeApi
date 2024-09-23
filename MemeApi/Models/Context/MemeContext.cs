@@ -66,8 +66,25 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .HasForeignKey(p => p.PlaceId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<MemePlace>()
+            .Property(u => u.CreatedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+
         modelBuilder.Entity<PlaceSubmission>()
-            .ToTable("PlaceSubmissions");
+            .ToTable("PlaceSubmissions")
+            .Property(u => u.CreatedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        modelBuilder.Entity<PlaceSubmission>()
+                    .Property(e => e.PixelSubmissions)
+                    .HasConversion(new CompactPixelListConverter());
+
+        modelBuilder.Entity<PlacePixelPurchase>()
+            .HasOne(p => p.Submission)
+            .WithOne()
+            .IsRequired(true)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<DubloonEvent>()
             .Property(u => u.EventTimestamp)

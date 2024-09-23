@@ -1,17 +1,11 @@
-﻿using MemeApi.library.repositories;
-using MemeApi.library.Services.Files;
-using MemeApi.Models.Context;
-using MemeApi.Models.Entity;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System;
-using Microsoft.EntityFrameworkCore;
-using System.Drawing;
+﻿using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
+using MemeApi.Models.Entity;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MemeApi.library.Repositories
 {
@@ -23,10 +17,27 @@ namespace MemeApi.library.Repositories
             _context = context;
         }
 
+        public async Task<MemePlace> CreateMemePlace(PlaceCreationDTO placeCreationDTO)
+        {
+            var place = new MemePlace
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = placeCreationDTO.Name,
+                Height = placeCreationDTO.Height,
+                Width = placeCreationDTO.Width,
+                PlaceSubmissions = []
+            };
+
+            _context.MemePlaces.Add(place);
+            await _context.SaveChangesAsync();
+            return place;
+        }
+
         public async Task<List<MemePlace>> GetMemePlaces()
         {
             return await _context.MemePlaces
                 .Include(m => m.PlaceSubmissions)
+                .ThenInclude(s => s.Owner)
                 .ToListAsync();
         }
 
@@ -34,6 +45,7 @@ namespace MemeApi.library.Repositories
         {
             return await _context.MemePlaces
                 .Include(m => m.PlaceSubmissions)
+                .ThenInclude(s => s.Owner)
                 .FirstOrDefaultAsync(p => p.Id == placeId);
         }
 
@@ -45,12 +57,37 @@ namespace MemeApi.library.Repositories
                 .ToListAsync();
         }
 
-        public async Task<PlaceSubmission> CreatePlaceSubmission(MemePlace place, User submitter, IFormFile file)
+        public async Task<PlaceSubmission?> GetPlaceSubmission(string submissionId)
         {
-            var place = new MemePlace
-            {
+            return await _context.PlaceSubmissions.FirstOrDefaultAsync(s => s.Id == submissionId);
+        }
 
-            }
+        public async Task<PlaceSubmission> CreatePlaceSubmission(MemePlace place, User submitter, Dictionary<Coordinate, Color> pixelSubmissions)
+        {
+            var submission = new PlaceSubmission
+            {
+                Id = Guid.NewGuid().ToString(),
+                Place = place,
+                Owner = submitter,
+                PixelSubmissions = pixelSubmissions.Select(pair => new Pixel
+                {
+                    Coordinate = pair.Key,
+                    Color = pair.Value
+                }).ToList(),
+            };
+
+            var dubloonEvent = new PlacePixelPurchase
+            {
+                Id = Guid.NewGuid().ToString(),
+                Owner = submitter,
+                Submission = submission,
+                Dubloons = -Math.Ceiling(pixelSubmissions.Count / 100.0)
+            };
+
+            _context.PlaceSubmissions.Add(submission);
+            _context.DubloonEvents.Add(dubloonEvent);
+            _context.SaveChanges();
+            return submission;
         }
     }
 }

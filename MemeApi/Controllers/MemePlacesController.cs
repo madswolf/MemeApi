@@ -5,6 +5,8 @@ using MemeApi.library.Repositories;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -34,6 +36,16 @@ public class MemePlacesController : ControllerBase
     }
 
     /// <summary>
+    /// Create Place
+    /// </summary>
+    [HttpPost]
+    public async Task<ActionResult<MemePlaceDTO>> CreateMemePlace([FromForm]PlaceCreationDTO placeCreationDTO)
+    {
+        var place = await _memePlaceRepository.CreateMemePlace(placeCreationDTO);
+        return Ok(place.ToMemePlaceDTO());
+    }
+
+    /// <summary>
     /// Get all MemePlaces
     /// </summary>
     [HttpGet]
@@ -46,7 +58,19 @@ public class MemePlacesController : ControllerBase
     /// <summary>
     /// Get all PlaceSubmissions for given placeId
     /// </summary>
-    [HttpGet("{placeId}/submisisons")]
+    [HttpGet("{placeId}/submissions/latest")]
+    public async Task<ActionResult<PlaceSubmissionDTO>> GetLatestPlaceSubmission(string placeId)
+    {
+        var place = await _memePlaceRepository.GetMemePlace(placeId);
+        if (place == null) return NotFound(placeId);
+
+        return Ok(place.LatestSubmission().ToPlaceSubmissionDTO());
+    }
+
+    /// <summary>
+    /// Get all PlaceSubmissions for given placeId
+    /// </summary>
+    [HttpGet("{placeId}/submissions")]
     public async Task<ActionResult<IEnumerable<PlaceSubmissionDTO>>> GetPlaceSubmissions(string placeId)
     {
         var places = await _memePlaceRepository.GetMemePlaceSubmissions(placeId);
@@ -54,10 +78,38 @@ public class MemePlacesController : ControllerBase
     }
 
     /// <summary>
+    /// Get a rendered place submission
+    /// </summary>
+    [HttpGet("submisison/{submissionId}")]
+    public async Task<ActionResult<IEnumerable<PlaceSubmissionDTO>>> GetRenderedPlaceSubmission(string submissionId)
+    {
+        var submission = await _memePlaceRepository.GetPlaceSubmission(submissionId);
+        if(submission == null) return NotFound(submissionId);
+
+        var file = File(submission.ToRenderedSubmission(), "image/png", $"{submission.Id}.png");
+
+        return file;
+    }
+
+    /// <summary>
+    /// Get the rendered Placefor given placeId
+    /// </summary>
+    [HttpGet("{placeId}/rendered")]
+    public async Task<ActionResult<byte[]>> GetPlace(string placeId)
+    {
+        var place = await _memePlaceRepository.GetMemePlace(placeId);
+        if (place == null) return NotFound("Cannot find place with provided Id: " + placeId);
+
+        var file = File(place.ToRenderedPlace(), "image/png", $"{place.LatestSubmission().Id}.png");
+
+        return file;
+    }
+
+    /// <summary>
     /// Post a PlaceSubmission
     /// </summary>
-    [HttpPost("/submisisons/submit")]
-    public async Task<ActionResult<IEnumerable<PlaceSubmissionDTO>>> GetPlaceSubmissions([FromForm]PlaceSubmissionCreationDTO submissionDTO)
+    [HttpPost("submissions/submit")]
+    public async Task<ActionResult<IEnumerable<PlaceSubmissionDTO>>> Submit([FromForm]PlaceSubmissionCreationDTO submissionDTO)
     {
         if (submissionDTO.ImageWithChanges.Length > 5000000)
             return StatusCode(413);
@@ -69,9 +121,14 @@ public class MemePlacesController : ControllerBase
         var place = await _memePlaceRepository.GetMemePlace(submissionDTO.PlaceId);
         if (place == null) return NotFound(submissionDTO.PlaceId);
 
-        var renderedPlaceImage = place.ToRenderedPlaceImage();
+        var changedPixels = submissionDTO.ImageWithChanges.ToSubmissionPixelChanges(place);
+        var requiredFunds = Math.Ceiling(changedPixels.Count/100.0);
 
-        var submission = await _memePlaceRepository.CreatePlaceSubmission(place, user, submissionDTO.ImageWithChanges);
+        if (user.DubloonEvents.CountDubloons() < requiredFunds)
+            return BadRequest("Not enough dubloons to make submission. Dubloons needed: " + requiredFunds);
+
+        var submission = await _memePlaceRepository.CreatePlaceSubmission(place, user, changedPixels);
         return Ok(submission.ToPlaceSubmissionDTO());
+        
     }
-}
+} 
