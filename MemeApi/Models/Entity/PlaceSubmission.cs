@@ -17,7 +17,7 @@ public class PlaceSubmission
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime CreatedAt { get; set; }
 
-    public List<Pixel> SubmissionPixelChanges { get; set; }
+    public List<Pixel> PixelSubmissions { get; set; }
 }
 
 public class Pixel
@@ -32,9 +32,10 @@ public class Coordinate
     public int Y { get; set; }
 }
 
-public class Color
+public record Color
 {
     public byte Red { get; set; }
     public byte Green { get; set; }
     public byte Blue { get; set; }
+    public byte Alpha { get; set; }
 }

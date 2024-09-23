@@ -1,5 +1,6 @@
 using MemeApi.library;
 using MemeApi.library.repositories;
+using MemeApi.library.Repositories;
 using MemeApi.library.Services;
 using MemeApi.library.Services.Files;
 using MemeApi.MIddleware;
@@ -86,6 +87,7 @@ services.AddScoped<VisualRepository>();
 services.AddScoped<TextRepository>();
 services.AddScoped<VotableRepository>();
 services.AddScoped<TopicRepository>();
+services.AddScoped<MemePlaceRepository>();
 
 services.AddSingleton<MemeApiSettings>();
 
