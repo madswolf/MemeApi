@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -111,7 +112,10 @@ public class UserRepository
                 {
                     user.ProfilePicFile = VisualRepository.RandomString(5) + user.ProfilePicFile;
                 }
-                await _fileSaver.SaveFile(updateDto.NewProfilePic, "profilePic/", user.ProfilePicFile);
+                using var memoryStream = new MemoryStream();
+                await updateDto.NewProfilePic.CopyToAsync(memoryStream);
+
+                await _fileSaver.SaveFile(memoryStream.ToArray(), "profilePic/", user.ProfilePicFile, updateDto.NewProfilePic.ContentType);
             }
 
             if (updateDto.NewEmail != null) user.Email = updateDto.NewEmail;

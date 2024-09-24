@@ -2,6 +2,7 @@
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Repositories;
+using MemeApi.library.Services.Files;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Mvc;
@@ -24,15 +25,17 @@ public class MemePlacesController : ControllerBase
     private readonly MemeApiSettings _settings;
     private readonly MemePlaceRepository _memePlaceRepository;
     private readonly UserRepository _userRepository;
+    private readonly IFileSaver _fileSaver;
 
     /// <summary>
     /// A controller for creating and managing visual meme components.
     /// </summary>
-    public MemePlacesController(MemePlaceRepository memePlaceRepository, MemeApiSettings settings, UserRepository userRepository)
+    public MemePlacesController(MemePlaceRepository memePlaceRepository, MemeApiSettings settings, UserRepository userRepository, IFileSaver fileSaver)
     {
         _memePlaceRepository = memePlaceRepository;
         _settings = settings;
         _userRepository = userRepository;
+        _fileSaver = fileSaver;
     }
 
     /// <summary>
@@ -64,7 +67,10 @@ public class MemePlacesController : ControllerBase
         var place = await _memePlaceRepository.GetMemePlace(placeId);
         if (place == null) return NotFound(placeId);
 
-        return Ok(place.LatestSubmission().ToPlaceSubmissionDTO());
+        var submission = place.LatestSubmission();
+        if (submission == null) return NoContent();
+
+        return Ok(submission.ToPlaceSubmissionDTO());
     }
 
     /// <summary>
@@ -100,9 +106,23 @@ public class MemePlacesController : ControllerBase
         var place = await _memePlaceRepository.GetMemePlace(placeId);
         if (place == null) return NotFound("Cannot find place with provided Id: " + placeId);
 
-        var file = File(place.ToRenderedPlace(), "image/png", $"{place.LatestSubmission().Id}.png");
+        var file = File(place.ToRenderedPlace(), "image/png", $"{place.LatestSubmissionId()}.png");
 
         return file;
+    }
+
+    /// <summary>
+    /// Force the service rerender the place with the given place Id
+    /// </summary>
+    [HttpPost("{placeId}/rerender")]
+    public async Task<ActionResult> RerenderPlace(string placeId)
+    {
+        var place = await _memePlaceRepository.GetMemePlace(placeId);
+        if (place == null) return NotFound("Cannot find place with provided Id: " + placeId);
+
+        await _fileSaver.SaveFile(place.ToRenderedPlace(), "places/", $"{place.Id}_latest.png", "image/png");
+
+        return Ok();
     }
 
     /// <summary>
@@ -128,6 +148,11 @@ public class MemePlacesController : ControllerBase
             return BadRequest("Not enough dubloons to make submission. Dubloons needed: " + requiredFunds);
 
         var submission = await _memePlaceRepository.CreatePlaceSubmission(place, user, changedPixels);
+        var isSucessfulRender = await _memePlaceRepository.RenderDelta(place);
+
+        if (!isSucessfulRender)
+            Console.WriteLine("Failed To render new submission");
+
         return Ok(submission.ToPlaceSubmissionDTO());
         
     }

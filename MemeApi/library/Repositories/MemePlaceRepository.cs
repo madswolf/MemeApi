@@ -1,4 +1,6 @@
-﻿using MemeApi.Models.Context;
+﻿using MemeApi.library.Extensions;
+using MemeApi.library.Services.Files;
+using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.EntityFrameworkCore;
@@ -12,9 +14,13 @@ namespace MemeApi.library.Repositories
     public class MemePlaceRepository
     {
         private readonly MemeContext _context;
-        public MemePlaceRepository(MemeContext context)
+        private readonly IFileSaver _fileSaver;
+        private readonly IFileLoader _fileLoader;
+        public MemePlaceRepository(MemeContext context, IFileSaver fileSaver, IFileLoader loader)
         {
             _context = context;
+            _fileSaver = fileSaver;
+            _fileLoader = loader;
         }
 
         public async Task<MemePlace> CreateMemePlace(PlaceCreationDTO placeCreationDTO)
@@ -60,6 +66,29 @@ namespace MemeApi.library.Repositories
         public async Task<PlaceSubmission?> GetPlaceSubmission(string submissionId)
         {
             return await _context.PlaceSubmissions.FirstOrDefaultAsync(s => s.Id == submissionId);
+        }
+
+        public async Task<bool> RenderDelta(MemePlace place)
+        {
+            var latestRender = await _fileLoader.LoadFile($"places/{place.Id}_latest.png");
+            if (latestRender == null) return false;
+            
+            var renderTime = latestRender.GetExifComment();
+            if (renderTime == null) return false;
+            
+            var renderDateTime = DateTime.Parse(renderTime);
+            var submissions = place.PlaceSubmissions.Where(p => renderDateTime < p.CreatedAt).ToList();
+            if (!submissions.Any()) return true;
+
+            var newRender = latestRender.ToRenderedPlaceWithBase(submissions);
+
+            await _fileSaver.SaveFile(newRender, "places/", $"{place.Id}_latest.png", "image/png");
+            return true;
+        }
+
+        public async Task ReRender(MemePlace place)
+        {
+            await _fileSaver.SaveFile(place.ToRenderedPlace(), "places/", $"{place.Id}_latest.png", "image/png");
         }
 
         public async Task<PlaceSubmission> CreatePlaceSubmission(MemePlace place, User submitter, Dictionary<Coordinate, Color> pixelSubmissions)

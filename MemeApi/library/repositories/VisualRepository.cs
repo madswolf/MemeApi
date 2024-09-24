@@ -88,8 +88,10 @@ public class VisualRepository
         {
             memeVisual.Filename = RandomString(5) + memeVisual.Filename;
         }
+        using var memoryStream = new MemoryStream();
+        await visual.CopyToAsync(memoryStream);
 
-        await _fileSaver.SaveFile(visual, "visual/", memeVisual.Filename);
+        await _fileSaver.SaveFile(memoryStream.ToArray(), "visual/", memeVisual.Filename, visual.ContentType);
 
         _context.Visuals.Add(memeVisual);
         var changes = _context.ChangeTracker.Entries();
