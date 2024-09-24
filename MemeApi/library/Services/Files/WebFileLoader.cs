@@ -13,10 +13,10 @@ public class WebFileLoader : IFileLoader
         _settings = settings;
     }
 
-    public async Task<byte[]> LoadFile(string url)
+    public async Task<byte[]> LoadFile(string path)
     {
         using var webClient = new HttpClient();
-        var full_url = _settings.GetMediaHost() + url;
+        var full_url = _settings.GetMediaHost() + path;
         return await webClient.GetByteArrayAsync(new Uri(full_url));
     }
 }

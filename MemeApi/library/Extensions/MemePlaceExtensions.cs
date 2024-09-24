@@ -2,17 +2,27 @@
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Http;
 using SkiaSharp;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace MemeApi.library.Extensions;
 
 public static class MemePlaceExtensions
 {
-    public static PlaceSubmission LatestSubmission(this MemePlace place)
+
+    public static PlaceSubmission? LatestSubmission(this MemePlace place)
     {
-        return place.PlaceSubmissions.OrderByDescending(s => s.CreatedAt).First();
+        return place.PlaceSubmissions.OrderByDescending(s => s.CreatedAt).FirstOrDefault();
+    }
+
+    public static string LatestSubmissionId(this MemePlace place)
+    {
+        var submission = place.PlaceSubmissions.OrderByDescending(s => s.CreatedAt).FirstOrDefault();
+
+        return submission != null ? submission.Id : place.Id;
     }
     public static MemePlaceDTO ToMemePlaceDTO(this MemePlace place) => new MemePlaceDTO()
     {
@@ -32,7 +42,7 @@ public static class MemePlaceExtensions
 
     public static Dictionary<Coordinate, Color> ToSubmissionPixelChanges(this IFormFile file, MemePlace place)
     {
-        var unrederedPlace = place.ToUnrenderedPlacePixels();
+        var unrederedPlace = place.PlaceSubmissions.ToUnrenderedPlacePixels();
         var unrenderedPlaceWithChanges = file.ToUnrenderedPlacePixels();
         var defaultColor = new Color
         {
@@ -46,7 +56,7 @@ public static class MemePlaceExtensions
             .Where(pair => {
                 unrederedPlace.TryGetValue(pair.Key, out var value);
                 return pair.Value != defaultColor && value != pair.Value;
-                })
+            })
             .ToDictionary(pair => pair.Key, pair => pair.Value);
     }
 
@@ -67,22 +77,40 @@ public static class MemePlaceExtensions
                 Y = ps.Coordinate.Y - minY,
             },
             ps => ps.Color);
-        return RenderBitsmap(width, height, pixels);
+        return RenderPixelsWithBlankBase(width, height, pixels);
     }
 
     public static byte[] ToRenderedPlace(this MemePlace place)
     {
-        Dictionary<Coordinate, Color> pixels = place.ToUnrenderedPlacePixels();
+        Dictionary<Coordinate, Color> pixels = place.PlaceSubmissions.ToUnrenderedPlacePixels();
 
-        return RenderBitsmap(place.Width, place.Height, pixels);
+        return RenderPixelsWithBlankBase(place.Width, place.Height, pixels);
     }
 
-    private static byte[] RenderBitsmap(int width, int height, Dictionary<Coordinate, Color> pixels)
+    public static byte[] ToRenderedPlaceWithBase(this byte[] baseImage, List<PlaceSubmission> submissions)
+    {
+        Dictionary<Coordinate, Color> pixels = submissions.ToUnrenderedPlacePixels();
+        var bitmap = SKBitmap.Decode(baseImage);
+        return RenderPixelsToBaseImage(bitmap, pixels)
+            .WriteExifComment(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+    }
+
+    private static byte[] RenderPixelsWithBlankBase(int width, int height, Dictionary<Coordinate, Color> pixels)
     {
         var bitmap = new SKBitmap(width, height);
         var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.White);
 
+        var renderedPlace =
+            RenderPixelsToBaseImage(bitmap, pixels)
+            .WriteExifComment(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
+        return renderedPlace;
+    }
+
+    private static byte[] RenderPixelsToBaseImage(SKBitmap baseImage, Dictionary<Coordinate, Color> pixels)
+    {
+        var canvas = new SKCanvas(baseImage);
 
         foreach (var entry in pixels)
         {
@@ -95,7 +123,7 @@ public static class MemePlaceExtensions
                 IsAntialias = true
             };
 
-            if (coord.X < width && coord.Y < height)
+            if (coord.X < baseImage.Width && coord.Y < baseImage.Height)
             {
                 canvas.DrawPoint(coord.X, coord.Y, paint);
             }
@@ -105,18 +133,18 @@ public static class MemePlaceExtensions
         {
             using (var imageStream = new SKManagedWStream(stream))
             {
-                bitmap.Encode(imageStream, SKEncodedImageFormat.Png, quality: 100);
+                baseImage.Encode(imageStream, SKEncodedImageFormat.Png, quality: 100);
             }
 
             return stream.ToArray();
         }
     }
 
-    public static Dictionary<Coordinate, Color> ToUnrenderedPlacePixels(this MemePlace place)
+    public static Dictionary<Coordinate, Color> ToUnrenderedPlacePixels(this List<PlaceSubmission> submissions)
     {
         var pixels = new Dictionary<Coordinate, Color>();
 
-        place.PlaceSubmissions.OrderBy(ps => ps.CreatedAt).ToList().ForEach(ps =>
+        submissions.OrderBy(ps => ps.CreatedAt).ToList().ForEach(ps =>
         {
             foreach (var pair in ps.PixelSubmissions)
             {
