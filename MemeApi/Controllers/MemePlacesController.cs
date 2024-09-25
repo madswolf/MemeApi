@@ -143,8 +143,9 @@ public class MemePlacesController : ControllerBase
 
         var changedPixels = submissionDTO.ImageWithChanges.ToSubmissionPixelChanges(place);
         var requiredFunds = Math.Ceiling(changedPixels.Count/100.0);
+        var currentFunds = user.DubloonEvents.CountDubloons();
 
-        if (user.DubloonEvents.CountDubloons() < requiredFunds)
+        if (currentFunds < requiredFunds)
             return BadRequest("Not enough dubloons to make submission. Dubloons needed: " + requiredFunds);
 
         var submission = await _memePlaceRepository.CreatePlaceSubmission(place, user, changedPixels);

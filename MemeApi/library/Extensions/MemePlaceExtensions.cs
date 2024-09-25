@@ -83,7 +83,6 @@ public static class MemePlaceExtensions
     public static byte[] ToRenderedPlace(this MemePlace place)
     {
         Dictionary<Coordinate, Color> pixels = place.PlaceSubmissions.ToUnrenderedPlacePixels();
-
         return RenderPixelsWithBlankBase(place.Width, place.Height, pixels);
     }
 
@@ -91,19 +90,20 @@ public static class MemePlaceExtensions
     {
         Dictionary<Coordinate, Color> pixels = submissions.ToUnrenderedPlacePixels();
         var bitmap = SKBitmap.Decode(baseImage);
+
         return RenderPixelsToBaseImage(bitmap, pixels)
-            .WriteExifComment(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            .WriteExifComment(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
     }
 
     private static byte[] RenderPixelsWithBlankBase(int width, int height, Dictionary<Coordinate, Color> pixels)
-    {
+    { 
         var bitmap = new SKBitmap(width, height);
         var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.White);
 
         var renderedPlace =
             RenderPixelsToBaseImage(bitmap, pixels)
-            .WriteExifComment(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            .WriteExifComment(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
 
         return renderedPlace;
     }

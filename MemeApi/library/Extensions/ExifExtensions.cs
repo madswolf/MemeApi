@@ -9,7 +9,8 @@ public static class ExifExtensions
 {
     public static byte[] WriteExifComment(this byte[] imageData, string comment)
     {
-
+        comment = comment.Replace(' ', '_');
+        comment = comment.Replace(':', 'x');
         using var image = Image.Load(imageData);
         if (image.Metadata.ExifProfile == null)
         {
@@ -21,6 +22,7 @@ public static class ExifExtensions
         using var memoryStream = new MemoryStream();
         image.SaveAsPng(memoryStream);
         return memoryStream.ToArray();
+
 
     }
 
@@ -36,6 +38,8 @@ public static class ExifExtensions
             {
                 comment = comment.Replace("UNICODE", "").Trim();
             }
+            comment = comment.Replace('_', ' ');
+            comment = comment.Replace('x', ':');
             return comment;
         }
 
