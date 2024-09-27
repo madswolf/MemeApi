@@ -79,6 +79,11 @@ namespace MemeApi.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "MemePlaces",
+                columns: new[] { "Id", "Name", "CreatedAt", "Width", "Height" },
+                values: new object[] { "c6a058f9-8ce4-40e0-bd55-8f98d249f7aa", "Bean-canvas", DateTime.UtcNow, 1920, 1080});
+
             migrationBuilder.CreateIndex(
                 name: "IX_PlacePixelPurchase_SubmissionId",
                 table: "PlacePixelPurchase",

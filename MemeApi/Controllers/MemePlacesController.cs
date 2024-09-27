@@ -5,10 +5,12 @@ using MemeApi.library.Repositories;
 using MemeApi.library.Services.Files;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -140,6 +142,20 @@ public class MemePlacesController : ControllerBase
 
         var place = await _memePlaceRepository.GetMemePlace(submissionDTO.PlaceId);
         if (place == null) return NotFound(submissionDTO.PlaceId);
+
+        var filename = submissionDTO.ImageWithChanges.FileName;
+        if (filename == null) return BadRequest("You have either based your changes off an older version of the current place or changed the name of the file. Please download the latest Place render and try again.");
+        var latestSubmission = place.LatestSubmission();
+
+        filename = filename.Replace("_", " ");
+        filename = filename.Replace("x", ":");
+        string format = "yyyy-MM-dd HH:mm:ss";
+        var sucess = DateTime.TryParseExact(filename, format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var renderedTimeOfSubmissionImage);
+
+        if (!sucess ||
+            latestSubmission != null && 
+            renderedTimeOfSubmissionImage < latestSubmission.CreatedAt)
+            return BadRequest("You have either based your changes off an older version of the current place or changed the name of the file. Please download the latest Place render and try again.");
 
         var changedPixels = submissionDTO.ImageWithChanges.ToSubmissionPixelChanges(place);
         var requiredFunds = Math.Ceiling(changedPixels.Count/100.0);
