@@ -13,6 +13,7 @@ namespace MemeApi.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+
             migrationBuilder.CreateTable(
                 name: "MemePlaces",
                 columns: table => new
@@ -60,7 +61,7 @@ namespace MemeApi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    SubmissionId = table.Column<string>(type: "text", nullable: false)
+                    SubmissionId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -76,13 +77,13 @@ namespace MemeApi.Migrations
                         column: x => x.SubmissionId,
                         principalTable: "PlaceSubmissions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.InsertData(
                 table: "MemePlaces",
                 columns: new[] { "Id", "Name", "CreatedAt", "Width", "Height" },
-                values: new object[] { "c6a058f9-8ce4-40e0-bd55-8f98d249f7aa", "Bean-canvas", DateTime.UtcNow, 1920, 1080});
+                values: new object[] { "c6a058f9-8ce4-40e0-bd55-8f98d249f7aa", "Bean-canvas", DateTime.UtcNow, 1920, 1080 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_PlacePixelPurchase_SubmissionId",

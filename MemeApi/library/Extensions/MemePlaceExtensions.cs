@@ -121,7 +121,7 @@ public static class MemePlaceExtensions
             var paint = new SKPaint
             {
                 Color = new SKColor(color.Red, color.Green, color.Blue, color.Alpha),
-                IsAntialias = true
+                BlendMode = SKBlendMode.SrcOver
             };
 
             if (coord.X < baseImage.Width && coord.Y < baseImage.Height)
