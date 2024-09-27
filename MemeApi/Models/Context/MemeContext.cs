@@ -83,8 +83,8 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
         modelBuilder.Entity<PlacePixelPurchase>()
             .HasOne(p => p.Submission)
             .WithOne()
-            .IsRequired(true)
-            .OnDelete(DeleteBehavior.Cascade);
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<DubloonEvent>()
             .Property(u => u.EventTimestamp)

@@ -88,7 +88,7 @@ public class MemePlacesController : ControllerBase
     /// <summary>
     /// Get a rendered place submission
     /// </summary>
-    [HttpGet("submisison/{submissionId}")]
+    [HttpGet("submisisons/{submissionId}")]
     public async Task<ActionResult<IEnumerable<PlaceSubmissionDTO>>> GetRenderedPlaceSubmission(string submissionId)
     {
         var submission = await _memePlaceRepository.GetPlaceSubmission(submissionId);
@@ -102,15 +102,14 @@ public class MemePlacesController : ControllerBase
     /// <summary>
     /// Get the rendered Placefor given placeId
     /// </summary>
-    [HttpGet("{placeId}/rendered")]
-    public async Task<ActionResult<byte[]>> GetPlace(string placeId)
+    [HttpDelete("submisisons/{submisisonId}")]
+    public async Task<ActionResult> GetPlace(string submisisonId)
     {
-        var place = await _memePlaceRepository.GetMemePlace(placeId);
-        if (place == null) return NotFound("Cannot find place with provided Id: " + placeId);
+        var isSuccessful = await _memePlaceRepository.DeleteSubmission(submisisonId);
+        if (!isSuccessful) 
+            return NotFound("Cannot find submission with provided Id: " + submisisonId);
 
-        var file = File(place.ToRenderedPlace(), "image/png", $"{place.LatestSubmissionId()}.png");
-
-        return file;
+        return Ok(submisisonId);
     }
 
     /// <summary>
@@ -132,7 +131,7 @@ public class MemePlacesController : ControllerBase
     /// </summary>
     [HttpPost("submissions/submit")]
     public async Task<ActionResult<IEnumerable<PlaceSubmissionDTO>>> Submit([FromForm]PlaceSubmissionCreationDTO submissionDTO)
-    {
+        {
         if (submissionDTO.ImageWithChanges.Length > 5000000)
             return StatusCode(413);
 
@@ -149,6 +148,8 @@ public class MemePlacesController : ControllerBase
 
         filename = filename.Replace("_", " ");
         filename = filename.Replace("x", ":");
+        filename = filename.Replace(".png", "");
+
         string format = "yyyy-MM-dd HH:mm:ss";
         var sucess = DateTime.TryParseExact(filename, format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var renderedTimeOfSubmissionImage);
 

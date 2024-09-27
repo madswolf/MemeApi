@@ -55,6 +55,18 @@ namespace MemeApi.library.Repositories
                 .FirstOrDefaultAsync(p => p.Id == placeId);
         }
 
+        public async Task<bool> DeleteSubmission(string submissionId)
+        {
+            var submission = await _context.PlaceSubmissions.FindAsync(submissionId);
+            if (submission == null) return false;
+
+
+            _context.PlaceSubmissions.Remove(submission);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
         public async Task<List<PlaceSubmission>> GetMemePlaceSubmissions(string placeId)
         {
             return await _context.PlaceSubmissions
