@@ -27,6 +27,7 @@ public static class MemePlaceExtensions
     public static MemePlaceDTO ToMemePlaceDTO(this MemePlace place) => new MemePlaceDTO()
     {
         Id = place.Id,
+        Name = place.Name,
         PlaceSubmissions = place.PlaceSubmissions.Select(ps => ps.ToPlaceSubmissionDTO()).ToList(),
     };
 
