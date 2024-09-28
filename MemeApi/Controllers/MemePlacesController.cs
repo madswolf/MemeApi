@@ -88,7 +88,7 @@ public class MemePlacesController : ControllerBase
     /// <summary>
     /// Get a rendered place submission
     /// </summary>
-    [HttpGet("submisisons/{submissionId}")]
+    [HttpGet("submissions/{submissionId}")]
     public async Task<ActionResult<IEnumerable<PlaceSubmissionDTO>>> GetRenderedPlaceSubmission(string submissionId)
     {
         var submission = await _memePlaceRepository.GetPlaceSubmission(submissionId);
@@ -102,14 +102,16 @@ public class MemePlacesController : ControllerBase
     /// <summary>
     /// Get the rendered Placefor given placeId
     /// </summary>
-    [HttpDelete("submisisons/{submisisonId}")]
+    [HttpDelete("submissions/{submisisonId}")]
     public async Task<ActionResult> GetPlace(string submisisonId)
     {
+        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret()) return Unauthorized();
+
         var isSuccessful = await _memePlaceRepository.DeleteSubmission(submisisonId);
         if (!isSuccessful) 
             return NotFound("Cannot find submission with provided Id: " + submisisonId);
 
-        return Ok(submisisonId);
+        return NoContent();
     }
 
     /// <summary>
@@ -118,6 +120,8 @@ public class MemePlacesController : ControllerBase
     [HttpPost("{placeId}/rerender")]
     public async Task<ActionResult> RerenderPlace(string placeId)
     {
+        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret()) return Unauthorized();
+
         var place = await _memePlaceRepository.GetMemePlace(placeId);
         if (place == null) return NotFound("Cannot find place with provided Id: " + placeId);
 
@@ -155,7 +159,7 @@ public class MemePlacesController : ControllerBase
 
         if (!sucess ||
             latestSubmission != null && 
-            renderedTimeOfSubmissionImage < latestSubmission.CreatedAt)
+            (renderedTimeOfSubmissionImage.TruncateToSeconds() < latestSubmission.CreatedAt.TruncateToSeconds())) 
             return BadRequest("You have either based your changes off an older version of the current place or changed the name of the file. Please download the latest Place render and try again.");
 
         var changedPixels = submissionDTO.ImageWithChanges.ToSubmissionPixelChanges(place);
