@@ -2,6 +2,7 @@
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +15,11 @@ namespace MemeApi.library.Extensions;
 
 public static class Extensions
 {
+    public static DateTime TruncateToSeconds(this DateTime dateTime)
+    {
+        return dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerSecond));
+
+    }
     public static async Task<byte[]> GetBytes(this IFormFile formFile)
     {
         await using var memoryStream = new MemoryStream();

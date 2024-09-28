@@ -20,13 +20,13 @@ public class PlaceSubmission
     public List<Pixel> PixelSubmissions { get; set; }
 }
 
-public class Pixel
+public record Pixel
 {
     public Coordinate Coordinate { get; set; }
     public Color Color { get; set; }
 }
 
-public class Coordinate
+public record Coordinate
 {
     public int X { get; set; }
     public int Y { get; set; }
