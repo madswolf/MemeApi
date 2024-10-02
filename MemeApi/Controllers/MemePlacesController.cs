@@ -4,10 +4,7 @@ using MemeApi.library.repositories;
 using MemeApi.library.Repositories;
 using MemeApi.library.Services.Files;
 using MemeApi.Models.DTO;
-using MemeApi.Models.Entity;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -100,10 +97,10 @@ public class MemePlacesController : ControllerBase
     }
 
     /// <summary>
-    /// Get the rendered Placefor given placeId
+    /// Delete the Submission with the given submissionId
     /// </summary>
     [HttpDelete("submissions/{submisisonId}")]
-    public async Task<ActionResult> GetPlace(string submisisonId)
+    public async Task<ActionResult> DeleteSubmission(string submisisonId)
     {
         if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret()) return Unauthorized();
 
@@ -163,6 +160,9 @@ public class MemePlacesController : ControllerBase
             return BadRequest("You have either based your changes off an older version of the current place or changed the name of the file. Please download the latest Place render and try again.");
 
         var changedPixels = submissionDTO.ImageWithChanges.ToSubmissionPixelChanges(place);
+        if (changedPixels.Count == 0) 
+            return BadRequest("The submission did not change any pixels. Please try again.");
+
         var requiredFunds = Math.Ceiling(changedPixels.Count/100.0);
         var currentFunds = user.DubloonEvents.CountDubloons();
 

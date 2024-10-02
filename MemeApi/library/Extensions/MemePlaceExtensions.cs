@@ -54,9 +54,10 @@ public static class MemePlaceExtensions
         };
 
         return unrenderedPlaceWithChanges
-            .Where(pair => {
-                unrederedPlace.TryGetValue(pair.Key, out var value);
-                return pair.Value != defaultColor && value != pair.Value;
+            .Where(pixelChange => {
+                unrederedPlace.TryGetValue(pixelChange.Key, out var currentPixelColor);
+                var isDefault = pixelChange.Value == defaultColor && currentPixelColor == null;
+                return currentPixelColor != pixelChange.Value && !isDefault;
             })
             .ToDictionary(pair => pair.Key, pair => pair.Value);
     }
@@ -144,6 +145,7 @@ public static class MemePlaceExtensions
     public static Dictionary<Coordinate, Color> ToUnrenderedPlacePixels(this List<PlaceSubmission> submissions)
     {
         var pixels = new Dictionary<Coordinate, Color>();
+
 
         submissions.OrderBy(ps => ps.CreatedAt).ToList().ForEach(ps =>
         {
