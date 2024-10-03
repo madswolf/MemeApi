@@ -3,7 +3,9 @@ using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Http;
 using SkiaSharp;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using static System.Net.Mime.MediaTypeNames;
@@ -18,12 +20,6 @@ public static class MemePlaceExtensions
         return place.PlaceSubmissions.OrderByDescending(s => s.CreatedAt).FirstOrDefault();
     }
 
-    public static string LatestSubmissionId(this MemePlace place)
-    {
-        var submission = place.PlaceSubmissions.OrderByDescending(s => s.CreatedAt).FirstOrDefault();
-
-        return submission != null ? submission.Id : place.Id;
-    }
     public static MemePlaceDTO ToMemePlaceDTO(this MemePlace place) => new MemePlaceDTO()
     {
         Id = place.Id,
@@ -41,10 +37,11 @@ public static class MemePlaceExtensions
         PixelChangeCount = submission.PixelSubmissions.Count,
     };
 
-    public static Dictionary<Coordinate, Color> ToSubmissionPixelChanges(this IFormFile file, MemePlace place)
+    public static Dictionary<Coordinate, Color> ToSubmissionPixelChanges(this IFormFile file, byte[] placeRender)
     {
-        var unrederedPlace = place.PlaceSubmissions.ToUnrenderedPlacePixels();
-        var unrenderedPlaceWithChanges = file.ToUnrenderedPlacePixels();
+        using var unrederedPlaceBitmap = SKBitmap.Decode(placeRender);
+        var unrederedPlace = unrederedPlaceBitmap.ToPixels();
+        var unrenderedPlaceWithChanges = file.ToPixels();
         var defaultColor = new Color
         {
             Red = 255,
@@ -62,108 +59,73 @@ public static class MemePlaceExtensions
             .ToDictionary(pair => pair.Key, pair => pair.Value);
     }
 
-    public static byte[] ToRenderedSubmission(this PlaceSubmission submission)
+    public static bool IsBasedOnLatestRender(this IFormFile file, MemePlace? place)
     {
-        var minX = submission.PixelSubmissions.Min(pixel => pixel.Coordinate.X);
-        var minY = submission.PixelSubmissions.Min(pixel => pixel.Coordinate.Y);
-        var maxX = submission.PixelSubmissions.Max(pixel => pixel.Coordinate.X);
-        var maxY = submission.PixelSubmissions.Max(pixel => pixel.Coordinate.Y);
+        var filename = file.FileName;
+        if (filename == null) return false;
 
-        var width = maxX - minX;
-        var height = maxY - minY;
+        var latestSubmission = place.LatestSubmission();
 
-        Dictionary<Coordinate, Color> pixels =
-            submission.PixelSubmissions.ToDictionary(ps => new Coordinate
-            {
-                X = ps.Coordinate.X - minX,
-                Y = ps.Coordinate.Y - minY,
-            },
-            ps => ps.Color);
-        return RenderPixelsWithBlankBase(width, height, pixels);
+        filename = filename.Replace("_", " ");
+        filename = filename.Replace("x", ":");
+        filename = filename.Replace(".png", "");
+
+        string format = "yyyy-MM-dd HH:mm:ss";
+        var sucess = DateTime.TryParseExact(filename, format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var renderedTimeOfSubmissionImage);
+
+        if (!sucess ||
+            latestSubmission != null &&
+            (renderedTimeOfSubmissionImage.TruncateToSeconds() < latestSubmission.CreatedAt.TruncateToSeconds()))
+            return false;
+
+        return true;
     }
 
-    public static byte[] ToRenderedPlace(this MemePlace place)
+    public static SKBitmap OverlayImage(this SKBitmap baseBitmap, byte[] overlayImageBytes)
     {
-        Dictionary<Coordinate, Color> pixels = place.PlaceSubmissions.ToUnrenderedPlacePixels();
-        return RenderPixelsWithBlankBase(place.Width, place.Height, pixels);
-    }
+        using var overlayBitmap = SKBitmap.Decode(overlayImageBytes);
+        var imageInfo = new SKImageInfo(baseBitmap.Width, baseBitmap.Height);
 
-    public static byte[] ToRenderedPlaceWithBase(this byte[] baseImage, List<PlaceSubmission> submissions)
-    {
-        Dictionary<Coordinate, Color> pixels = submissions.ToUnrenderedPlacePixels();
-        var bitmap = SKBitmap.Decode(baseImage);
+        using var surface = SKSurface.Create(imageInfo);
+        var canvas = surface.Canvas;
 
-        return RenderPixelsToBaseImage(bitmap, pixels)
-            .WriteExifComment(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
-    }
-
-    private static byte[] RenderPixelsWithBlankBase(int width, int height, Dictionary<Coordinate, Color> pixels)
-    { 
-        var bitmap = new SKBitmap(width, height);
-        var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.White);
 
-        var renderedPlace =
-            RenderPixelsToBaseImage(bitmap, pixels)
-            .WriteExifComment(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
+        canvas.DrawBitmap(baseBitmap, 0, 0);
 
-        return renderedPlace;
+        canvas.DrawBitmap(overlayBitmap, 0, 0);
+
+        canvas.Flush();
+
+        return baseBitmap;
     }
 
-    private static byte[] RenderPixelsToBaseImage(SKBitmap baseImage, Dictionary<Coordinate, Color> pixels)
+    public static byte[] ToByteArray(this SKBitmap bitMap)
     {
-        var canvas = new SKCanvas(baseImage);
-
-        foreach (var entry in pixels)
-        {
-            Coordinate coord = entry.Key;
-            Color color = entry.Value;
-
-            var paint = new SKPaint
-            {
-                Color = new SKColor(color.Red, color.Green, color.Blue, color.Alpha),
-                BlendMode = SKBlendMode.SrcOver
-            };
-
-            if (coord.X < baseImage.Width && coord.Y < baseImage.Height)
-            {
-                canvas.DrawPoint(coord.X, coord.Y, paint);
-            }
-        }
-
-        using (var stream = new MemoryStream())
-        {
-            using (var imageStream = new SKManagedWStream(stream))
-            {
-                baseImage.Encode(imageStream, SKEncodedImageFormat.Png, quality: 100);
-            }
-
-            return stream.ToArray();
-        }
+        using var stream = new MemoryStream();
+        using var imageStream = new SKManagedWStream(stream);
+        bitMap.Encode(imageStream, SKEncodedImageFormat.Png, quality: 100);
+        return stream.ToArray();
     }
 
-    public static Dictionary<Coordinate, Color> ToUnrenderedPlacePixels(this List<PlaceSubmission> submissions)
+    public static byte[] ToByteArray(this IFormFile file)
     {
-        var pixels = new Dictionary<Coordinate, Color>();
-
-
-        submissions.OrderBy(ps => ps.CreatedAt).ToList().ForEach(ps =>
-        {
-            foreach (var pair in ps.PixelSubmissions)
-            {
-                pixels[pair.Coordinate] = pair.Color;
-            }
-        });
-        return pixels;
+        using var memoryStream = new MemoryStream();
+        file.CopyTo(memoryStream);
+        return memoryStream.ToArray();
     }
 
-    public static Dictionary<Coordinate, Color> ToUnrenderedPlacePixels(this IFormFile file)
+    public static Dictionary<Coordinate, Color> ToPixels(this IFormFile file)
     {
-        Dictionary<Coordinate, Color> coordinateColorMap = [];
-
         using var stream = file.OpenReadStream();
         using var skStream = new SKManagedStream(stream);
         using var bitmap = SKBitmap.Decode(skStream);
+        return bitmap.ToPixels();
+    }
+
+    private static Dictionary<Coordinate, Color> ToPixels(this SKBitmap bitmap)
+    {
+        Dictionary<Coordinate, Color> coordinateColorMap = [];
 
         for (int y = 0; y < bitmap.Height; y++)
         {
