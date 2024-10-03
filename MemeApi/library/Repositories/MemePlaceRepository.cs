@@ -3,7 +3,9 @@ using MemeApi.library.Services.Files;
 using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,6 +82,43 @@ namespace MemeApi.library.Repositories
             return await _context.PlaceSubmissions.FirstOrDefaultAsync(s => s.Id == submissionId);
         }
 
+
+        public async Task<bool> RerenderPlace(string placeId)
+        {
+            var place = await GetMemePlace(placeId);
+            if (place == null) return false;
+
+            var submissionImages = await FetchSubmissionRenders(place.PlaceSubmissions);
+
+            if (submissionImages == null || submissionImages.Any(s => s == null)) return false;
+
+            var result = new SKBitmap(place.Width, place.Height);
+            var canvas = new SKCanvas(result);
+            canvas.Clear(SKColors.White);
+            var image = submissionImages.Aggregate(result, (acc, item) => acc.OverlayImage(item));
+
+            await _fileSaver.SaveFile(image.ToByteArray(), "places/", $"{place.Id}_latest.png", "image/png");
+            return true;
+        }
+
+        private async Task<byte[]?[]?> FetchSubmissionRenders(
+            List<PlaceSubmission> placeSubmissions)
+        {
+            return await Task.WhenAll(placeSubmissions.OrderBy(ps => ps.CreatedAt).Select(
+                    async p => await GetPlaceSubmissionRender(p.Id)
+                ));
+        }
+
+        public async Task<byte[]?> GetLatestPlaceRender(string placeId)
+        {
+            return await _fileLoader.LoadFile($"places/{placeId}_latest.png");
+        }
+
+        public async Task<byte[]?> GetPlaceSubmissionRender(string submissionId)
+        {
+            return await _fileLoader.LoadFile($"placesubmission/{submissionId}.png");
+        }
+
         public async Task<bool> RenderDelta(MemePlace place)
         {
             var latestRender = await _fileLoader.LoadFile($"places/{place.Id}_latest.png");
@@ -89,21 +128,24 @@ namespace MemeApi.library.Repositories
             if (renderTime == null) return false;
             
             var renderDateTime = DateTime.Parse(renderTime);
-            var submissions = place.PlaceSubmissions.Where(p => renderDateTime < p.CreatedAt).ToList();
+            var submissions = 
+                place.PlaceSubmissions.Where(p => renderDateTime < p.CreatedAt).ToList();
+
             if (!submissions.Any()) return true;
 
-            var newRender = latestRender.ToRenderedPlaceWithBase(submissions);
+            var submissionImages = await FetchSubmissionRenders(submissions);
+            if (submissionImages == null || submissionImages.Any(s => s == null)) return false;
 
-            await _fileSaver.SaveFile(newRender, "places/", $"{place.Id}_latest.png", "image/png");
+            using var latestRenderBitmap = SKBitmap.Decode(latestRender);
+            var newRender = submissionImages.Aggregate(
+                latestRenderBitmap, (acc, item) => acc.OverlayImage(item)
+            );
+
+            await _fileSaver.SaveFile(newRender.ToByteArray(), "places/", $"{place.Id}_latest.png", "image/png");
             return true;
         }
 
-        public async Task ReRender(MemePlace place)
-        {
-            await _fileSaver.SaveFile(place.ToRenderedPlace(), "places/", $"{place.Id}_latest.png", "image/png");
-        }
-
-        public async Task<PlaceSubmission> CreatePlaceSubmission(MemePlace place, User submitter, Dictionary<Coordinate, Color> pixelSubmissions)
+        public async Task<PlaceSubmission> CreatePlaceSubmission(MemePlace place, User submitter, Dictionary<Coordinate, Color> pixelSubmissions, IFormFile submissionImage)
         {
             var submission = new PlaceSubmission
             {
@@ -116,6 +158,10 @@ namespace MemeApi.library.Repositories
                     Color = pair.Value
                 }).ToList(),
             };
+
+            var pixelSubmissionsImage = submission.ToRenderedSubmission();
+            await _fileSaver.SaveFile(pixelSubmissionsImage, "placesubmissions/", $"{submission.Id}.png", "image/png");
+            await _fileSaver.SaveFile(submissionImage.ToByteArray(), "placesubmissions/backups/", $"{submission.Id}.png", "image/png");
 
             var dubloonEvent = new PlacePixelPurchase
             {

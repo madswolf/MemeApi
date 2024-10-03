@@ -4,6 +4,8 @@ using MemeApi.library.repositories;
 using MemeApi.library.Repositories;
 using MemeApi.library.Services.Files;
 using MemeApi.Models.DTO;
+using MemeApi.Models.Entity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -91,7 +93,7 @@ public class MemePlacesController : ControllerBase
         var submission = await _memePlaceRepository.GetPlaceSubmission(submissionId);
         if(submission == null) return NotFound(submissionId);
 
-        var file = File(submission.ToRenderedSubmission(), "image/png", $"{submission.Id}.png");
+        var file = File(submission, "image/png", $"{submission.Id}.png");
 
         return file;
     }
@@ -122,7 +124,8 @@ public class MemePlacesController : ControllerBase
         var place = await _memePlaceRepository.GetMemePlace(placeId);
         if (place == null) return NotFound("Cannot find place with provided Id: " + placeId);
 
-        await _fileSaver.SaveFile(place.ToRenderedPlace(), "places/", $"{place.Id}_latest.png", "image/png");
+        var success = await _memePlaceRepository.RenderDelta(place);
+        if (!success) Console.WriteLine($"Failed to rerender place with Id: {placeId}");
 
         return Ok();
     }
@@ -132,7 +135,7 @@ public class MemePlacesController : ControllerBase
     /// </summary>
     [HttpPost("submissions/submit")]
     public async Task<ActionResult<IEnumerable<PlaceSubmissionDTO>>> Submit([FromForm]PlaceSubmissionCreationDTO submissionDTO)
-        {
+    {
         if (submissionDTO.ImageWithChanges.Length > 5000000)
             return StatusCode(413);
 
@@ -143,39 +146,35 @@ public class MemePlacesController : ControllerBase
         var place = await _memePlaceRepository.GetMemePlace(submissionDTO.PlaceId);
         if (place == null) return NotFound(submissionDTO.PlaceId);
 
-        var filename = submissionDTO.ImageWithChanges.FileName;
-        if (filename == null) return BadRequest("You have either based your changes off an older version of the current place or changed the name of the file. Please download the latest Place render and try again.");
-        var latestSubmission = place.LatestSubmission();
+        var isBasedOnLatestRender = submissionDTO.ImageWithChanges.IsBasedOnLatestRender(place);
+        if (!isBasedOnLatestRender) return BadRequest("The file is not based on the latest render of the given place. Please try again.");
+        
+        var latestRender = await _memePlaceRepository.GetLatestPlaceRender(submissionDTO.PlaceId);
+        if (latestRender == null) return BadRequest();
 
-        filename = filename.Replace("_", " ");
-        filename = filename.Replace("x", ":");
-        filename = filename.Replace(".png", "");
-
-        string format = "yyyy-MM-dd HH:mm:ss";
-        var sucess = DateTime.TryParseExact(filename, format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var renderedTimeOfSubmissionImage);
-
-        if (!sucess ||
-            latestSubmission != null && 
-            (renderedTimeOfSubmissionImage.TruncateToSeconds() < latestSubmission.CreatedAt.TruncateToSeconds())) 
-            return BadRequest("You have either based your changes off an older version of the current place or changed the name of the file. Please download the latest Place render and try again.");
-
-        var changedPixels = submissionDTO.ImageWithChanges.ToSubmissionPixelChanges(place);
-        if (changedPixels.Count == 0) 
+        var changedPixels = submissionDTO.ImageWithChanges.ToSubmissionPixelChanges(latestRender);
+        if (changedPixels.Count == 0)
             return BadRequest("The submission did not change any pixels. Please try again.");
 
-        var requiredFunds = Math.Ceiling(changedPixels.Count/100.0);
+        var requiredFunds = Math.Ceiling(changedPixels.Count / 100.0);
         var currentFunds = user.DubloonEvents.CountDubloons();
 
         if (currentFunds < requiredFunds)
             return BadRequest("Not enough dubloons to make submission. Dubloons needed: " + requiredFunds);
 
-        var submission = await _memePlaceRepository.CreatePlaceSubmission(place, user, changedPixels);
+        var submission = await _memePlaceRepository.CreatePlaceSubmission(
+            place, 
+            user, 
+            changedPixels, 
+            submissionDTO.ImageWithChanges
+            );
+
         var isSucessfulRender = await _memePlaceRepository.RenderDelta(place);
 
         if (!isSucessfulRender)
             Console.WriteLine("Failed To render new submission");
 
         return Ok(submission.ToPlaceSubmissionDTO());
-        
+
     }
 } 
