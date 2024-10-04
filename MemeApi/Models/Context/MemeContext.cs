@@ -76,10 +76,6 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .Property(u => u.CreatedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-        modelBuilder.Entity<PlaceSubmission>()
-                    .Property(e => e.PixelSubmissions)
-                    .HasConversion(new CompactPixelListConverter());
-
         modelBuilder.Entity<PlacePixelPurchase>()
             .HasOne(p => p.Submission)
             .WithOne()
