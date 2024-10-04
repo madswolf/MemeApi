@@ -90,10 +90,10 @@ public class MemePlacesController : ControllerBase
     [HttpGet("submissions/{submissionId}")]
     public async Task<ActionResult<IEnumerable<PlaceSubmissionDTO>>> GetRenderedPlaceSubmission(string submissionId)
     {
-        var submission = await _memePlaceRepository.GetPlaceSubmission(submissionId);
-        if(submission == null) return NotFound(submissionId);
+        var render = await _memePlaceRepository.GetPlaceSubmissionRender(submissionId);
+        if(render == null) return NotFound(submissionId);
 
-        var file = File(submission, "image/png", $"{submission.Id}.png");
+        var file = File(render, "image/png", $"{submissionId}.png");
 
         return file;
     }

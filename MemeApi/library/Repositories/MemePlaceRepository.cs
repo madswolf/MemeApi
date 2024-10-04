@@ -152,14 +152,9 @@ namespace MemeApi.library.Repositories
                 Id = Guid.NewGuid().ToString(),
                 Place = place,
                 Owner = submitter,
-                PixelSubmissions = pixelSubmissions.Select(pair => new Pixel
-                {
-                    Coordinate = pair.Key,
-                    Color = pair.Value
-                }).ToList(),
             };
 
-            var pixelSubmissionsImage = submission.ToRenderedSubmission();
+            var pixelSubmissionsImage = pixelSubmissions.ToRenderedSubmission(place);
             await _fileSaver.SaveFile(pixelSubmissionsImage, "placesubmissions/", $"{submission.Id}.png", "image/png");
             await _fileSaver.SaveFile(submissionImage.ToByteArray(), "placesubmissions/backups/", $"{submission.Id}.png", "image/png");
 

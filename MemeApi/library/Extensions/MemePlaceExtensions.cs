@@ -14,7 +14,7 @@ namespace MemeApi.library.Extensions;
 
 public static class MemePlaceExtensions
 {
-
+    
     public static PlaceSubmission? LatestSubmission(this MemePlace place)
     {
         return place.PlaceSubmissions.OrderByDescending(s => s.CreatedAt).FirstOrDefault();
@@ -34,7 +34,7 @@ public static class MemePlaceExtensions
         OwnerUserId = submission.Owner.Id,
         OwnerUserName = submission.Owner.UserName,
         PlaceId = submission.PlaceId,
-        PixelChangeCount = submission.PixelSubmissions.Count,
+        PixelChangeCount = submission.PixelChangeCount,
     };
 
     public static Dictionary<Coordinate, Color> ToSubmissionPixelChanges(this IFormFile file, byte[] placeRender)
@@ -79,6 +79,34 @@ public static class MemePlaceExtensions
             return false;
 
         return true;
+    }
+
+    public static byte[] ToRenderedSubmission( this Dictionary<Coordinate, Color> pixels, MemePlace place)
+    {
+
+        var baseImage = new SKBitmap(place.Width, place.Height);
+        var canvas = new SKCanvas(baseImage);
+        canvas.Clear(SKColors.White);
+
+        foreach (var entry in pixels)
+        {
+            Coordinate coord = entry.Key;
+            Color color = entry.Value;
+
+            var paint = new SKPaint
+            {
+                Color = new SKColor(color.Red, color.Green, color.Blue, color.Alpha),
+                BlendMode = SKBlendMode.SrcOver
+            };
+
+            canvas.DrawPoint(coord.X, coord.Y, paint);
+        }
+
+        using var stream = new MemoryStream();
+        using var imageStream = new SKManagedWStream(stream);
+        baseImage.Encode(imageStream, SKEncodedImageFormat.Png, quality: 100);
+      
+        return stream.ToArray();
     }
 
     public static SKBitmap OverlayImage(this SKBitmap baseBitmap, byte[] overlayImageBytes)
