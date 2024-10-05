@@ -106,9 +106,12 @@ public class MemePlacesController : ControllerBase
     {
         if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret()) return Unauthorized();
 
-        var isSuccessful = await _memePlaceRepository.DeleteSubmission(submisisonId);
+        var (isSuccessful,place) = await _memePlaceRepository.DeleteSubmission(submisisonId);
         if (!isSuccessful) 
             return NotFound("Cannot find submission with provided Id: " + submisisonId);
+
+        var success = await _memePlaceRepository.RerenderPlace(place);
+        if (!success) Console.WriteLine($"Failed to rerender place with Id: {place.Id}");
 
         return NoContent();
     }
@@ -124,7 +127,7 @@ public class MemePlacesController : ControllerBase
         var place = await _memePlaceRepository.GetMemePlace(placeId);
         if (place == null) return NotFound("Cannot find place with provided Id: " + placeId);
 
-        var success = await _memePlaceRepository.RenderDelta(place);
+        var success = await _memePlaceRepository.RerenderPlace(place);
         if (!success) Console.WriteLine($"Failed to rerender place with Id: {placeId}");
 
         return Ok();
