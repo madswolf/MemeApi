@@ -7,14 +7,17 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SkiaSharp;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MemeApi.library.Repositories
 {
     public class MemePlaceRepository
     {
+        public static ConcurrentDictionary<string, SemaphoreSlim> placeLocks = new();
         private readonly MemeContext _context;
         private readonly IFileSaver _fileSaver;
         private readonly IFileLoader _fileLoader;
@@ -57,16 +60,16 @@ namespace MemeApi.library.Repositories
                 .FirstOrDefaultAsync(p => p.Id == placeId);
         }
 
-        public async Task<bool> DeleteSubmission(string submissionId)
+        public async Task<(bool,MemePlace?)> DeleteSubmission(string submissionId)
         {
             var submission = await _context.PlaceSubmissions.FindAsync(submissionId);
-            if (submission == null) return false;
-
+            if (submission == null) return (false, null);
+            var place = submission.Place;
 
             _context.PlaceSubmissions.Remove(submission);
             await _context.SaveChangesAsync();
 
-            return true;
+            return (true, place);
         }
 
         public async Task<List<PlaceSubmission>> GetMemePlaceSubmissions(string placeId)
@@ -83,21 +86,26 @@ namespace MemeApi.library.Repositories
         }
 
 
-        public async Task<bool> RerenderPlace(string placeId)
+        public async Task<bool> RerenderPlace(MemePlace place)
         {
-            var place = await GetMemePlace(placeId);
-            if (place == null) return false;
+            var lockObject = placeLocks.GetOrAdd(place.Id, new SemaphoreSlim(1, 1));
+            await lockObject.WaitAsync();
 
-            var submissionImages = await FetchSubmissionRenders(place.PlaceSubmissions);
+            try
+            {
+                var submissionImages = await FetchSubmissionRenders(place.PlaceSubmissions);
 
-            if (submissionImages == null || submissionImages.Any(s => s == null)) return false;
+                if (submissionImages == null || submissionImages.Any(s => s == null)) return false;
 
-            var result = new SKBitmap(place.Width, place.Height);
-            var canvas = new SKCanvas(result);
-            canvas.Clear(SKColors.White);
-            var image = submissionImages.Aggregate(result, (acc, item) => acc.OverlayImage(item));
+                var result = new SKBitmap(place.Width, place.Height);
+                var canvas = new SKCanvas(result);
+                canvas.Clear(SKColors.White);
+                var image = submissionImages.Aggregate(result, (acc, item) => acc.OverlayImage(item));
 
-            await _fileSaver.SaveFile(image.ToByteArray(), "places/", $"{place.Id}_latest.png", "image/png");
+                await _fileSaver.SaveFile(image.ToByteArray(), "places/", $"{place.Id}_latest.png", "image/png");
+            }
+            finally { lockObject.Release(); }
+
             return true;
         }
 
@@ -121,27 +129,34 @@ namespace MemeApi.library.Repositories
 
         public async Task<bool> RenderDelta(MemePlace place)
         {
-            var latestRender = await _fileLoader.LoadFile($"places/{place.Id}_latest.png");
-            if (latestRender == null) return false;
+            var lockObject = placeLocks.GetOrAdd(place.Id, new SemaphoreSlim(1, 1));
+            await lockObject.WaitAsync();
             
-            var renderTime = latestRender.GetExifComment();
-            if (renderTime == null) return false;
+            try
+            {
+                var latestRender = await _fileLoader.LoadFile($"places/{place.Id}_latest.png");
+                if (latestRender == null) return false;
+
+                var renderTime = latestRender.GetExifComment();
+                if (renderTime == null) return false;
+
+                var renderDateTime = DateTime.Parse(renderTime);
+                var submissions =
+                    place.PlaceSubmissions.Where(p => renderDateTime < p.CreatedAt).ToList();
+
+                if (!submissions.Any()) return true;
+
+                var submissionImages = await FetchSubmissionRenders(submissions);
+                if (submissionImages == null || submissionImages.Any(s => s == null)) return false;
+
+                using var latestRenderBitmap = SKBitmap.Decode(latestRender);
+                var newRender = submissionImages.Aggregate(
+                    latestRenderBitmap, (acc, item) => acc.OverlayImage(item)
+                );
+
+                await _fileSaver.SaveFile(newRender.ToByteArray(), "places/", $"{place.Id}_latest.png", "image/png");
+            } finally { lockObject.Release(); }
             
-            var renderDateTime = DateTime.Parse(renderTime);
-            var submissions = 
-                place.PlaceSubmissions.Where(p => renderDateTime < p.CreatedAt).ToList();
-
-            if (!submissions.Any()) return true;
-
-            var submissionImages = await FetchSubmissionRenders(submissions);
-            if (submissionImages == null || submissionImages.Any(s => s == null)) return false;
-
-            using var latestRenderBitmap = SKBitmap.Decode(latestRender);
-            var newRender = submissionImages.Aggregate(
-                latestRenderBitmap, (acc, item) => acc.OverlayImage(item)
-            );
-
-            await _fileSaver.SaveFile(newRender.ToByteArray(), "places/", $"{place.Id}_latest.png", "image/png");
             return true;
         }
 
