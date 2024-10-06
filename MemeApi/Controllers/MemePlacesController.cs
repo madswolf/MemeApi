@@ -78,9 +78,9 @@ public class MemePlacesController : ControllerBase
     /// Get all PlaceSubmissions for given placeId
     /// </summary>
     [HttpGet("{placeId}/submissions")]
-    public async Task<ActionResult<IEnumerable<PlaceSubmissionDTO>>> GetPlaceSubmissions(string placeId)
+    public async Task<ActionResult<IEnumerable<PlaceSubmissionDTO>>> GetPlaceSubmissions(string placeId, [FromQuery] bool includeDeleted = false)
     {
-        var places = await _memePlaceRepository.GetMemePlaceSubmissions(placeId);
+        var places = await _memePlaceRepository.GetMemePlaceSubmissions(placeId, includeDeleted);
         return Ok(places.Select(p => p.ToPlaceSubmissionDTO()));
     }
 

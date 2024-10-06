@@ -17,7 +17,7 @@ namespace MemeApi.library.Repositories
 {
     public class MemePlaceRepository
     {
-        public static ConcurrentDictionary<string, SemaphoreSlim> placeLocks = new();
+        private readonly static ConcurrentDictionary<string, SemaphoreSlim> PlaceLocks = new();
         private readonly MemeContext _context;
         private readonly IFileSaver _fileSaver;
         private readonly IFileLoader _fileLoader;
@@ -62,22 +62,30 @@ namespace MemeApi.library.Repositories
 
         public async Task<(bool, MemePlace?)> DeleteSubmission(string submissionId)
         {
-            var submission = await _context.PlaceSubmissions.FindAsync(submissionId);
-            if (submission == null) return (false, null);
-            var place = submission.Place;
+            var submission = 
+                await _context.PlaceSubmissions
+                .Include(ps => ps.Place)
+                .ThenInclude(p => p.PlaceSubmissions)
+                .FirstOrDefaultAsync(ps => ps.Id == submissionId);
 
-            _context.PlaceSubmissions.Remove(submission);
+            if (submission == null) return (false, null);
+            submission.IsDeleted = true;
+
             await _context.SaveChangesAsync();
 
-            return (true, place);
+            return (true, submission.Place);
         }
 
-        public async Task<List<PlaceSubmission>> GetMemePlaceSubmissions(string placeId)
+        public async Task<List<PlaceSubmission>> GetMemePlaceSubmissions(string placeId, bool includeDeleted = false)
         {
-            return await _context.PlaceSubmissions
-                .Include(p => p.Owner)
-                .Where(p => p.PlaceId == placeId)
-                .ToListAsync();
+            var queryable = _context.PlaceSubmissions.Where(p => p.IsDeleted == false).Include(p => p.Owner);
+
+            if (includeDeleted)
+            {
+                queryable = _context.PlaceSubmissions.Include(p => p.Owner);
+            }
+
+            return await queryable.ToListAsync();
         }
 
         public async Task<PlaceSubmission?> GetPlaceSubmission(string submissionId)
@@ -88,12 +96,17 @@ namespace MemeApi.library.Repositories
 
         public async Task<bool> RerenderPlace(MemePlace place)
         {
-            var lockObject = placeLocks.GetOrAdd(place.Id, new SemaphoreSlim(1, 1));
+            var lockObject = PlaceLocks.GetOrAdd(place.Id, new SemaphoreSlim(1, 1));
             await lockObject.WaitAsync();
 
             try
             {
-                var submissionImages = await FetchSubmissionRenders(place.PlaceSubmissions);
+                var submissionImages = 
+                    await FetchSubmissionRenders(
+                        place.PlaceSubmissions
+                        .Where(p => p.IsDeleted == false)
+                        .ToList()
+                    );
 
                 if (submissionImages == null || submissionImages.Any(s => s == null)) return false;
 
@@ -144,7 +157,7 @@ namespace MemeApi.library.Repositories
 
         public async Task<bool> RenderDelta(MemePlace place)
         {
-            var lockObject = placeLocks.GetOrAdd(place.Id, new SemaphoreSlim(1, 1));
+            var lockObject = PlaceLocks.GetOrAdd(place.Id, new SemaphoreSlim(1, 1));
             await lockObject.WaitAsync();
 
             try
@@ -157,7 +170,9 @@ namespace MemeApi.library.Repositories
 
                 var renderDateTime = DateTime.Parse(renderTime);
                 var submissions =
-                    place.PlaceSubmissions.Where(p => renderDateTime < p.CreatedAt).ToList();
+                    place.PlaceSubmissions
+                    .Where(p => renderDateTime < p.CreatedAt && p.IsDeleted == false)
+                    .ToList();
 
                 if (submissions.Count == 0) return true;
 
@@ -190,6 +205,7 @@ namespace MemeApi.library.Repositories
                 Place = place,
                 Owner = submitter,
                 PixelChangeCount = pixelSubmissions.Count,
+                IsDeleted = false,
             };
 
             var pixelSubmissionsImage = pixelSubmissions.ToRenderedSubmission(place);
