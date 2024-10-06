@@ -49,7 +49,7 @@ public class ConsumeScopedServiceHostedService : BackgroundService
                     }
                 } else
                 {
-                    Console.WriteLine($"Meme created in interval {occurencePast.ToString()} - {occurenceNow.ToString()}");
+                    Console.WriteLine($"Meme created in interval {occurencePast} - {occurenceNow}");
                 }
             }
 

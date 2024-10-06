@@ -15,6 +15,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
@@ -233,5 +234,21 @@ public class MemeTestBase : IAsyncLifetime
                      new Mock<IAuthenticationSchemeProvider>().Object,
                      new Mock<IUserConfirmation<User>>().Object)
         { }
+    }
+
+    public static IFormFile CreateFormFile(int size, string filename)
+    {
+        var fileStream = new MemoryStream();
+        var dummyData = new byte[size];
+        fileStream.Write(dummyData, 0, size);
+        fileStream.Position = 0;
+
+        var file = new FormFile(fileStream, 0, size, "fileStream", filename)
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "image/png"
+        };
+
+        return file;
     }
 }

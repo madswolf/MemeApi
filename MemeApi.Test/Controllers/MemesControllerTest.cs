@@ -1,15 +1,12 @@
 ﻿using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.Models.DTO.Memes;
-using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Memes;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -57,7 +54,7 @@ public class MemesControllerTest : MemeTestBase
             Id = Guid.NewGuid().ToString(),
             Filename = "Test",
         };
-        
+
         var meme = new Meme
         {
             Id = Guid.NewGuid().ToString(),
@@ -180,13 +177,5 @@ public class MemesControllerTest : MemeTestBase
         var deleteTask2 = await controller2.DeleteMemeText(createdMeme?.Toptext?.Id);
         deleteTask2.Should().NotBeNull();
         deleteTask2.Should().BeOfType<NoContentResult>();
-    }
-
-
-    public static IFormFile CreateFormFile(int size, string filename)
-    {
-        var fileStream = new MemoryStream(size);
-        var file = new FormFile(fileStream, 0, size, "fileStream", filename);
-        return file;
     }
 }
