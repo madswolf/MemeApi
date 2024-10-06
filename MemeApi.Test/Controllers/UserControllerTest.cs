@@ -12,6 +12,8 @@ using MemeApi.library.repositories;
 using MemeApi.library.Services;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Dubloons;
+using MemeApi.Models.Entity.Memes;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Http;

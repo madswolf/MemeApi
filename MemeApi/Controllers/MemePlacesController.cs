@@ -3,7 +3,7 @@ using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Repositories;
 using MemeApi.library.Services.Files;
-using MemeApi.Models.DTO;
+using MemeApi.Models.DTO.Places;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,17 +26,15 @@ public class MemePlacesController : ControllerBase
     private readonly MemeApiSettings _settings;
     private readonly MemePlaceRepository _memePlaceRepository;
     private readonly UserRepository _userRepository;
-    private readonly IFileSaver _fileSaver;
 
     /// <summary>
     /// A controller for creating and managing visual meme components.
     /// </summary>
-    public MemePlacesController(MemePlaceRepository memePlaceRepository, MemeApiSettings settings, UserRepository userRepository, IFileSaver fileSaver)
+    public MemePlacesController(MemePlaceRepository memePlaceRepository, MemeApiSettings settings, UserRepository userRepository)
     {
         _memePlaceRepository = memePlaceRepository;
         _settings = settings;
         _userRepository = userRepository;
-        _fileSaver = fileSaver;
     }
 
     /// <summary>
@@ -47,6 +45,48 @@ public class MemePlacesController : ControllerBase
     {
         var place = await _memePlaceRepository.CreateMemePlace(placeCreationDTO);
         return Ok(place.ToMemePlaceDTO());
+    }
+
+    /// <summary>
+    /// Get place price history
+    /// </summary>
+    [HttpGet("{placeId}/pricehistory")]
+    public async Task<ActionResult<MemePlaceDTO>> GetPlacePriceHistory(string placeId) 
+    {
+        var place = await _memePlaceRepository.GetMemePlace(placeId);
+        if (place == null) return NotFound(placeId);
+
+        return Ok(place.PriceHistory.Select(p => p.ToPriceDTO()));
+    }
+
+    /// <summary>
+    /// Get place price history
+    /// </summary>
+    [HttpGet("{placeId}/currentprice")]
+    public async Task<ActionResult<MemePlaceDTO>> GetPlaceCurrentPrice(string placeId)
+    {
+        var place = await _memePlaceRepository.GetMemePlace(placeId);
+        if (place == null) return NotFound(placeId);
+
+        var price = place.CurrentPixelPrice();
+        if (price == null) return NotFound(placeId);
+
+
+        return Ok(price.ToPriceDTO());
+    }
+
+    /// <summary>
+    /// Create Place
+    /// </summary>
+    [HttpPost("ChangePrice")]
+    public async Task<ActionResult<MemePlaceDTO>> ChangePixelPrice(
+        [FromForm] PriceChangeDTO priceChangeDTO)
+    {
+        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret()) return Unauthorized();
+        var price = await _memePlaceRepository.ChangePrice(priceChangeDTO);
+        if (price == null) return NotFound(priceChangeDTO);
+
+        return Ok(price.ToPriceDTO());
     }
 
     /// <summary>
@@ -158,8 +198,14 @@ public class MemePlacesController : ControllerBase
         var changedPixels = submissionDTO.ImageWithChanges.ToSubmissionPixelChanges(latestRender);
         if (changedPixels.Count == 0)
             return BadRequest("The submission did not change any pixels. Please try again.");
+        var currentPixelPrice = place.CurrentPixelPrice();
+        if (currentPixelPrice == null)
+        {
+            Console.WriteLine("Failed to get the current pixel price");
+            return BadRequest("Failed to get the current pixel price");
+        }
 
-        var requiredFunds = Math.Ceiling(changedPixels.Count / 100.0);
+        var requiredFunds = Math.Ceiling(changedPixels.Count * currentPixelPrice.PricePerPixel);
         var currentFunds = user.DubloonEvents.CountDubloons();
 
         if (currentFunds < requiredFunds)
@@ -169,7 +215,8 @@ public class MemePlacesController : ControllerBase
             place, 
             user, 
             changedPixels, 
-            submissionDTO.ImageWithChanges
+            submissionDTO.ImageWithChanges,
+            requiredFunds
         );
 
         var isSucessfulRender = await _memePlaceRepository.RenderDelta(place);

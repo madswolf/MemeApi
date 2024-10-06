@@ -1,6 +1,10 @@
 ﻿using MemeApi.library.Services.Files;
 using MemeApi.Models.DTO;
+using MemeApi.Models.DTO.Dubloons;
+using MemeApi.Models.DTO.Memes;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Dubloons;
+using MemeApi.Models.Entity.Memes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System;

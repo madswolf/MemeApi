@@ -1,4 +1,6 @@
 ﻿#nullable disable warnings
+using MemeApi.Models.Entity.Memes;
+
 namespace MemeApi.Models.Entity;
 
 public class TopicModerator

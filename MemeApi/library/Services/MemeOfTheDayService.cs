@@ -3,7 +3,7 @@
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Services.Files;
-using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Memes;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -44,7 +44,10 @@ public class MemeOfTheDayService : IMemeOfTheDayService
 
             form.Add(new ByteArrayContent(imageContent, 0, imageContent.Length), "image/png", meme.ToFilenameString());
             form.Add(json_payload, "payload_json");
-            await httpClient.PostAsync(webhookUrl, form, stoppingToken);
+            var response = await httpClient.PostAsync(webhookUrl, form, stoppingToken);
+            if (response == null) Console.WriteLine("Response was null");
+            Console.WriteLine(await LogHttpResponse(response));
+
             httpClient.Dispose();
         }
         catch (Exception)
@@ -106,5 +109,27 @@ public class MemeOfTheDayService : IMemeOfTheDayService
             "Toni... don't hurry up with that 😅",
             "Skaftet",
         ];
+
+    public async Task<string> LogHttpResponse(HttpResponseMessage response)
+    {
+        var log = new StringBuilder();
+
+        log.AppendLine($"Status Code: {response.StatusCode}");
+
+        log.AppendLine("Headers:");
+        foreach (var header in response.Headers)
+        {
+            log.AppendLine($"{header.Key}: {string.Join(", ", header.Value)}");
+        }
+
+        if (response.Content != null)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            log.AppendLine("Content:");
+            log.AppendLine(content);
+        }
+
+        return log.ToString();
+    }
 }
 

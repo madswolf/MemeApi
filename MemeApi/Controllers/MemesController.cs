@@ -1,8 +1,6 @@
 ﻿using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Services.Files;
-using MemeApi.Models.DTO;
-using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -15,6 +13,8 @@ using Microsoft.Net.Http.Headers;
 using System.Runtime;
 using MemeApi.library;
 using System.Security.Claims;
+using MemeApi.Models.Entity.Memes;
+using MemeApi.Models.DTO.Memes;
 
 namespace MemeApi.Controllers;
 

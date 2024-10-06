@@ -1,8 +1,8 @@
 ﻿using MemeApi.library;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
-using MemeApi.Models.DTO;
-using MemeApi.Models.Entity;
+using MemeApi.Models.DTO.Memes;
+using MemeApi.Models.Entity.Memes;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;

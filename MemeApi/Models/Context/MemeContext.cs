@@ -1,5 +1,8 @@
 ﻿using MemeApi.library;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Dubloons;
+using MemeApi.Models.Entity.Memes;
+using MemeApi.Models.Entity.Places;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +27,7 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
     public DbSet<DubloonEvent> DubloonEvents { get; set; }
     public DbSet<MemePlace> MemePlaces { get; set; }
     public DbSet<PlaceSubmission> PlaceSubmissions { get; set; }
+    public DbSet<PlacePixelPrice> PixelPrices { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -68,12 +72,26 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
 
         modelBuilder.Entity<MemePlace>()
             .Property(u => u.CreatedAt)
+            .IsRequired(true)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+        modelBuilder.Entity<MemePlace>()
+            .HasMany(m => m.PriceHistory)
+            .WithOne(p => p.Place)
+            .IsRequired(true)
+            .HasForeignKey(p => p.PlaceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PlacePixelPrice>()
+            .ToTable("PlacePixelPrices")
+            .Property(p => p.PriceChangeTime)
+            .IsRequired(true)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         modelBuilder.Entity<PlaceSubmission>()
             .ToTable("PlaceSubmissions")
             .Property(u => u.CreatedAt)
+            .IsRequired(true)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         modelBuilder.Entity<PlacePixelPurchase>()

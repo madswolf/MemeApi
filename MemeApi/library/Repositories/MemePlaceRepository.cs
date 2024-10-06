@@ -1,8 +1,10 @@
 ﻿using MemeApi.library.Extensions;
 using MemeApi.library.Services.Files;
 using MemeApi.Models.Context;
-using MemeApi.Models.DTO;
+using MemeApi.Models.DTO.Places;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Dubloons;
+using MemeApi.Models.Entity.Places;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SkiaSharp;
@@ -30,18 +32,44 @@ namespace MemeApi.library.Repositories
 
         public async Task<MemePlace> CreateMemePlace(PlaceCreationDTO placeCreationDTO)
         {
+            var defaultPixelPrice = new PlacePixelPrice
+            {
+                Id = Guid.NewGuid().ToString(),
+                PricePerPixel = 0.01
+            };
+
             var place = new MemePlace
             {
                 Id = Guid.NewGuid().ToString(),
                 Name = placeCreationDTO.Name,
                 Height = placeCreationDTO.Height,
                 Width = placeCreationDTO.Width,
-                PlaceSubmissions = []
+                PlaceSubmissions = [],
+                PriceHistory = [defaultPixelPrice]
             };
+
+            defaultPixelPrice.Place = place;
 
             _context.MemePlaces.Add(place);
             await _context.SaveChangesAsync();
             return place;
+        }
+
+        public async Task<PlacePixelPrice?> ChangePrice(PriceChangeDTO priceChangeDTO)
+        {
+            var place = await GetMemePlace(priceChangeDTO.PlaceId);
+            if (place == null) return null;
+
+            var price = new PlacePixelPrice
+            {
+                Id = Guid.NewGuid().ToString(),
+                PricePerPixel = priceChangeDTO.NewPricePerPixel,
+                Place = place,
+            };
+
+            _context.PixelPrices.Add(price);
+            await _context.SaveChangesAsync();
+            return price;
         }
 
         public async Task<List<MemePlace>> GetMemePlaces()
@@ -57,6 +85,7 @@ namespace MemeApi.library.Repositories
             return await _context.MemePlaces
                 .Include(m => m.PlaceSubmissions)
                 .ThenInclude(s => s.Owner)
+                .Include(m => m.PriceHistory)
                 .FirstOrDefaultAsync(p => p.Id == placeId);
         }
 
@@ -78,14 +107,13 @@ namespace MemeApi.library.Repositories
 
         public async Task<List<PlaceSubmission>> GetMemePlaceSubmissions(string placeId, bool includeDeleted = false)
         {
-            var queryable = _context.PlaceSubmissions.Where(p => p.IsDeleted == false).Include(p => p.Owner);
+            var queryable = _context.PlaceSubmissions
+                .Where(p => p.Id == placeId);
 
-            if (includeDeleted)
-            {
-                queryable = _context.PlaceSubmissions.Include(p => p.Owner);
-            }
+            if (!includeDeleted)
+                queryable = queryable.Where(p => p.IsDeleted == false);
 
-            return await queryable.ToListAsync();
+            return await queryable.Include(p => p.Owner).ToListAsync();
         }
 
         public async Task<PlaceSubmission?> GetPlaceSubmission(string submissionId)
@@ -197,7 +225,7 @@ namespace MemeApi.library.Repositories
             await _fileSaver.SaveFile(imageBytes, "places/", $"{placeId}_latest.png", "image/png");
         }
 
-        public async Task<PlaceSubmission> CreatePlaceSubmission(MemePlace place, User submitter, Dictionary<Coordinate, Color> pixelSubmissions, IFormFile submissionImage)
+        public async Task<PlaceSubmission> CreatePlaceSubmission(MemePlace place, User submitter, Dictionary<Coordinate, Color> pixelSubmissions, IFormFile submissionImage, double price)
         {
             var submission = new PlaceSubmission
             {
@@ -217,7 +245,7 @@ namespace MemeApi.library.Repositories
                 Id = Guid.NewGuid().ToString(),
                 Owner = submitter,
                 Submission = submission,
-                Dubloons = -Math.Ceiling(pixelSubmissions.Count / 100.0)
+                Dubloons = -price
             };
 
             _context.PlaceSubmissions.Add(submission);
