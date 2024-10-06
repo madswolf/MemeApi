@@ -28,11 +28,11 @@ public class MemeVisualsControllerTest : MemeTestBase
     {
         var controller = new VisualsController(_visualRepository, _settings);
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
-
+        var filename = "test.png";
         // given
         var visualCreationDTO = new VisualCreationDTO
         {
-            File = new FormFile(new MemoryStream(5), 0, 5, "fileStream", "test"),
+            File = CreateFormFile(5, filename)
         };
 
         // When
@@ -42,7 +42,7 @@ public class MemeVisualsControllerTest : MemeTestBase
         var createdMemeVisual = ActionResultUtils.ActionResultToValueAndAssertCreated(createTask);
 
         (await _context.Visuals.CountAsync()).Should().Be(1);
-        createdMemeVisual?.Filename.Should().Be(visualCreationDTO.File.FileName);
+        createdMemeVisual?.Filename.Should().Be(filename);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public class MemeVisualsControllerTest : MemeTestBase
         var visual = new MemeVisual()
         {
             Id = Guid.NewGuid().ToString(),
-            Filename = "Test"
+            Filename = "Test",
         };
         _context.Visuals.Add(visual);
         await _context.SaveChangesAsync();
@@ -80,10 +80,11 @@ public class MemeVisualsControllerTest : MemeTestBase
         var controller = new VisualsController(_visualRepository, _settings);
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
+        var filename = "test.png";
         // given
         var visualCreationDTO = new VisualCreationDTO
         {
-            File = new FormFile(new MemoryStream(5), 0, 5, "fileStream", "filename"),
+            File = CreateFormFile(5, filename)
         };
 
         // When
@@ -95,8 +96,8 @@ public class MemeVisualsControllerTest : MemeTestBase
         var createdMemeVisual2 = ActionResultUtils.ActionResultToValueAndAssertCreated(createTask2);
 
         (await _context.Visuals.CountAsync()).Should().Be(2);
-        createdMemeVisual?.Filename.Should().Be(visualCreationDTO.File.FileName);
-        createdMemeVisual2?.Filename.Should().NotBe(visualCreationDTO.File.FileName);
+        createdMemeVisual?.Filename.Should().Be(filename);
+        createdMemeVisual2?.Filename.Should().NotBe(filename);
     }
 
     [Fact]
