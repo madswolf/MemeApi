@@ -22,7 +22,7 @@ namespace MemeApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("MemeApi.Models.Entity.DubloonEvent", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Dubloons.DubloonEvent", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -48,65 +48,7 @@ namespace MemeApi.Migrations
                     b.UseTptMappingStrategy();
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.MemePlace", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int>("Height")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Width")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MemePlaces", (string)null);
-                });
-
-            modelBuilder.Entity("MemeApi.Models.Entity.PlaceSubmission", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("PixelChangeCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PlaceId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OwnerId");
-
-                    b.HasIndex("PlaceId");
-
-                    b.ToTable("PlaceSubmissions", (string)null);
-                });
-
-            modelBuilder.Entity("MemeApi.Models.Entity.Topic", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Memes.Topic", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -148,44 +90,197 @@ namespace MemeApi.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "28aae7f0-9467-4835-93cc-383c836adcc9",
+                            Id = "a3b615bf-3978-4ddc-b156-f4abcf811c58",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes created 2020-2023",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Swu-legacy",
-                            OwnerId = "2e425ece-35d2-4c1d-a94e-c7f0b2df1b98"
+                            OwnerId = "92d78bf0-dfaf-4da8-be82-fa93e897ad1c"
                         },
                         new
                         {
-                            Id = "bbe4a540-9eb4-4b25-9c52-1c01d76f623c",
+                            Id = "fe1b12f1-c495-4473-aff5-0650a3300c3c",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes are back baby!",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Rotte-Grotte",
-                            OwnerId = "2e425ece-35d2-4c1d-a94e-c7f0b2df1b98"
+                            OwnerId = "92d78bf0-dfaf-4da8-be82-fa93e897ad1c"
                         },
                         new
                         {
-                            Id = "46bb9938-f4ff-44f2-9ba2-3f253d5e6ce8",
+                            Id = "a8b43158-361f-498f-a659-953edeba4fe3",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes are back baby!",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Bean-den",
-                            OwnerId = "2e425ece-35d2-4c1d-a94e-c7f0b2df1b98"
+                            OwnerId = "92d78bf0-dfaf-4da8-be82-fa93e897ad1c"
                         },
                         new
                         {
-                            Id = "3b1c1f88-1b06-473a-ba59-3351dc3dcd4a",
+                            Id = "8ef13d87-8043-4c24-97d8-f3bd9788bf32",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes of the day",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "MemeOfTheDay",
-                            OwnerId = "2e425ece-35d2-4c1d-a94e-c7f0b2df1b98"
+                            OwnerId = "92d78bf0-dfaf-4da8-be82-fa93e897ad1c"
                         });
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.Memes.Votable", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("OwnerId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("Votables", (string)null);
+
+                    b.UseTptMappingStrategy();
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.Memes.Vote", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("DubloonEventId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ElementId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("Upvote")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("VoteNumber")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DubloonEventId")
+                        .IsUnique();
+
+                    b.HasIndex("ElementId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Votes", (string)null);
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.Places.MemePlace", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MemePlaces", (string)null);
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.Places.PlacePixelPrice", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PlaceId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("PriceChangeTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<double>("PricePerPixel")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlaceId");
+
+                    b.ToTable("PlacePixelPrices", (string)null);
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.Places.PlaceSubmission", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("PixelChangeCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PlaceId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("PlaceId");
+
+                    b.ToTable("PlaceSubmissions", (string)null);
                 });
 
             modelBuilder.Entity("MemeApi.Models.Entity.TopicModerator", b =>
@@ -303,91 +398,20 @@ namespace MemeApi.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "2e425ece-35d2-4c1d-a94e-c7f0b2df1b98",
+                            Id = "92d78bf0-dfaf-4da8-be82-fa93e897ad1c",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "0ee672cf-8cee-4cab-bcdf-54f9b24397ec",
+                            ConcurrencyStamp = "83c8a805-da91-44e6-ab1d-60b423b30241",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "",
                             EmailConfirmed = false,
-                            LastLoginAt = new DateTime(2024, 10, 6, 13, 7, 55, 892, DateTimeKind.Utc).AddTicks(850),
+                            LastLoginAt = new DateTime(2024, 10, 6, 15, 7, 37, 512, DateTimeKind.Utc).AddTicks(8234),
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             LockoutEnabled = false,
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "06-10-2024 13:07:55",
+                            SecurityStamp = "06-10-2024 15:07:37",
                             TwoFactorEnabled = false,
                             UserName = ""
                         });
-                });
-
-            modelBuilder.Entity("MemeApi.Models.Entity.Votable", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<DateTime>("LastUpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("OwnerId")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OwnerId");
-
-                    b.ToTable("Votables", (string)null);
-
-                    b.UseTptMappingStrategy();
-                });
-
-            modelBuilder.Entity("MemeApi.Models.Entity.Vote", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("DubloonEventId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ElementId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("LastUpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<bool>("Upvote")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("VoteNumber")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DubloonEventId")
-                        .IsUnique();
-
-                    b.HasIndex("ElementId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Votes", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<string>", b =>
@@ -526,9 +550,9 @@ namespace MemeApi.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.DailyVote", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Dubloons.DailyVote", b =>
                 {
-                    b.HasBaseType("MemeApi.Models.Entity.DubloonEvent");
+                    b.HasBaseType("MemeApi.Models.Entity.Dubloons.DubloonEvent");
 
                     b.Property<string>("VoteId")
                         .IsRequired()
@@ -540,9 +564,9 @@ namespace MemeApi.Migrations
                     b.ToTable("DailyVotes", (string)null);
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.PlacePixelPurchase", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Dubloons.PlacePixelPurchase", b =>
                 {
-                    b.HasBaseType("MemeApi.Models.Entity.DubloonEvent");
+                    b.HasBaseType("MemeApi.Models.Entity.Dubloons.DubloonEvent");
 
                     b.Property<string>("SubmissionId")
                         .HasColumnType("text");
@@ -553,9 +577,9 @@ namespace MemeApi.Migrations
                     b.ToTable("PlacePixelPurchase");
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.Transaction", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Dubloons.Transaction", b =>
                 {
-                    b.HasBaseType("MemeApi.Models.Entity.DubloonEvent");
+                    b.HasBaseType("MemeApi.Models.Entity.Dubloons.DubloonEvent");
 
                     b.Property<string>("OtherUserId")
                         .IsRequired()
@@ -566,9 +590,9 @@ namespace MemeApi.Migrations
                     b.ToTable("Transaction");
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.Meme", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Memes.Meme", b =>
                 {
-                    b.HasBaseType("MemeApi.Models.Entity.Votable");
+                    b.HasBaseType("MemeApi.Models.Entity.Memes.Votable");
 
                     b.Property<string>("BottomTextId")
                         .HasColumnType("text");
@@ -589,9 +613,9 @@ namespace MemeApi.Migrations
                     b.ToTable("Memes");
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.MemeText", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Memes.MemeText", b =>
                 {
-                    b.HasBaseType("MemeApi.Models.Entity.Votable");
+                    b.HasBaseType("MemeApi.Models.Entity.Memes.Votable");
 
                     b.Property<int>("Position")
                         .HasColumnType("integer");
@@ -603,9 +627,9 @@ namespace MemeApi.Migrations
                     b.ToTable("MemeTexts", (string)null);
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.MemeVisual", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Memes.MemeVisual", b =>
                 {
-                    b.HasBaseType("MemeApi.Models.Entity.Votable");
+                    b.HasBaseType("MemeApi.Models.Entity.Memes.Votable");
 
                     b.Property<string>("Filename")
                         .IsRequired()
@@ -614,7 +638,7 @@ namespace MemeApi.Migrations
                     b.ToTable("MemeVisuals", (string)null);
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.DubloonEvent", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Dubloons.DubloonEvent", b =>
                 {
                     b.HasOne("MemeApi.Models.Entity.User", "Owner")
                         .WithMany("DubloonEvents")
@@ -625,26 +649,7 @@ namespace MemeApi.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.PlaceSubmission", b =>
-                {
-                    b.HasOne("MemeApi.Models.Entity.User", "Owner")
-                        .WithMany("PlaceSubmissions")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MemeApi.Models.Entity.MemePlace", "Place")
-                        .WithMany("PlaceSubmissions")
-                        .HasForeignKey("PlaceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
-
-                    b.Navigation("Place");
-                });
-
-            modelBuilder.Entity("MemeApi.Models.Entity.Topic", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Memes.Topic", b =>
                 {
                     b.HasOne("MemeApi.Models.Entity.User", "Owner")
                         .WithMany("Topics")
@@ -655,45 +660,7 @@ namespace MemeApi.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.TopicModerator", b =>
-                {
-                    b.HasOne("MemeApi.Models.Entity.User", "Moderator")
-                        .WithMany()
-                        .HasForeignKey("ModeratorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MemeApi.Models.Entity.Topic", "Topic")
-                        .WithMany()
-                        .HasForeignKey("TopicID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Moderator");
-
-                    b.Navigation("Topic");
-                });
-
-            modelBuilder.Entity("MemeApi.Models.Entity.TopicVotable", b =>
-                {
-                    b.HasOne("MemeApi.Models.Entity.Topic", "Topic")
-                        .WithMany()
-                        .HasForeignKey("TopicID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MemeApi.Models.Entity.Votable", "Votable")
-                        .WithMany()
-                        .HasForeignKey("VotableId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Topic");
-
-                    b.Navigation("Votable");
-                });
-
-            modelBuilder.Entity("MemeApi.Models.Entity.Votable", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Memes.Votable", b =>
                 {
                     b.HasOne("MemeApi.Models.Entity.User", "Owner")
                         .WithMany("Votables")
@@ -703,13 +670,13 @@ namespace MemeApi.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.Vote", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Memes.Vote", b =>
                 {
-                    b.HasOne("MemeApi.Models.Entity.DubloonEvent", "DubloonEvent")
+                    b.HasOne("MemeApi.Models.Entity.Dubloons.DubloonEvent", "DubloonEvent")
                         .WithOne()
-                        .HasForeignKey("MemeApi.Models.Entity.Vote", "DubloonEventId");
+                        .HasForeignKey("MemeApi.Models.Entity.Memes.Vote", "DubloonEventId");
 
-                    b.HasOne("MemeApi.Models.Entity.Votable", "Element")
+                    b.HasOne("MemeApi.Models.Entity.Memes.Votable", "Element")
                         .WithMany("Votes")
                         .HasForeignKey("ElementId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -726,6 +693,74 @@ namespace MemeApi.Migrations
                     b.Navigation("Element");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.Places.PlacePixelPrice", b =>
+                {
+                    b.HasOne("MemeApi.Models.Entity.Places.MemePlace", "Place")
+                        .WithMany("PriceHistory")
+                        .HasForeignKey("PlaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Place");
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.Places.PlaceSubmission", b =>
+                {
+                    b.HasOne("MemeApi.Models.Entity.User", "Owner")
+                        .WithMany("PlaceSubmissions")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MemeApi.Models.Entity.Places.MemePlace", "Place")
+                        .WithMany("PlaceSubmissions")
+                        .HasForeignKey("PlaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("Place");
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.TopicModerator", b =>
+                {
+                    b.HasOne("MemeApi.Models.Entity.User", "Moderator")
+                        .WithMany()
+                        .HasForeignKey("ModeratorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MemeApi.Models.Entity.Memes.Topic", "Topic")
+                        .WithMany()
+                        .HasForeignKey("TopicID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Moderator");
+
+                    b.Navigation("Topic");
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.TopicVotable", b =>
+                {
+                    b.HasOne("MemeApi.Models.Entity.Memes.Topic", "Topic")
+                        .WithMany()
+                        .HasForeignKey("TopicID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MemeApi.Models.Entity.Memes.Votable", "Votable")
+                        .WithMany()
+                        .HasForeignKey("VotableId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Topic");
+
+                    b.Navigation("Votable");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -779,44 +814,44 @@ namespace MemeApi.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.DailyVote", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Dubloons.DailyVote", b =>
                 {
-                    b.HasOne("MemeApi.Models.Entity.DubloonEvent", null)
+                    b.HasOne("MemeApi.Models.Entity.Dubloons.DubloonEvent", null)
                         .WithOne()
-                        .HasForeignKey("MemeApi.Models.Entity.DailyVote", "Id")
+                        .HasForeignKey("MemeApi.Models.Entity.Dubloons.DailyVote", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MemeApi.Models.Entity.Vote", "Vote")
+                    b.HasOne("MemeApi.Models.Entity.Memes.Vote", "Vote")
                         .WithOne()
-                        .HasForeignKey("MemeApi.Models.Entity.DailyVote", "VoteId")
+                        .HasForeignKey("MemeApi.Models.Entity.Dubloons.DailyVote", "VoteId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.Navigation("Vote");
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.PlacePixelPurchase", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Dubloons.PlacePixelPurchase", b =>
                 {
-                    b.HasOne("MemeApi.Models.Entity.DubloonEvent", null)
+                    b.HasOne("MemeApi.Models.Entity.Dubloons.DubloonEvent", null)
                         .WithOne()
-                        .HasForeignKey("MemeApi.Models.Entity.PlacePixelPurchase", "Id")
+                        .HasForeignKey("MemeApi.Models.Entity.Dubloons.PlacePixelPurchase", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MemeApi.Models.Entity.PlaceSubmission", "Submission")
+                    b.HasOne("MemeApi.Models.Entity.Places.PlaceSubmission", "Submission")
                         .WithOne()
-                        .HasForeignKey("MemeApi.Models.Entity.PlacePixelPurchase", "SubmissionId")
+                        .HasForeignKey("MemeApi.Models.Entity.Dubloons.PlacePixelPurchase", "SubmissionId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Submission");
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.Transaction", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Dubloons.Transaction", b =>
                 {
-                    b.HasOne("MemeApi.Models.Entity.DubloonEvent", null)
+                    b.HasOne("MemeApi.Models.Entity.Dubloons.DubloonEvent", null)
                         .WithOne()
-                        .HasForeignKey("MemeApi.Models.Entity.Transaction", "Id")
+                        .HasForeignKey("MemeApi.Models.Entity.Dubloons.Transaction", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -829,25 +864,25 @@ namespace MemeApi.Migrations
                     b.Navigation("Other");
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.Meme", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Memes.Meme", b =>
                 {
-                    b.HasOne("MemeApi.Models.Entity.MemeText", "BottomText")
+                    b.HasOne("MemeApi.Models.Entity.Memes.MemeText", "BottomText")
                         .WithMany()
                         .HasForeignKey("BottomTextId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("MemeApi.Models.Entity.Votable", null)
+                    b.HasOne("MemeApi.Models.Entity.Memes.Votable", null)
                         .WithOne()
-                        .HasForeignKey("MemeApi.Models.Entity.Meme", "Id")
+                        .HasForeignKey("MemeApi.Models.Entity.Memes.Meme", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MemeApi.Models.Entity.MemeText", "TopText")
+                    b.HasOne("MemeApi.Models.Entity.Memes.MemeText", "TopText")
                         .WithMany()
                         .HasForeignKey("TopTextId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("MemeApi.Models.Entity.MemeVisual", "Visual")
+                    b.HasOne("MemeApi.Models.Entity.Memes.MemeVisual", "Visual")
                         .WithMany()
                         .HasForeignKey("VisualId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -860,27 +895,34 @@ namespace MemeApi.Migrations
                     b.Navigation("Visual");
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.MemeText", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Memes.MemeText", b =>
                 {
-                    b.HasOne("MemeApi.Models.Entity.Votable", null)
+                    b.HasOne("MemeApi.Models.Entity.Memes.Votable", null)
                         .WithOne()
-                        .HasForeignKey("MemeApi.Models.Entity.MemeText", "Id")
+                        .HasForeignKey("MemeApi.Models.Entity.Memes.MemeText", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.MemeVisual", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Memes.MemeVisual", b =>
                 {
-                    b.HasOne("MemeApi.Models.Entity.Votable", null)
+                    b.HasOne("MemeApi.Models.Entity.Memes.Votable", null)
                         .WithOne()
-                        .HasForeignKey("MemeApi.Models.Entity.MemeVisual", "Id")
+                        .HasForeignKey("MemeApi.Models.Entity.Memes.MemeVisual", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.MemePlace", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Memes.Votable", b =>
+                {
+                    b.Navigation("Votes");
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.Places.MemePlace", b =>
                 {
                     b.Navigation("PlaceSubmissions");
+
+                    b.Navigation("PriceHistory");
                 });
 
             modelBuilder.Entity("MemeApi.Models.Entity.User", b =>
@@ -893,11 +935,6 @@ namespace MemeApi.Migrations
 
                     b.Navigation("Votables");
 
-                    b.Navigation("Votes");
-                });
-
-            modelBuilder.Entity("MemeApi.Models.Entity.Votable", b =>
-                {
                     b.Navigation("Votes");
                 });
 #pragma warning restore 612, 618

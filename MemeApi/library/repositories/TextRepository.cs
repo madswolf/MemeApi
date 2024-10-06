@@ -1,6 +1,7 @@
 ﻿using MemeApi.library.Extensions;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Memes;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

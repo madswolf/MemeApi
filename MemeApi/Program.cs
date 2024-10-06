@@ -120,7 +120,7 @@ using (var serviceScope = factory.CreateScope())
         context.SaveChanges();
     }
 }
-
+app.UseRequestLocalization("en-US");
 app.UseMiddleware<SwaggerAuthenticationMiddleware>();
 app.UseMiddleware<ExternalUserMiddleware>();
 app.UseSwaggerUI();

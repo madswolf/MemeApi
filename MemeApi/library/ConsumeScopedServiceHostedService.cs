@@ -30,7 +30,7 @@ public class ConsumeScopedServiceHostedService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var occurencePast = CalCulateNextRun(DateTime.UtcNow.AddMinutes(-15));
+            var occurencePast = CalCulateNextRun(DateTime.UtcNow.AddMinutes(-60));
             var occurenceNow = CalCulateNextRun(DateTime.UtcNow);
             using var scope = Services.CreateScope();
             if (occurencePast != occurenceNow)
@@ -39,7 +39,17 @@ public class ConsumeScopedServiceHostedService : BackgroundService
                 var memeCreated = await service.HasMemeCreatedInTimeSpan(occurencePast, occurenceNow);
                 if (!memeCreated)
                 {
-                    await InvokeMemeOfTheDayService(scope, stoppingToken);
+                    try
+                    {
+                        await InvokeMemeOfTheDayService(scope, stoppingToken);
+                    } catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        throw;
+                    }
+                } else
+                {
+                    Console.WriteLine($"Meme created in interval {occurencePast.ToString()} - {occurenceNow.ToString()}");
                 }
             }
 

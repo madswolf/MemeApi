@@ -1,7 +1,7 @@
 ﻿using MemeApi.library;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
-using MemeApi.Models.DTO;
+using MemeApi.Models.DTO.Memes;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

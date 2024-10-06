@@ -1,7 +1,8 @@
 ﻿using FluentAssertions;
 using MemeApi.Controllers;
-using MemeApi.Models.DTO;
+using MemeApi.Models.DTO.Memes;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Memes;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Http;

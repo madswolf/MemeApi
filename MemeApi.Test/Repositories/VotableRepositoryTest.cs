@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using MemeApi.library.Extensions;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Memes;
 using MemeApi.Test.library;
 using System;
 using System.Threading.Tasks;

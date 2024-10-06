@@ -3,6 +3,7 @@ using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Services;
 using MemeApi.Models.DTO;
+using MemeApi.Models.DTO.Dubloons;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;

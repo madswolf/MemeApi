@@ -1,8 +1,9 @@
 ﻿using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.library.Extensions;
-using MemeApi.Models.DTO;
+using MemeApi.Models.DTO.Dubloons;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Memes;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
 using Microsoft.EntityFrameworkCore;

@@ -2,6 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using MemeApi.Models.Entity.Dubloons;
+using MemeApi.Models.Entity.Memes;
+using MemeApi.Models.Entity.Places;
 using Microsoft.AspNetCore.Identity;
 
 namespace MemeApi.Models.Entity;

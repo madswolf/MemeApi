@@ -1,4 +1,4 @@
-﻿using MemeApi.Models.Entity;
+﻿using MemeApi.Models.Entity.Memes;
 using System.Threading.Tasks;
 
 namespace MemeApi.library.Services.Files;

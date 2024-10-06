@@ -1,20 +1,25 @@
-﻿using MemeApi.Models.DTO;
-using MemeApi.Models.Entity;
+﻿using MemeApi.Models.DTO.Places;
+using MemeApi.Models.Entity.Places;
 using Microsoft.AspNetCore.Http;
 using SkiaSharp;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace MemeApi.library.Extensions;
 
 public static class MemePlaceExtensions
 {
-    
+
+    public static PlacePixelPrice? CurrentPixelPrice(this MemePlace place)
+    {
+        return place.PriceHistory
+            .OrderByDescending(s => s.PriceChangeTime)
+            .FirstOrDefault();
+    }
+
     public static PlaceSubmission? LatestSubmission(this MemePlace place)
     {
         return place.PlaceSubmissions.OrderByDescending(s => s.CreatedAt).FirstOrDefault(p => p.IsDeleted == false);
@@ -25,6 +30,14 @@ public static class MemePlaceExtensions
         Id = place.Id,
         Name = place.Name,
         PlaceSubmissions = place.PlaceSubmissions.Where(p => p.IsDeleted == false).Select(ps => ps.ToPlaceSubmissionDTO()).ToList(),
+    };
+
+    public static PlacePriceDTO ToPriceDTO(this PlacePixelPrice price) 
+        => new()
+    {
+        Id = price.Id,
+        PricePerPixel = price.PricePerPixel,
+        PriceChangeTime = price.PriceChangeTime,
     };
 
     public static PlaceSubmissionDTO ToPlaceSubmissionDTO(this PlaceSubmission submission) => new()

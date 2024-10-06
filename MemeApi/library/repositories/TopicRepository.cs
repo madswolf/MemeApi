@@ -2,6 +2,7 @@
 using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Memes;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

@@ -1,7 +1,9 @@
 ﻿using MemeApi.library.Extensions;
 using MemeApi.Models.Context;
-using MemeApi.Models.DTO;
+using MemeApi.Models.DTO.Dubloons;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Dubloons;
+using MemeApi.Models.Entity.Memes;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
