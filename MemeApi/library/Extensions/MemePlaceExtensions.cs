@@ -53,8 +53,7 @@ public static class MemePlaceExtensions
         return unrenderedPlaceWithChanges
             .Where(pixelChange => {
                 unrederedPlace.TryGetValue(pixelChange.Key, out var currentPixelColor);
-                var isDefault = pixelChange.Value == defaultColor && currentPixelColor == null;
-                return currentPixelColor != pixelChange.Value && !isDefault;
+                return currentPixelColor != pixelChange.Value;
             })
             .ToDictionary(pair => pair.Key, pair => pair.Value);
     }
@@ -86,7 +85,7 @@ public static class MemePlaceExtensions
 
         var baseImage = new SKBitmap(place.Width, place.Height);
         var canvas = new SKCanvas(baseImage);
-        canvas.Clear(SKColors.White);
+        canvas.Clear(SKColors.Transparent);
 
         foreach (var entry in pixels)
         {
@@ -119,9 +118,14 @@ public static class MemePlaceExtensions
 
         canvas.Clear(SKColors.White);
 
-        canvas.DrawBitmap(baseBitmap, 0, 0);
+        using var paint = new SKPaint
+        {
+            BlendMode = SKBlendMode.SrcOver // Explicitly setting the blend mode
+        };
 
-        canvas.DrawBitmap(overlayBitmap, 0, 0);
+        canvas.DrawBitmap(baseBitmap, 0, 0, paint);
+
+        canvas.DrawBitmap(overlayBitmap, 0, 0, paint);
 
         canvas.Flush();
 

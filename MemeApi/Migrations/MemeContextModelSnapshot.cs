@@ -145,43 +145,43 @@ namespace MemeApi.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "046f3eb0-d3c6-435f-8fd5-0096c0838fd7",
+                            Id = "e3d06235-72e9-441f-ad66-89971d394763",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes created 2020-2023",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Swu-legacy",
-                            OwnerId = "612296aa-c263-4750-ad44-81e84938a234"
+                            OwnerId = "bcf2c1d1-7462-4e5f-a0f5-1103f7dd7339"
                         },
                         new
                         {
-                            Id = "6ff4d869-2cc6-4077-9192-7288b4f77825",
+                            Id = "21082274-2b43-46ad-9897-40f0c063ed6b",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes are back baby!",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Rotte-Grotte",
-                            OwnerId = "612296aa-c263-4750-ad44-81e84938a234"
+                            OwnerId = "bcf2c1d1-7462-4e5f-a0f5-1103f7dd7339"
                         },
                         new
                         {
-                            Id = "50e9f653-c5e8-4ad9-8590-1cccbce00f67",
+                            Id = "aed34d95-75f0-4c88-bf54-56042455c798",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes are back baby!",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Bean-den",
-                            OwnerId = "612296aa-c263-4750-ad44-81e84938a234"
+                            OwnerId = "bcf2c1d1-7462-4e5f-a0f5-1103f7dd7339"
                         },
                         new
                         {
-                            Id = "10d8202f-c7b7-4921-878e-6bcc150ec807",
+                            Id = "4d1a1cb4-7fc5-4b4f-a56e-9d230ae84d4d",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes of the day",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "MemeOfTheDay",
-                            OwnerId = "612296aa-c263-4750-ad44-81e84938a234"
+                            OwnerId = "bcf2c1d1-7462-4e5f-a0f5-1103f7dd7339"
                         });
                 });
 
@@ -300,17 +300,17 @@ namespace MemeApi.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "612296aa-c263-4750-ad44-81e84938a234",
+                            Id = "bcf2c1d1-7462-4e5f-a0f5-1103f7dd7339",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "269096b7-2c31-490a-ba08-23a11618fc7e",
+                            ConcurrencyStamp = "73fb5305-0299-470f-9e3a-01e947a99b01",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "",
                             EmailConfirmed = false,
-                            LastLoginAt = new DateTime(2024, 10, 4, 23, 55, 39, 347, DateTimeKind.Utc).AddTicks(717),
+                            LastLoginAt = new DateTime(2024, 10, 5, 15, 12, 35, 611, DateTimeKind.Utc).AddTicks(7403),
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             LockoutEnabled = false,
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "04-10-2024 23:55:39",
+                            SecurityStamp = "05-10-2024 15:12:35",
                             TwoFactorEnabled = false,
                             UserName = ""
                         });

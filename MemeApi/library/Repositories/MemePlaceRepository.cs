@@ -60,7 +60,7 @@ namespace MemeApi.library.Repositories
                 .FirstOrDefaultAsync(p => p.Id == placeId);
         }
 
-        public async Task<(bool,MemePlace?)> DeleteSubmission(string submissionId)
+        public async Task<(bool, MemePlace?)> DeleteSubmission(string submissionId)
         {
             var submission = await _context.PlaceSubmissions.FindAsync(submissionId);
             if (submission == null) return (false, null);
@@ -97,16 +97,31 @@ namespace MemeApi.library.Repositories
 
                 if (submissionImages == null || submissionImages.Any(s => s == null)) return false;
 
-                var result = new SKBitmap(place.Width, place.Height);
-                var canvas = new SKCanvas(result);
+                var baseImage = new SKBitmap(place.Width, place.Height);
+                var canvas = new SKCanvas(baseImage);
                 canvas.Clear(SKColors.White);
-                var image = submissionImages.Aggregate(result, (acc, item) => acc.OverlayImage(item));
 
-                await _fileSaver.SaveFile(image.ToByteArray(), "places/", $"{place.Id}_latest.png", "image/png");
+                var render = RenderSubmissionsToBase(baseImage, submissionImages);
+
+                await SavePlaceRender(render, place.Id);
             }
             finally { lockObject.Release(); }
 
             return true;
+        }
+
+        private static SKBitmap RenderSubmissionsToBase(SKBitmap baseImage, byte[][] submissionImages)
+        {
+            var canvas = new SKCanvas(baseImage);
+
+            foreach (var submissionImage in submissionImages)
+            {
+                using var overlayBitmap = SKBitmap.Decode(submissionImage);
+                canvas.DrawBitmap(overlayBitmap, 0, 0);
+
+                canvas.Flush();
+            }
+            return baseImage;
         }
 
         private async Task<byte[]?[]?> FetchSubmissionRenders(
@@ -124,14 +139,14 @@ namespace MemeApi.library.Repositories
 
         public async Task<byte[]?> GetPlaceSubmissionRender(string submissionId)
         {
-            return await _fileLoader.LoadFile($"placesubmission/{submissionId}.png");
+            return await _fileLoader.LoadFile($"placesubmissions/{submissionId}.png");
         }
 
         public async Task<bool> RenderDelta(MemePlace place)
         {
             var lockObject = placeLocks.GetOrAdd(place.Id, new SemaphoreSlim(1, 1));
             await lockObject.WaitAsync();
-            
+
             try
             {
                 var latestRender = await _fileLoader.LoadFile($"places/{place.Id}_latest.png");
@@ -144,20 +159,27 @@ namespace MemeApi.library.Repositories
                 var submissions =
                     place.PlaceSubmissions.Where(p => renderDateTime < p.CreatedAt).ToList();
 
-                if (!submissions.Any()) return true;
+                if (submissions.Count == 0) return true;
 
                 var submissionImages = await FetchSubmissionRenders(submissions);
                 if (submissionImages == null || submissionImages.Any(s => s == null)) return false;
 
                 using var latestRenderBitmap = SKBitmap.Decode(latestRender);
-                var newRender = submissionImages.Aggregate(
-                    latestRenderBitmap, (acc, item) => acc.OverlayImage(item)
-                );
 
-                await _fileSaver.SaveFile(newRender.ToByteArray(), "places/", $"{place.Id}_latest.png", "image/png");
-            } finally { lockObject.Release(); }
-            
+                var render = RenderSubmissionsToBase(latestRenderBitmap, submissionImages);
+
+                await SavePlaceRender(latestRenderBitmap, place.Id);
+            }
+            finally { lockObject.Release(); }
+
             return true;
+        }
+
+        private async Task SavePlaceRender(SKBitmap latestRenderBitmap, string placeId)
+        {
+            var imageBytes = latestRenderBitmap.ToByteArray().WriteExifComment(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
+
+            await _fileSaver.SaveFile(imageBytes, "places/", $"{placeId}_latest.png", "image/png");
         }
 
         public async Task<PlaceSubmission> CreatePlaceSubmission(MemePlace place, User submitter, Dictionary<Coordinate, Color> pixelSubmissions, IFormFile submissionImage)
@@ -167,6 +189,7 @@ namespace MemeApi.library.Repositories
                 Id = Guid.NewGuid().ToString(),
                 Place = place,
                 Owner = submitter,
+                PixelChangeCount = pixelSubmissions.Count,
             };
 
             var pixelSubmissionsImage = pixelSubmissions.ToRenderedSubmission(place);

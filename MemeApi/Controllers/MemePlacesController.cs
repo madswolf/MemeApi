@@ -170,7 +170,7 @@ public class MemePlacesController : ControllerBase
             user, 
             changedPixels, 
             submissionDTO.ImageWithChanges
-            );
+        );
 
         var isSucessfulRender = await _memePlaceRepository.RenderDelta(place);
 
