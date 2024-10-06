@@ -17,17 +17,17 @@ public static class MemePlaceExtensions
     
     public static PlaceSubmission? LatestSubmission(this MemePlace place)
     {
-        return place.PlaceSubmissions.OrderByDescending(s => s.CreatedAt).FirstOrDefault();
+        return place.PlaceSubmissions.OrderByDescending(s => s.CreatedAt).FirstOrDefault(p => p.IsDeleted == false);
     }
 
     public static MemePlaceDTO ToMemePlaceDTO(this MemePlace place) => new MemePlaceDTO()
     {
         Id = place.Id,
         Name = place.Name,
-        PlaceSubmissions = place.PlaceSubmissions.Select(ps => ps.ToPlaceSubmissionDTO()).ToList(),
+        PlaceSubmissions = place.PlaceSubmissions.Where(p => p.IsDeleted == false).Select(ps => ps.ToPlaceSubmissionDTO()).ToList(),
     };
 
-    public static PlaceSubmissionDTO ToPlaceSubmissionDTO(this PlaceSubmission submission) => new PlaceSubmissionDTO()
+    public static PlaceSubmissionDTO ToPlaceSubmissionDTO(this PlaceSubmission submission) => new()
     {
         Id = submission.Id,
         CreatedAt = submission.CreatedAt,

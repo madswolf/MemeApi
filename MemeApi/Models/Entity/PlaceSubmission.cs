@@ -19,6 +19,7 @@ public class PlaceSubmission
 
     public int PixelChangeCount { get; set; }
 
+    public bool IsDeleted { get; set; }
 }
 
 public record Coordinate
