@@ -1,11 +1,14 @@
-﻿using MemeApi.library.Services.Files;
+﻿using MemeApi.library.Extensions;
+using MemeApi.library.Services.Files;
 using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Dubloons;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,15 +33,48 @@ public class UserRepository
         return await _memeContext.Users.Include(u => u.Topics).ToListAsync();
     }
 
-    public async Task<User?> GetUser(string? id)
+    public async Task<User?> GetUser(string? id, bool includeDubloons = false)
     {
-        return await _memeContext.Users.Include(u => u.Topics).FirstOrDefaultAsync(u => u.Id == id);
+        if (id == null) return null;
+        IQueryable<User> queryable = _memeContext.Users.Include(u => u.Topics);
+
+        if(includeDubloons) 
+            queryable = queryable.Include(u => u.DubloonEvents);
+        return await queryable.FirstOrDefaultAsync(u => u.Id == id || u.Id == id.ExternalUserIdToGuid());
+    }
+
+    public async Task<bool> TransferDubloons(User sender, User receiver, uint amount)
+    {
+        var senderDubloonCount = sender.DubloonEvents.CountDubloons();
+        if(senderDubloonCount < amount) return false;
+        
+        var sendEvent = new Transaction
+        {
+            Id = Guid.NewGuid().ToString(),
+            Owner = sender,
+            Dubloons = -amount,
+            Other = receiver,
+        };
+
+        var  receiveEvent = new Transaction
+        {
+            Id = Guid.NewGuid().ToString(),
+            Owner = receiver,
+            Dubloons = amount,
+            Other = sender,
+        };
+
+        _memeContext.DubloonEvents.Add(sendEvent);
+        _memeContext.DubloonEvents.Add(receiveEvent);
+        await _memeContext.SaveChangesAsync();
+
+        return true;
     }
 
     public async Task<User?> FindByEmail(string userEmail)
     {
         return await _memeContext.Users.FirstOrDefaultAsync(user => 
-            string.Equals(user.Email, userEmail, StringComparison.OrdinalIgnoreCase)
+                EF.Functions.Collate(user.Email, "und-x-icu") == userEmail.ToLower()
         );
     }
 
@@ -77,7 +113,10 @@ public class UserRepository
                 {
                     user.ProfilePicFile = VisualRepository.RandomString(5) + user.ProfilePicFile;
                 }
-                await _fileSaver.SaveFile(updateDto.NewProfilePic, "profilePic/", user.ProfilePicFile);
+                using var memoryStream = new MemoryStream();
+                await updateDto.NewProfilePic.CopyToAsync(memoryStream);
+
+                await _fileSaver.SaveFile(memoryStream.ToArray(), "profilePic/", user.ProfilePicFile, updateDto.NewProfilePic.ContentType);
             }
 
             if (updateDto.NewEmail != null) user.Email = updateDto.NewEmail;

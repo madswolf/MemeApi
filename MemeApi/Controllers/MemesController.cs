@@ -1,8 +1,6 @@
 ﻿using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Services.Files;
-using MemeApi.Models.DTO;
-using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -11,6 +9,12 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System;
+using Microsoft.Net.Http.Headers;
+using System.Runtime;
+using MemeApi.library;
+using System.Security.Claims;
+using MemeApi.Models.Entity.Memes;
+using MemeApi.Models.DTO.Memes;
 
 namespace MemeApi.Controllers;
 
@@ -24,14 +28,16 @@ public class MemesController : ControllerBase
 {
     private readonly IMemeRenderingService _memeRendererService;
     private readonly MemeRepository _memeRepository;
+    private readonly MemeApiSettings _settings;
 
     /// <summary>
     /// A controller for creating memes made of visuals and textual components.
     /// </summary>
-    public MemesController(MemeRepository memeRepository, IMemeRenderingService memeRendererService)
+    public MemesController(MemeRepository memeRepository, IMemeRenderingService memeRendererService, MemeApiSettings settings)
     {
         _memeRepository = memeRepository;
         _memeRendererService = memeRendererService;
+        _settings = settings;
     }
     /// <summary>
     /// Get all memes
@@ -40,7 +46,7 @@ public class MemesController : ControllerBase
     public async Task<ActionResult<IEnumerable<MemeDTO>>> GetMemes()
     {
         var memes = await _memeRepository.GetMemes();
-        return Ok(memes.Select(m => m.ToMemeDTO()));
+        return Ok(memes.Select(m => m.ToMemeDTO(_settings.GetMediaHost())));
     }
 
     /// <summary>
@@ -52,7 +58,7 @@ public class MemesController : ControllerBase
         var meme = await _memeRepository.GetMeme(id);
         if (meme == null) return NotFound();
 
-        return Ok(meme.ToMemeDTO());
+        return Ok(meme.ToMemeDTO(_settings.GetMediaHost()));
     }
 
     //[HttpPut("{id}")]
@@ -73,12 +79,25 @@ public class MemesController : ControllerBase
     /// </summary>
     [HttpPost]
     [AllowAnonymous]
-    public async Task<ActionResult<MemeDTO>> PostMeme([FromForm]MemeCreationDTO memeCreationDto)
+    public async Task<ActionResult<MemeDTO>> PostMeme([FromForm]MemeCreationDTO memeCreationDto, [FromQuery] bool? renderMeme = false)
     {
         if (!memeCreationDto.VisualFile.FileName.Equals("VisualFile")) memeCreationDto.FileName = memeCreationDto.VisualFile.FileName;
-        var meme = await _memeRepository.CreateMeme(memeCreationDto);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var meme = await _memeRepository.CreateMeme(memeCreationDto, userId);
         if (meme == null) return NotFound("One of the topics was not found");
-        return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme.ToMemeDTO());
+
+        var renderedMeme = renderMeme == true ? await _memeRendererService.RenderMeme(meme) : null;  
+        return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme.ToMemeDTO(_settings.GetMediaHost(), renderedMeme));
+    }
+
+    [HttpPost("ById")]
+    [AllowAnonymous]
+    public async Task<ActionResult<MemeDTO>> PostMemeById([FromBody] MemeCreationByIdDTO memeCreationDto)
+    {     
+        var meme = await _memeRepository.CreateMemeById(memeCreationDto);
+        if (meme == null) return NotFound("One of the topics was not found");
+
+        return CreatedAtAction(nameof(GetMeme), new { id = meme.Id }, meme.ToMemeDTO(_settings.GetMediaHost()));
     }
 
     /// <summary>
@@ -102,7 +121,7 @@ public class MemesController : ControllerBase
         var list = await _memeRepository.GetMemes();
         var regex = new Regex("^.*\\.gif$");
         list = list
-            .Where(x => !regex.IsMatch(x.MemeVisual.Filename))
+            .Where(x => !regex.IsMatch(x.Visual.Filename))
             .Where(x => x.TopText == null || x.TopText.Text.Length < 150)
             .Where(x => x.BottomText == null || x.BottomText.Text.Length < 150)
             .ToList();
@@ -114,21 +133,39 @@ public class MemesController : ControllerBase
     /// Use the optional Query parameters TopText and BottomText to define what the top and bottom text should be
     /// </summary>
     [HttpGet("random/Rendered")]
-    public async Task<ActionResult> RenderImage([FromQuery] string? TopText = null, [FromQuery] string? BottomText = null)
+    public async Task<ActionResult> RenderImage([FromQuery] string? VisualId = null, [FromQuery] string? TopText = null, [FromQuery] string? BottomText = null)
     {
-        var meme = await _memeRepository.RandomMemeByComponents(TopText, BottomText);
-        var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO());
+        var meme = await _memeRepository.RandomMemeByComponents(VisualId, TopText, BottomText);
+        var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO(_settings.GetMediaHost()));
         var cleanedHeaderValue = Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X");
-        Response.Headers.Append( new ("X-File-Info", cleanedHeaderValue));
 
         var watch = System.Diagnostics.Stopwatch.StartNew();
+
         var file = File(await _memeRendererService.RenderMeme(meme), "image/png");
+
         watch.Stop();
         var elapsedMs = watch.ElapsedMilliseconds;
         Console.WriteLine(elapsedMs);
+
+
+        Response.Headers.Append(new("X-File-Info", cleanedHeaderValue));
+        Response.Headers[HeaderNames.ContentDisposition] = new ContentDispositionHeaderValue("inline")
+        {
+            FileNameStar = meme.ToFilenameString()
+        }.ToString();
         Response.Headers.Append(new ("X-File-Render-Time", elapsedMs.ToString() + "ms"));
 
         return file;
+    }
+
+    /// <summary>
+    /// Get a random meme rendered to a png in the response
+    /// Use the optional Query parameters TopText and BottomText to define what the top and bottom text should be
+    /// </summary>
+    [HttpGet("Render")]
+    public async Task<ActionResult> RenderImage([FromForm] MemeCreationDTO memeDTO)
+    {
+        return File(_memeRendererService.RenderMemeFromData(await memeDTO.VisualFile.GetBytes(), memeDTO.TopText, memeDTO.BottomText), "image/png");
     }
 }
 

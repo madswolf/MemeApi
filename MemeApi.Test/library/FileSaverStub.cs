@@ -1,12 +1,11 @@
 ﻿using MemeApi.library.Services.Files;
-using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 
 namespace MemeApi.Test.library;
 
 internal class FileSaverStub : IFileSaver
 {
-    public Task SaveFile(IFormFile file, string path, string fileName)
+    public Task SaveFile(byte[] file, string path, string fileName, string contentType)
     {
         return Task.CompletedTask;
     }

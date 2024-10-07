@@ -29,33 +29,30 @@ public class S3FileStorageClient : IFileSaver, IFileRemover
         );
     }
 
-    public async Task SaveFile(IFormFile file, string path, string fileName)
+    public async Task SaveFile(byte[] file, string path, string fileName, string contentType)
     {
 
-        using (var memoryStream = new MemoryStream())
+        using var memoryStream = new MemoryStream(file);
+        memoryStream.Position = 0;
+
+        var putRequest = new PutObjectRequest
         {
-            await file.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
+            BucketName = _settings.GetBlobStorageBucketName(),
+            Key = path + fileName,
+            InputStream = memoryStream,
+            ContentType = contentType,
+            CannedACL = S3CannedACL.PublicRead
+        };
 
-            var putRequest = new PutObjectRequest
-            {
-                BucketName = _settings.GetBlobStorageBucketName(),
-                Key = path + fileName,
-                InputStream = memoryStream,
-                ContentType = file.ContentType,
-                CannedACL = S3CannedACL.PublicRead
-            };
+        var response = await _client.PutObjectAsync(putRequest);
 
-            var response = await _client.PutObjectAsync(putRequest);
-
-            if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
-            {
-                Console.WriteLine("File uploaded successfully");
-            }
-            else
-            {
-                Console.WriteLine($"Error uploading file. Status code: {response.HttpStatusCode}");
-            }
+        if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
+        {
+            Console.WriteLine("File uploaded successfully");
+        }
+        else
+        {
+            Console.WriteLine($"Error uploading file. Status code: {response.HttpStatusCode}");
         }
     }
     public async Task RemoveFile(string path)

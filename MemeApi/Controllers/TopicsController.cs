@@ -102,7 +102,7 @@ public class TopicsController : ControllerBase
         var success = await _topicRepository.DeleteTopic(topic, user);
 
         if (!success) return Unauthorized();
-        return NoContent();
+        return Ok();
     }
 
 

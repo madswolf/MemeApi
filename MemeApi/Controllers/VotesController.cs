@@ -1,11 +1,16 @@
-﻿using MemeApi.library.repositories;
-using MemeApi.Models.DTO;
+﻿using MemeApi.library;
+using MemeApi.library.Extensions;
+using MemeApi.library.repositories;
+using MemeApi.Models.DTO.Dubloons;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Memes;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace MemeApi.Controllers;
@@ -22,16 +27,18 @@ public class VotesController : ControllerBase
     private readonly VisualRepository _visualRepository;
     private readonly MemeRepository _memeRepository;
     private readonly UserRepository _userRepository;
+    private readonly MemeApiSettings _settings;
     /// <summary>
     /// A controller for creating managing votes
     /// </summary>
-    public VotesController(VotableRepository votableRepository, TextRepository textRepository, VisualRepository visualRepository, MemeRepository memeRepository, UserRepository userRepository)
+    public VotesController(VotableRepository votableRepository, TextRepository textRepository, VisualRepository visualRepository, MemeRepository memeRepository, UserRepository userRepository, MemeApiSettings settings)
     {
         _votableRepository = votableRepository;
         _textRepository = textRepository;
         _visualRepository = visualRepository;
         _memeRepository = memeRepository;
         _userRepository = userRepository;
+        _settings = settings;
     }
 
     /// <summary>
@@ -65,18 +72,45 @@ public class VotesController : ControllerBase
     /// To vote for a meme that does not exist yet, include the id's of elements it contains.
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<Vote>> PostVote([FromForm]VoteDTO voteDTO)
+    public async Task<ActionResult<VoteDTO>> PostVote([FromForm]PostVoteDTO voteDTO)
     {
-        var components = await _votableRepository.FindMany(voteDTO.ElementIDs);
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if ((voteDTO.UpVote == null && voteDTO.VoteNumber == null) || 
+            (voteDTO.UpVote != null && voteDTO.VoteNumber != null)) 
+            return BadRequest("Supply either an Upvote or VoteNumber value");
 
-        if (userIdString == null || components.Count == 0)
+
+        if (voteDTO.VoteNumber == null) voteDTO.VoteNumber = voteDTO.UpVote == Upvote.Upvote ? 9 : 0;
+        if (voteDTO.UpVote == null) voteDTO.UpVote = voteDTO.VoteNumber < 5 ? Upvote.Downvote : Upvote.Upvote;
+
+        var components = await _votableRepository.FindMany(voteDTO.ElementIDs);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if ((userId == null && voteDTO.ExternalUserID == null) || components.Count == 0)
         {
             return NotFound();
         }
 
-        var userId = userIdString;
-        var user = await _userRepository.GetUser(userId);
+        User? user = null;
+        if (Request.Headers["Bot_Secret"] == _settings.GetBotSecret())
+        {
+            if (voteDTO.ExternalUserID == null || voteDTO.ExternalUserName == null) return BadRequest("Please include an external user whe voting on behalf of someone else");
+
+            userId = voteDTO.ExternalUserID?.ExternalUserIdToGuid();
+            user = await _userRepository.GetUser(userId);
+            if (user == null) {
+                user = new User()
+                {
+                    Id = userId,
+                    UserName = voteDTO.ExternalUserName,
+                    ProfilePicFile = "default.jpg",
+                    LastLoginAt = DateTime.UtcNow,
+                };
+            }
+        }
+        else
+        {
+            user = await _userRepository.GetUser(userId);
+        }
 
         if (user == null) return NotFound("User not found");
 
@@ -107,12 +141,12 @@ public class VotesController : ControllerBase
 
         Vote vote;
         var existingVote = _votableRepository.FindByElementAndUser(element, userId);
-
+        
         if (existingVote != null)
         {
             if (voteDTO.UpVote != Upvote.Unvote)
             { 
-                return await _votableRepository.ChangeVote(existingVote, voteDTO.UpVote);
+                return Ok(await _votableRepository.ChangeVote(existingVote, (Upvote)voteDTO.UpVote, (int)voteDTO.VoteNumber));
             }
             else
             {
@@ -131,14 +165,13 @@ public class VotesController : ControllerBase
                 Upvote = voteDTO.UpVote == Upvote.Upvote,
                 Element = element,
                 User = user,
-                CreatedAt = DateTime.UtcNow,
-                LastUpdatedAt = DateTime.UtcNow,
+                VoteNumber = (int)voteDTO.VoteNumber,
             };
 
             await _votableRepository.CreateVote(vote);
         }
 
-        return CreatedAtAction("GetVote", new { id = vote.Id }, vote);
+        return CreatedAtAction("GetVote", new { id = vote.Id }, vote.ToVoteDTO());
     }
 
     /// <summary>

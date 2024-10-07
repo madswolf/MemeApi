@@ -1,7 +1,7 @@
 ﻿using MemeApi.library;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
-using MemeApi.Models.DTO;
+using MemeApi.Models.DTO.Memes;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -34,9 +34,9 @@ public class VisualsController : ControllerBase
     /// Get all visuals
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<VisualDTO>>> GetVisuals(){
+    public async Task<ActionResult<IEnumerable<VisualDTO>>> GetVisuals() {
         var visuals = await _visualRepository.GetVisuals();
-        return Ok(visuals.Select(v => v.ToVisualDTO()));
+        return Ok(visuals.Select(v => v.ToVisualDTO(_settings.GetMediaHost())));
     }
     /// <summary>
     /// Get a specific visual by ID
@@ -54,13 +54,13 @@ public class VisualsController : ControllerBase
     /// Create a visual
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<MemeVisual>> PostMemeVisual(IFormFile visual)
+    public async Task<ActionResult<VisualDTO>> PostMemeVisual([FromForm]VisualCreationDTO visual)
     {
-        if (visual.Length > 5000000) return StatusCode(413);
+        if (visual.File.Length > 5000000) return StatusCode(413);
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var memeVisual = await _visualRepository.CreateMemeVisual(visual, visual.FileName, userId:userId);
-        return CreatedAtAction("GetMemeVisual", new { id = memeVisual.Id }, memeVisual);
+        var memeVisual = await _visualRepository.CreateMemeVisual(visual.File, visual.FileName ?? visual.File.FileName, visual.Topics, userId);
+        return CreatedAtAction("GetMemeVisual", new { id = memeVisual.Id }, memeVisual.ToVisualDTO(_settings.GetMediaHost()));
     }
 
     /// <summary>

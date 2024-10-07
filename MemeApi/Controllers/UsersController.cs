@@ -3,6 +3,7 @@ using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Services;
 using MemeApi.Models.DTO;
+using MemeApi.Models.DTO.Dubloons;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -85,7 +86,7 @@ public class UsersController : ControllerBase
                 _ => StatusCode(500) // Should never happen
             };
         }
-        return NoContent();
+        return Ok();
     }
 
     /// <summary>
@@ -104,8 +105,6 @@ public class UsersController : ControllerBase
             UserName = userDTO.Username, 
             Email = userDTO.Email,
             ProfilePicFile = "default.jpg",
-            CreatedAt = DateTime.UtcNow,
-            LastUpdatedAt = DateTime.UtcNow,
             LastLoginAt = DateTime.UtcNow,
             Topics = []
         };
@@ -116,6 +115,70 @@ public class UsersController : ControllerBase
 
         await _signInManager.SignInAsync(user, false);
         return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user.ToUserInfo(_settings.GetMediaHost()));
+    }
+
+
+    /// <summary>
+    /// Get the current count of dubloons that a user has.
+    /// </summary>
+    [HttpGet]
+    [Route("[controller]/{id}/Dubloons")]
+    public async Task<ActionResult<UserInfoDTO>> Dubloons(string id)
+    {
+        var user = await _userRepository.GetUser(id, includeDubloons: true);
+
+        if (user == null)
+            return NotFound();
+
+        return Ok(user.DubloonEvents.CountDubloons());
+    }
+
+    /// <summary>
+    /// Get the current log of dubloon events that a user has.
+    /// </summary>
+    [HttpGet]
+    [Route("[controller]/{id}/DubloonEvents")]
+    public async Task<ActionResult<DubloonEventInfoDTO>> DubloonEvents(string id)
+    {
+        var user = await _userRepository.GetUser(id, includeDubloons: true);
+
+        if (user == null)
+            return NotFound();
+
+        return Ok(user.DubloonEvents.Select(d => d.ToDubloonEventInfoDTO()));
+    }
+
+    /// <summary>
+    /// Transfer dubloons from the current user to another user
+    /// </summary>
+    [HttpPost]
+    [Route("[controller]/Transfer")]
+    public async Task<ActionResult> TransferDubloons([FromForm] DubloonTransferDTO dubloonTransferDTO)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        dubloonTransferDTO.OtherUserId = dubloonTransferDTO.OtherUserId.ExternalUserIdToGuid();
+        if (userId == dubloonTransferDTO.OtherUserId) return BadRequest("Transfer to same user: You cannot transfer dubloons to yourself");
+
+        var sender = await _userRepository.GetUser(userId, true);
+        var receiver = await _userRepository.GetUser(dubloonTransferDTO.OtherUserId, true);
+
+        if (receiver == null)
+        {
+            receiver = new User()
+            {
+                Id = dubloonTransferDTO.OtherUserId,
+                UserName = dubloonTransferDTO.OtherUserName,
+                ProfilePicFile = "default.jpg",
+                LastLoginAt = DateTime.UtcNow,
+            };
+        }
+
+        if (sender == null || receiver == null) return NotFound("User not found"); 
+
+
+        var success = await _userRepository.TransferDubloons(sender, receiver, dubloonTransferDTO.DubloonsToTransfer);
+        
+        return success ? Ok() : BadRequest("Not enough dubloons");
     }
 
     /// <summary>
@@ -151,7 +214,7 @@ public class UsersController : ControllerBase
         if (user == null) return NotFound();
         await _userManager.DeleteAsync(user);
 
-        return NoContent();
+        return Ok();
     }
 
     /// <summary>

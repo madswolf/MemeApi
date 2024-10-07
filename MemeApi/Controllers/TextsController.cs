@@ -1,7 +1,8 @@
-﻿using MemeApi.library.Extensions;
+﻿using MemeApi.library;
+using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
-using MemeApi.Models.DTO;
-using MemeApi.Models.Entity;
+using MemeApi.Models.DTO.Memes;
+using MemeApi.Models.Entity.Memes;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,12 +19,14 @@ namespace MemeApi.Controllers;
 public class TextsController : ControllerBase
 {
     private readonly TextRepository _textRepository;
+    private readonly MemeApiSettings _settings;
     /// <summary>
     /// A controller for creating and managing meme textual components.
     /// </summary>
-    public TextsController(TextRepository textRepository)
+    public TextsController(TextRepository textRepository, MemeApiSettings settings)
     {
         _textRepository = textRepository;
+        _settings = settings;
     }
 
     /// <summary>
@@ -33,7 +36,7 @@ public class TextsController : ControllerBase
     [HttpGet("{type?}")]
     public async Task<ActionResult<IEnumerable<TextDTO>>> GetTexts(MemeTextPosition? type = null){
         var texts = await _textRepository.GetTexts(type);
-        return Ok(texts.Select(t => t.ToTextDTO()));
+        return Ok(texts.Select(t => t.ToTextDTO(_settings.GetMediaHost())));
     }
 
     /// <summary>
@@ -46,7 +49,7 @@ public class TextsController : ControllerBase
 
         if (memeBottomText == null) return NotFound();
 
-        return Ok(memeBottomText.ToTextDTO());
+        return Ok(memeBottomText.ToTextDTO(_settings.GetMediaHost()));
     }
 
     //[HttpPut("{id}")]
@@ -62,11 +65,11 @@ public class TextsController : ControllerBase
     /// Create a meme text
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<MemeText>> CreateMemeText([FromBody] TextCreationDTO textCreationDTO)
+    public async Task<ActionResult<TextDTO>> CreateMemeText([FromBody] TextCreationDTO textCreationDTO)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var memeText = await _textRepository.CreateText(textCreationDTO.Text, textCreationDTO.Position, userId: userId);
-        return CreatedAtAction("CreateMemeText", new { id = memeText.Id }, memeText);
+        return CreatedAtAction("CreateMemeText", new { id = memeText.Id }, memeText.ToTextDTO(_settings.GetMediaHost()));
     }
 
     /// <summary>

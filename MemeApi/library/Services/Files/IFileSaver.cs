@@ -5,5 +5,5 @@ namespace MemeApi.library.Services.Files;
 
 public interface IFileSaver
 {
-    Task SaveFile(IFormFile file, string path, string fileName);
+    Task SaveFile(byte[] file, string path, string fileName, string contentType);
 }

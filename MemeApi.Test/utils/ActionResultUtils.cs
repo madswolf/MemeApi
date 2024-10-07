@@ -13,9 +13,9 @@ internal class ActionResultUtils
         result.Should().BeOfType<CreatedAtActionResult>();
         return (result as CreatedAtActionResult)?.Value as T;
     }
-    public static async Task<T?> ActionResultToValueAndAssertOk<T>(Task<ActionResult<T>> actionResult) where T : class
+    public static T? ActionResultToValueAndAssertOk<T>(ActionResult<T> actionResult) where T : class
     {
-        var result = (await actionResult).Result;
+        var result = actionResult.Result;
         result.Should().NotBeNull();
         result.Should().BeOfType<OkObjectResult>();
         return (result as OkObjectResult)?.Value as T;

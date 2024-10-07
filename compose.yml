@@ -4,15 +4,11 @@ services:
     ports:
       - "5001:5001"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - BlobStorage_Access_Key=Development
-      - BlobStorage_Access_Key_Secret=Development
-      - BlobStorage_ServiceUrl=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - DATABASE_CONNECTION_STRING=Host=postgres;Database=memeapi;Username=postgres;Password=yourpassword
     depends_on:
       - postgres
-    volumes:
-      - ./:/data
+    restart: unless-stopped
 
   postgres:
     image: postgres:16
@@ -22,6 +18,7 @@ services:
       - POSTGRES_DB=memeapi
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
 
 volumes:
   postgres_data:
