@@ -1,8 +1,9 @@
-using MemeApi;
 using MemeApi.library;
 using MemeApi.library.repositories;
+using MemeApi.library.Repositories;
 using MemeApi.library.Services;
 using MemeApi.library.Services.Files;
+using MemeApi.MIddleware;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Builder;
@@ -24,10 +25,7 @@ var services = appBuilder.Services;
 services.AddControllers();
 services.AddDbContext<MemeContext>(options => {
     var connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING");
-    if (connectionString != null)
-        options.UseNpgsql(connectionString);
-    else
-        options.UseInMemoryDatabase("Test");
+    options.UseNpgsql(connectionString);
 });
 services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
@@ -89,6 +87,7 @@ services.AddScoped<VisualRepository>();
 services.AddScoped<TextRepository>();
 services.AddScoped<VotableRepository>();
 services.AddScoped<TopicRepository>();
+services.AddScoped<MemePlaceRepository>();
 
 services.AddSingleton<MemeApiSettings>();
 
@@ -121,8 +120,9 @@ using (var serviceScope = factory.CreateScope())
         context.SaveChanges();
     }
 }
-
+app.UseRequestLocalization("en-US");
 app.UseMiddleware<SwaggerAuthenticationMiddleware>();
+app.UseMiddleware<ExternalUserMiddleware>();
 app.UseSwaggerUI();
 app.UseSwagger();
 app.UseRouting();

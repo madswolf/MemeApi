@@ -1,6 +1,7 @@
 ﻿using MemeApi.library.Extensions;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Memes;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,25 +10,26 @@ using System.Threading.Tasks;
 
 namespace MemeApi.library.repositories;
 
-public class TextRepository(MemeContext context, TopicRepository topicRepository)
+public class TextRepository(MemeContext context, TopicRepository topicRepository, UserRepository userRepository)
 {
     private readonly MemeContext _context = context;
     private readonly TopicRepository _topicRepository = topicRepository;
+    private readonly UserRepository _userRepository = userRepository;
 
     public async Task<List<MemeText>> GetTexts(MemeTextPosition? type = null)
     {
-        var texts = _context.Texts.Include(x => x.Votes).Include(t => t.Topics);
+        var texts = _context.Texts.Include(x => x.Votes).Include(t => t.Topics).Include(t => t.Owner);
         if (type != null)
         {
             return await texts.Where(x => x.Position == type).ToListAsync();
         }
-        
+
         return await texts.ToListAsync();
     }
 
     public async Task<MemeText?> GetText(string id)
     {
-        return await _context.Texts.Include(x => x.Votes).Include(t => t.Topics).FirstOrDefaultAsync(t => t.Id == id);
+        return await _context.Texts.Include(x => x.Votes).Include(t => t.Topics).Include(t => t.Owner).FirstOrDefaultAsync(t => t.Id == id);
     }
 
     public async Task<MemeText> GetTextByContent(string content, MemeTextPosition position)
@@ -45,6 +47,12 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
     public MemeText GetRandomTextByType(MemeTextPosition type, string seed = "")
     {
         return _context.Texts.Where(x => x.Position == type).RandomItem(seed);
+    }
+
+    public MemeText GetRandomTextByTypeInTopic(MemeTextPosition type, Topic topic, string seed = "")
+    {
+        var list = _context.Texts.Include(t => t.Topics).Where(t => t.Topics.Contains(topic));
+        return _context.Texts.Include(t => t.Topics).Where(t => t.Topics.Contains(topic)).Where(x => x.Position == type).RandomItem(seed);
     }
 
 
@@ -69,7 +77,6 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
 
         try
         {
-            memeText.LastUpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
@@ -89,16 +96,23 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
 
     public async Task<MemeText> CreateText(string text, MemeTextPosition position, IEnumerable<string>? topicNames = null, string? userId = null)
     {
-        var topics = await _topicRepository.GetTopicsByNameForUser(topicNames, userId);
+        var user = await _userRepository.GetUser(userId);
+        return await CreateText(text, position, topicNames, user);
+    }
+
+    public async Task<MemeText> CreateText(string text, MemeTextPosition position, IEnumerable<string>? topicNames = null, User? user = null)
+    {
+        var topics = await _topicRepository.GetTopicsByNameForUser(topicNames, user?.Id);
+
         var memeText = new MemeText
         {
             Id = Guid.NewGuid().ToString(),
+            Topics = topics,
             Text = text,
             Position = position,
-            Topics = topics,
-            CreatedAt = DateTime.UtcNow,
-            LastUpdatedAt = DateTime.UtcNow,
         };
+
+        if (user != null) memeText.Owner = user;
 
         _context.Texts.Add(memeText);
         await _context.SaveChangesAsync();
@@ -108,9 +122,8 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
     public async Task<bool> Delete(string id)
     {
         var memeBottomText = await _context.Texts.FindAsync(id);
-        var test = _context.Database.GetDbConnection();
         if (memeBottomText == null) return false;
-        
+
 
         _context.Texts.Remove(memeBottomText);
         await _context.SaveChangesAsync();

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 
 namespace MemeApi.library.Services.Files;
@@ -13,12 +12,12 @@ public class FileSaver : IFileSaver
         _settings = settings;
     }
 
-    public async Task SaveFile(IFormFile file, string path, string fileName)
+    public async Task SaveFile(byte[] file, string path, string fileName, string contentType)
     {
         var completePath = Path.Combine(_settings.GetBaseUploadFolder(), path, fileName);
         using (Stream fileStream = new FileStream(completePath, FileMode.Create))
         {
-            await file.CopyToAsync(fileStream);
+            await fileStream.WriteAsync(file);
         };
     }
 }

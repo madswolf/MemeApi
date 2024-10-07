@@ -1,21 +1,27 @@
-﻿using MemeApi.Models.Context;
-using MemeApi.Models.DTO;
+﻿using MemeApi.library.Extensions;
+using MemeApi.Models.Context;
+using MemeApi.Models.DTO.Dubloons;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Dubloons;
+using MemeApi.Models.Entity.Memes;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace MemeApi.library.repositories;
 
 public class VotableRepository
 {
     private readonly MemeContext _context;
+    private readonly MemeApiSettings _settings;
 
-    public VotableRepository(MemeContext context)
+    public VotableRepository(MemeContext context, MemeApiSettings settings)
     {
         _context = context;
+        _settings = settings;
     }
 
     public async Task<List<Vote>> GetVotes()
@@ -31,6 +37,7 @@ public class VotableRepository
     public async Task<List<Votable>> FindMany(IEnumerable<string> ids)
     {
         return await _context.Votables
+            .Include(v => v.Topics)
             .Where(x => ids.Contains(x.Id))
             .ToListAsync();
     }
@@ -38,15 +45,30 @@ public class VotableRepository
 
     public Vote? FindByElementAndUser(Votable element, string userId)
     {
-        return _context.Votes
-            .Select(x => x)
+        IQueryable<Vote> queryable = _context.Votes
             .Include(x => x.Element)
-            .Include(x => x.User)
+            .Include(x => x.User);
+
+        if(element.Topics.Any(x => x.Name == _settings.GetMemeOfTheDayTopicName()))
+            queryable = queryable.Include(x => x.DubloonEvent);
+
+        return queryable
+            .Select(x => x)
             .SingleOrDefault(x => x.Element.Id == element.Id && x.User.Id == userId);
     }
 
     public async Task<Vote> CreateVote(Vote vote)
     {
+        if (vote.Element.Topics.Any(x => x.Name == _settings.GetMemeOfTheDayTopicName()) && 
+            DateTime.Now < vote.Element.CreatedAt.AddDays(3))
+            vote.DubloonEvent = new DailyVote
+            {
+                Id = Guid.NewGuid().ToString(),
+                Vote = vote,
+                Owner = vote.User,
+                Dubloons = vote.Element.CalculateDubloons(DateTime.UtcNow)
+            };
+
         _context.Votes.Add(vote);
         await _context.SaveChangesAsync();
         return vote;
@@ -71,12 +93,13 @@ public class VotableRepository
         return await _context.Votables.FindAsync(id);
     }
 
-    public async Task<Vote> ChangeVote(Vote vote, Upvote upvote)
+    public async Task<VoteDTO> ChangeVote(Vote vote, Upvote upvote, int voteNumber)
     {
         vote.Upvote = upvote == Upvote.Upvote;
+        vote.VoteNumber = voteNumber;
         vote.LastUpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
-        return vote;
+        return vote.ToVoteDTO();
     }
 
     public async Task<bool> DeleteVotable(Votable votable, User user)

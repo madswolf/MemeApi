@@ -1,14 +1,13 @@
 ﻿using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.library.Extensions;
-using MemeApi.Models.DTO;
-using MemeApi.Models.Entity;
+using MemeApi.Models.DTO.Memes;
+using MemeApi.Models.Entity.Memes;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -25,7 +24,7 @@ public class MemeTextsControllerTest : MemeTestBase
     [InlineData(MemeTextPosition.BottomText)]
     public async Task GIVEN_DummyMemeText_WHEN_CreatingMemeBottomText_THEN_MemeBottomTextIsCreatedWithProperValues(MemeTextPosition memePosition)
     {
-        var controller = new TextsController(_textRepository);
+        var controller = new TextsController(_textRepository, _settings);
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
         // given
@@ -48,7 +47,7 @@ public class MemeTextsControllerTest : MemeTestBase
     [Fact]
     public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_GettingMemeBottomText_THEN_MemeBottomTextHasProperValues()
     {
-        var controller = new TextsController(_textRepository);
+        var controller = new TextsController(_textRepository, _settings);
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
         // given
@@ -56,14 +55,13 @@ public class MemeTextsControllerTest : MemeTestBase
         {
             Id = Guid.NewGuid().ToString(),
             Text = "Test",
-            Position = MemeTextPosition.BottomText,
-            Topics = [await _topicRepository.GetDefaultTopic()]
+            Position = MemeTextPosition.BottomText
         };
         _context.Texts.Add(memeText);
         await _context.SaveChangesAsync();
 
         // When
-        var expected = memeText.ToTextDTO();
+        var expected = memeText.ToTextDTO(_settings.GetMediaHost());
         var result = (await controller.GetMemeText(memeText.Id)).Result;
 
         // Then
@@ -108,7 +106,7 @@ public class MemeTextsControllerTest : MemeTestBase
     [Fact]
     public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_Deleting_THEN_MemeBottomTextIsDeleted()
     {
-        var controller = new TextsController(_textRepository);
+        var controller = new TextsController(_textRepository, _settings);
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
         // given

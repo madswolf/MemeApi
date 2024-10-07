@@ -1,14 +1,12 @@
 ﻿using FluentAssertions;
 using MemeApi.Controllers;
-using MemeApi.Models.DTO;
-using MemeApi.Models.Entity;
+using MemeApi.Models.DTO.Memes;
+using MemeApi.Models.Entity.Memes;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -23,8 +21,8 @@ public class MemesControllerTest : MemeTestBase
     [Fact]
     public async Task GIVEN_Visual_WHEN_CreatingMeme_THEN_MemeIsCreated()
     {
-        var controller = new MemesController(_memeRepository, _memeRenderingService);
-
+        var controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
+        controller.ControllerContext.HttpContext = GetMockedHttpContext();
         // given
         var filename = "test.png";
 
@@ -42,25 +40,29 @@ public class MemesControllerTest : MemeTestBase
         (await _context.Memes.CountAsync()).Should().Be(1);
         (await _context.Visuals.CountAsync()).Should().Be(1);
 
-        createdMeme?.MemeVisual.Should().Be(filename);
+        createdMeme?.MemeVisual.Filename.Should().Be(filename);
     }
 
     [Fact]
     public async Task GIVEN_CreatedDummyMemeBottomText_WHEN_GettingMemeBottomText_THEN_MemeBottomTextHasProperValues()
     {
-        var controller = new MemesController(_memeRepository, _memeRenderingService);
+        var controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
 
         // given
         var visual = new MemeVisual()
         {
             Id = Guid.NewGuid().ToString(),
-            Filename = "Test"
+            Filename = "Test",
         };
+
         var meme = new Meme
         {
             Id = Guid.NewGuid().ToString(),
-            MemeVisual = visual,
+            Visual = visual,
+            VisualId = visual.Id,
         };
+
+        _context.Visuals.Add(visual);
         _context.Memes.Add(meme);
         await _context.SaveChangesAsync();
 
@@ -74,15 +76,17 @@ public class MemesControllerTest : MemeTestBase
         result.Should().BeOfType<OkObjectResult>();
         var foundMemeText = (result as OkObjectResult)?.Value as MemeDTO;
 
-        foundMemeText?.MemeVisual.Should().Be(visual.Filename);
+        foundMemeText?.MemeVisual.Filename.Should().Be(visual.Filename);
         foundMemeText?.Id.Should().Be(meme.Id);
     }
 
     [Fact]
     public async Task Test_Votable_Deletion_With_Connection_Reset()
     {
-        var controller = new MemesController(_memeRepository, _memeRenderingService);
-        var controller2 = new TextsController(_textRepository);
+        var controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
+        var controller2 = new TextsController(_textRepository, _settings);
+        controller.ControllerContext.HttpContext = GetMockedHttpContext();
+        controller2.ControllerContext.HttpContext = GetMockedHttpContext();
 
         // given
         var filename = "test.png";
@@ -103,11 +107,13 @@ public class MemesControllerTest : MemeTestBase
         (await _context.Memes.CountAsync()).Should().Be(1);
         (await _context.Visuals.CountAsync()).Should().Be(1);
 
-        createdMeme?.MemeVisual.Should().Be(filename);
+        createdMeme?.MemeVisual.Filename.Should().Be(filename);
 
         ResetConnection();
-        controller = new MemesController(_memeRepository, _memeRenderingService);
-        controller2 = new TextsController(_textRepository);
+        controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
+        controller2 = new TextsController(_textRepository, _settings);
+        controller.ControllerContext.HttpContext = GetMockedHttpContext();
+        controller2.ControllerContext.HttpContext = GetMockedHttpContext();
 
         //with the connection reset, this fails
         var deleteTask = await controller2.DeleteMemeText(createdMeme?.BottomText?.Id);
@@ -115,20 +121,23 @@ public class MemesControllerTest : MemeTestBase
         deleteTask.Should().BeOfType<NoContentResult>();
 
         ResetConnection();
-        controller = new MemesController(_memeRepository, _memeRenderingService);
-        controller2 = new TextsController(_textRepository);
+        controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
+        controller2 = new TextsController(_textRepository, _settings);
 
         //with the connection reset, this fails
         var deleteTask2 = await controller2.DeleteMemeText(createdMeme?.Toptext?.Id);
         deleteTask2.Should().NotBeNull();
         deleteTask2.Should().BeOfType<NoContentResult>();
+        await controller.GetMeme(createdMeme.Id);
     }
 
     [Fact]
     public async Task Test_Votable_Deletion_Without_Connection_Reset()
     {
-        var controller = new MemesController(_memeRepository, _memeRenderingService);
-        var controller2 = new TextsController(_textRepository);
+        var controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
+        var controller2 = new TextsController(_textRepository, _settings);
+        controller.ControllerContext.HttpContext = GetMockedHttpContext();
+        controller2.ControllerContext.HttpContext = GetMockedHttpContext();
 
         // given
         var filename = "test.png";
@@ -149,7 +158,7 @@ public class MemesControllerTest : MemeTestBase
         (await _context.Memes.CountAsync()).Should().Be(1);
         (await _context.Visuals.CountAsync()).Should().Be(1);
 
-        createdMeme?.MemeVisual.Should().Be(filename);
+        createdMeme?.MemeVisual.Filename.Should().Be(filename);
 
         //ResetConnection();
         //controller = new MemesController(_memeRepository, _memeRenderingService);
@@ -168,13 +177,5 @@ public class MemesControllerTest : MemeTestBase
         var deleteTask2 = await controller2.DeleteMemeText(createdMeme?.Toptext?.Id);
         deleteTask2.Should().NotBeNull();
         deleteTask2.Should().BeOfType<NoContentResult>();
-    }
-
-
-    public static IFormFile CreateFormFile(int size, string filename)
-    {
-        var fileStream = new MemoryStream(size);
-        var file = new FormFile(fileStream, 0, size, "fileStream", filename);
-        return file;
     }
 }

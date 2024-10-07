@@ -1,4 +1,5 @@
 ﻿#nullable disable warnings
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace MemeApi.Models.DTO;
@@ -19,4 +20,10 @@ public record TopicCreationDTO
     /// </summary>
     [Required]
     public string Description { get; init; }
+
+    /// <summary>
+    /// Configure if the topic will have restricted posting
+    /// </summary>
+
+    public bool HasRestrictedPosting { get; init; }
 }

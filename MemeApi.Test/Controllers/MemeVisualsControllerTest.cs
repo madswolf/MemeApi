@@ -2,7 +2,9 @@
 using MemeApi.Controllers;
 using MemeApi.library.Extensions;
 using MemeApi.Models.DTO;
+using MemeApi.Models.DTO.Memes;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Memes;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Http;
@@ -26,19 +28,21 @@ public class MemeVisualsControllerTest : MemeTestBase
     {
         var controller = new VisualsController(_visualRepository, _settings);
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
-
+        var filename = "test.png";
         // given
-        var fileStream = new MemoryStream(5);
-        var file = new FormFile(fileStream, 0, 5, "fileStream", "test");
+        var visualCreationDTO = new VisualCreationDTO
+        {
+            File = CreateFormFile(5, filename)
+        };
 
         // When
-        var createTask = await controller.PostMemeVisual(file);
+        var createTask = await controller.PostMemeVisual(visualCreationDTO);
 
         // Then
         var createdMemeVisual = ActionResultUtils.ActionResultToValueAndAssertCreated(createTask);
 
         (await _context.Visuals.CountAsync()).Should().Be(1);
-        createdMemeVisual?.Filename.Should().Be(file.FileName);
+        createdMemeVisual?.Filename.Should().Be(filename);
     }
 
     [Fact]
@@ -50,7 +54,7 @@ public class MemeVisualsControllerTest : MemeTestBase
         var visual = new MemeVisual()
         {
             Id = Guid.NewGuid().ToString(),
-            Filename = "Test"
+            Filename = "Test",
         };
         _context.Visuals.Add(visual);
         await _context.SaveChangesAsync();
@@ -76,15 +80,16 @@ public class MemeVisualsControllerTest : MemeTestBase
         var controller = new VisualsController(_visualRepository, _settings);
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
+        var filename = "test.png";
         // given
-        var fileStream = new MemoryStream(5);
-        var filename = "test";
-        var file = new FormFile(fileStream, 0, 5, "fileStream", filename);
-        var file2 = new FormFile(fileStream, 0, 5, "fileStream", filename);
+        var visualCreationDTO = new VisualCreationDTO
+        {
+            File = CreateFormFile(5, filename)
+        };
 
         // When
-        var createTask = await controller.PostMemeVisual(file);
-        var createTask2 = await controller.PostMemeVisual(file2);
+        var createTask = await controller.PostMemeVisual(visualCreationDTO);
+        var createTask2 = await controller.PostMemeVisual(visualCreationDTO);
 
         // Then
         var createdMemeVisual = ActionResultUtils.ActionResultToValueAndAssertCreated(createTask);
@@ -101,11 +106,13 @@ public class MemeVisualsControllerTest : MemeTestBase
         var controller = new VisualsController(_visualRepository, _settings);
 
         // given
-        var fileStream = new MemoryStream(5000001);
-        var file = new FormFile(fileStream, 0, 50000001, "filestream", "test");
+        var visualCreationDTO = new VisualCreationDTO
+        {
+            File = new FormFile(new MemoryStream(5000001), 0, 5000001, "fileStream", "filename"),
+        };
 
         // When
-        var createResult = (await controller.PostMemeVisual(file)).Result;
+        var createResult = (await controller.PostMemeVisual(visualCreationDTO)).Result;
 
         // Then
         createResult.Should().NotBeNull();

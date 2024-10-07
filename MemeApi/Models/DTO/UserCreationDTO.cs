@@ -1,4 +1,5 @@
 ﻿#nullable disable warnings
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace MemeApi.Models.DTO;
@@ -25,4 +26,9 @@ public record UserCreationDTO
     /// </summary>
     [Required]
     public string Password { get; init; }
+
+    /// <summary>
+    /// An optional datetime for migrations.
+    /// </summary>
+    public DateTime? CreatedAt { get; set; }
 }
