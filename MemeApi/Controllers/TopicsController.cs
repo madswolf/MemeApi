@@ -1,8 +1,10 @@
-﻿using MemeApi.library.Extensions;
+﻿using MemeApi.library;
+using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Runtime;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -18,14 +20,16 @@ public class TopicsController : ControllerBase
     private readonly UserRepository _userRepository;
     private readonly TopicRepository _topicRepository;
     private readonly VotableRepository _votableRepository;
+    private readonly MemeApiSettings _settings;
     /// <summary>
     /// A controller for creating and managing meme and meme component groupings called topics.
     /// </summary>
-    public TopicsController(UserRepository userRepository, TopicRepository topicRepository, VotableRepository votableRepository)
+    public TopicsController(UserRepository userRepository, TopicRepository topicRepository, VotableRepository votableRepository, MemeApiSettings settings)
     {
         _userRepository = userRepository;
         _topicRepository = topicRepository;
         _votableRepository = votableRepository;
+        _settings = settings;
     }
 
     /// <summary>
@@ -54,7 +58,7 @@ public class TopicsController : ControllerBase
     /// Mod a user for the given topic. Requires the currently logged in user to be the topic owner
     /// </summary>
     [HttpPut]
-    [Route("[controller]/{topicId}/mod/{userId}")]
+    [Route("{topicId}/mod/{userId}")]
     public async Task<IActionResult> ModUser(string topicId, string userId)
     {
         var topic = await _topicRepository.GetTopic(topicId);
@@ -63,7 +67,8 @@ public class TopicsController : ControllerBase
         if (topic == null) return NotFound("Topic not found");
         if (user == null) return Unauthorized("User not logged in");
 
-        if (topic.Owner != user) return Forbid("Action is forbidden");
+        if (topic.Owner != user && Request.Headers["Bot_Secret"] != _settings.GetBotSecret()) 
+            return Unauthorized("Action is forbidden");
 
         var success = await _topicRepository.ModUser(topic, userId);
 
@@ -110,8 +115,8 @@ public class TopicsController : ControllerBase
     ///Delete a votable in a topic that you own or moderate
     /// </summary>
     [HttpDelete]
-    [Route("[controller]/{id}")]
-    public async Task<IActionResult> DeleteVotable(string id)
+    [Route("votables/{id}")]
+    public async Task<IActionResult> DeleteVotable(string id, [FromQuery] bool? hardDelete = null)
     {
         var votable = await _votableRepository.GetVotable(id);
         var user = await _userRepository.GetUser(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -119,8 +124,8 @@ public class TopicsController : ControllerBase
         if (votable == null) return NotFound("Votable not found");
         if (user == null) return Unauthorized("User not logged in");
 
-        var success = await _votableRepository.DeleteVotable(votable, user);
-        if (!success) return Forbid("Action is forbidden");
+        var success = await _votableRepository.DeleteVotable(votable, user, hardDelete);
+        if (!success) return Unauthorized("Action is forbidden");
        
         return Ok();
     }

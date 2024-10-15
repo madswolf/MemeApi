@@ -90,7 +90,12 @@ public class VotableRepository
 
     public async Task<Votable?> GetVotable(string id)
     {
-        return await _context.Votables.FindAsync(id);
+        return await _context.Votables
+            .Include(v => v.Topics)
+            .ThenInclude(t => t.Moderators)
+            .Include(v => v.Topics)
+            .ThenInclude(t => t.Owner)
+            .FirstOrDefaultAsync(v => v.Id == id);
     }
 
     public async Task<VoteDTO> ChangeVote(Vote vote, Upvote upvote, int voteNumber)
@@ -102,7 +107,7 @@ public class VotableRepository
         return vote.ToVoteDTO();
     }
 
-    public async Task<bool> DeleteVotable(Votable votable, User user)
+    public async Task<bool> DeleteVotable(Votable votable, User user, bool? hardDelete = null)
     {
 
         var topicUserModerates = votable.Topics
@@ -113,9 +118,9 @@ public class VotableRepository
             return false;
         }
         votable.Topics.Remove(topicUserModerates);
-        if(votable.Topics.Count == 0)
+        if(votable.Topics.Count == 0 && hardDelete != null && hardDelete == true)
         {
-            _context.Votables.Remove(votable);
+                _context.Votables.Remove(votable);
         }
         await _context.SaveChangesAsync();
 
