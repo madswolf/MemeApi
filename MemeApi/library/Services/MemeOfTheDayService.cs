@@ -30,16 +30,25 @@ public class MemeOfTheDayService : IMemeOfTheDayService
 
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var seedNumber = new Random().Next(10);
+        
         Meme meme = await _memeRepository.RandomMemeByComponents(topicName: _settings.GetMemeOfTheDayTopicName());
+        if(seedNumber < 5)
+        {
+            meme.BottomText = new MemeText
+            {
+                Text = "Den er ikke random",
+            };
+        }
+
         var webhookUrl = _settings.GetMemeOfTheDayWehbhook();
 
         using HttpClient httpClient = new();
         MultipartFormDataContent form = [];
         try
         {
-
             var imageContent = await _memeRenderingService.RenderMeme(meme);
-            var message = new Random().Next(10) != 1 ? "Meme Of the Day" : messages.RandomItem();
+            var message = seedNumber != 1 ? "Meme Of the Day" : messages.RandomItem();
             var json_payload = CreateJsonPayload(message);
 
             form.Add(new ByteArrayContent(imageContent, 0, imageContent.Length), "image/png", meme.ToFilenameString());
