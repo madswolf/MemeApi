@@ -14,11 +14,36 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace MemeApi.library.Extensions;
 
 public static class Extensions
 {
+    public static IIncludableQueryable<T, List<Topic>> IncludeTopicsAndVotes<T>(this DbSet<T> set) where T : Votable
+    {
+        return set.Include(v => v.Owner).Include(v => v.Votes).Include(v => v.Topics);
+    }
+    
+    public static IIncludableQueryable<Meme, User> IncludeVotesAndVotesMemes(this DbSet<Meme> set)
+    {
+        return set.IncludeTopicsAndVotes()
+            .Include(m => m.BottomText)
+            .ThenInclude(t => t.Votes)
+            .Include(m => m.BottomText)
+            .ThenInclude(t => t.Owner)
+            
+            .Include(m => m.TopText)
+            .ThenInclude(t => t.Votes)
+            .Include(m => m.TopText)
+            .ThenInclude(t => t.Owner)
+            
+            .Include(meme => meme.Visual)
+            .ThenInclude(v => v.Votes)
+            .Include(meme => meme.Visual)
+            .ThenInclude(v => v.Owner);
+    }
     public static DateTime TruncateToSeconds(this DateTime dateTime)
     {
         return dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerSecond));
@@ -115,16 +140,6 @@ public static class Extensions
         return u.UserName ?? "default username";
     }
 
-    public static RandomComponentDTO ToRandomComponentDTO(this MemeText memeText)
-    {
-        return new RandomComponentDTO(memeText.Text, memeText.Id, memeText.SumVotes());
-    }
-
-    public static RandomComponentDTO ToRandomComponentDTO(this MemeVisual visual, string mediaHost)
-    {
-        return new RandomComponentDTO(mediaHost + "visual/" + visual.Filename, visual.Id, visual.SumVotes());
-    }
-
     public static string ToFilenameString(this Meme meme)
     {
         return $"memeId_{meme.Id}_visualId_{meme.VisualId}_toptextId_{meme.TopTextId}_bottomtextId_{meme.BottomTextId}.png";
@@ -163,12 +178,6 @@ public static class Extensions
         var isModerator = topic.Moderators.Any(m => m != null &&  m.Id == userId);
 
         return (!isRestricted || isOwner || isModerator);
-    }
-
-    public static int SumVotes(this Votable votable)
-    {
-        var votes = votable.Votes ?? [];
-        return votes.Aggregate(0, (acc, item) => acc + (item.Upvote ? 1 : -1));
     }
 
     public static double CalculateDubloons(this Votable element, DateTime timestamp2)

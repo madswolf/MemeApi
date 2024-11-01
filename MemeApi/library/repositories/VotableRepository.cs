@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using MemeApi.Models.DTO.Memes;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace MemeApi.library.repositories;
 
@@ -125,5 +127,34 @@ public class VotableRepository
         await _context.SaveChangesAsync();
 
         return true;
+    }
+
+    public IEnumerable<VotableComponentDTO> TopVotableInRange(
+        string votableType,
+        DateTime startDate,
+        DateTime endDate,
+        Topic topic,
+        int takeCount = 5,
+        bool orderAscending = true)
+    {
+        IQueryable<Votable> queryable =
+            votableType.ToLower() switch
+            {                
+                "toptext" => _context.Texts.IncludeTopicsAndVotes().Where(t => t.Position == MemeTextPosition.TopText),
+                "bottomtext" => _context.Texts.IncludeTopicsAndVotes().Where(t => t.Position == MemeTextPosition.BottomText),
+                "visual" => _context.Visuals.IncludeTopicsAndVotes(),
+                _ => _context.Memes.IncludeVotesAndVotesMemes(),
+            };
+        
+        var itemsInRange =
+            queryable.Where(v => startDate < v.CreatedAt && v.CreatedAt < endDate).ToList()
+            .Where(v => v.Topics.Contains(topic))
+            .Select(v => v.ToComponentDTO(_settings.GetMediaHost()));
+
+        var orderedItems = orderAscending
+            ? itemsInRange.OrderBy(v => v.voteAverage)
+            : itemsInRange.OrderByDescending(v => v.voteAverage);
+
+        return orderedItems.Take(takeCount);
     }
 }

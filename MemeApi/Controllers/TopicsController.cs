@@ -1,10 +1,13 @@
-﻿using MemeApi.library;
+﻿using System;
+using MemeApi.library;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime;
+using System.Runtime.InteropServices.JavaScript;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -128,5 +131,29 @@ public class TopicsController : ControllerBase
         if (!success) return Unauthorized("Action is forbidden");
        
         return Ok();
+    }
+    
+    
+    /// <summary>
+    /// Get a random meme rendered to a png in the response
+    /// Use the optional Query parameters TopText and BottomText to define what the top and bottom text should be
+    /// </summary>
+    [HttpGet("LeaderBoard")]
+    public async Task<ActionResult> LeaderBoard(
+        [FromQuery] string votableType = "meme",
+        [FromQuery] string? startDate = null,
+        [FromQuery] string? endDate = null,
+        [FromQuery] string? topicName = null,
+        [FromQuery] int takeCount = 5,
+        [FromQuery] bool orderAscending = true)
+    {
+        var start = startDate != null ? DateTime.SpecifyKind(DateTime.ParseExact(startDate, "dd-M-yyyy", CultureInfo.InvariantCulture), DateTimeKind.Utc) : DateTime.UtcNow.AddDays(-28);  
+        var end = endDate != null ? DateTime.SpecifyKind(DateTime.ParseExact(endDate, "dd-M-yyyy", CultureInfo.InvariantCulture), DateTimeKind.Utc) : DateTime.UtcNow;
+        topicName ??= _settings.GetMemeOfTheDayTopicName();
+
+        var topic = await _topicRepository.GetTopicByName(topicName);
+        if (topic == null) return NotFound(topicName);
+        
+        return Ok(_votableRepository.TopVotableInRange(votableType, start, end, topic, takeCount, orderAscending));
     }
 }

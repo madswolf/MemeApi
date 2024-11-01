@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using MemeApi.Models.DTO.Memes;
 
 namespace MemeApi.Models.Entity.Memes;
 
@@ -18,4 +20,15 @@ public abstract class Votable
 
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime LastUpdatedAt { get; set; }
+
+    public abstract VotableComponentDTO ToComponentDTO(string mediaHost);
+
+    public double VoteAverage()
+    {
+        var voteSum = Votes.Sum(v => v.VoteNumber);
+        var totalVotes = Votes.Count;
+        if (voteSum == 0 || totalVotes == 0) return 0.0;
+        
+        return voteSum/(totalVotes * 1.0);
+    }
 }
