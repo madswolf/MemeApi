@@ -1,4 +1,8 @@
 ﻿#nullable disable warnings
+using MemeApi.Models.DTO.Memes;
+using System.Text.Json;
+using MemeApi.library.Extensions;
+
 namespace MemeApi.Models.Entity.Memes;
 
 public class Meme : Votable
@@ -11,4 +15,14 @@ public class Meme : Votable
 
     public string? BottomTextId { get; set; }
     public MemeText? BottomText { get; set; }
+    public override VotableComponentDTO ToComponentDTO(string mediaHost)
+    {
+        var data = new
+        {
+            Visual = Visual.ToComponentDTO(mediaHost),
+            TopText = TopText?.ToComponentDTO(mediaHost),
+            BottomText = BottomText?.ToComponentDTO(mediaHost)
+        };
+        return new VotableComponentDTO(JsonSerializer.Serialize(data), Id, VoteAverage(), CreatedAt, Owner?.UserName ?? "No one");
+    }
 }

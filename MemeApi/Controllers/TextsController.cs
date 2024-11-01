@@ -90,11 +90,11 @@ public class TextsController : ControllerBase
 
     [HttpGet]
     [Route("random/{type}")]
-    public async Task<ActionResult<RandomComponentDTO>> RandomText(MemeTextPosition type)
+    public async Task<ActionResult<VotableComponentDTO>> RandomText(MemeTextPosition type)
     {
         var texts = await _textRepository.GetTexts(type);
         var text = texts.RandomItem();
-        return Ok(text.ToRandomComponentDTO());
+        return Ok(text.ToComponentDTO(_settings.GetMediaHost()));
     }
 
 }

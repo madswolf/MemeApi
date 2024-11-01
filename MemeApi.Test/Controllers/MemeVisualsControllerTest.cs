@@ -60,18 +60,18 @@ public class MemeVisualsControllerTest : MemeTestBase
         await _context.SaveChangesAsync();
 
         // When
-        var expected = visual.ToRandomComponentDTO("test");
+        var expected = visual.ToComponentDTO("test");
         var result = (await controller.GetMemeVisual(visual.Id)).Result;
 
         // Then
 
         result.Should().NotBeNull();
         result.Should().BeOfType<OkObjectResult>();
-        var foundMemeText = (result as OkObjectResult)?.Value as RandomComponentDTO;
+        var foundMemeText = (result as OkObjectResult)?.Value as VotableComponentDTO;
 
         foundMemeText?.data.Should().Be(expected.data);
         foundMemeText?.id.Should().Be(expected.id);
-        foundMemeText?.votes.Should().Be(expected.votes);
+        foundMemeText?.voteAverage.Should().Be(expected.voteAverage);
     }
 
     [Fact]

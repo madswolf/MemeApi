@@ -47,7 +47,7 @@ public class VisualsController : ControllerBase
         var memeVisual = await _visualRepository.GetVisual(id);
 
         if (memeVisual == null) return NotFound();
-        return Ok(memeVisual.ToRandomComponentDTO(_settings.GetMediaHost()));
+        return Ok(memeVisual.ToComponentDTO(_settings.GetMediaHost()));
     }
 
     /// <summary>
@@ -84,9 +84,9 @@ public class VisualsController : ControllerBase
     /// </summary>
     [HttpGet]
     [Route("random")]
-    public async Task<ActionResult<RandomComponentDTO>> RandomVisual()
+    public async Task<ActionResult<VotableComponentDTO>> RandomVisual()
     {
         var visual = (await _visualRepository.GetVisuals()).RandomItem();
-        return Ok(visual.ToRandomComponentDTO(_settings.GetMediaHost()));
+        return Ok(visual.ToComponentDTO(_settings.GetMediaHost()));
     }
 }
