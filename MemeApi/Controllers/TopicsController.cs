@@ -67,7 +67,7 @@ public class TopicsController : ControllerBase
         if (topic == null) return NotFound("Topic not found");
         if (user == null) return Unauthorized("User not logged in");
 
-        if (topic.Owner != user && Request.Headers["Bot_Secret"] != _settings.GetBotSecret()) 
+        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret()) 
             return Unauthorized("Action is forbidden");
 
         var success = await _topicRepository.ModUser(topic, userId);
