@@ -42,7 +42,7 @@ public class MemeVisualsControllerTest : MemeTestBase
         var createdMemeVisual = ActionResultUtils.ActionResultToValueAndAssertCreated(createTask);
 
         (await _context.Visuals.CountAsync()).Should().Be(1);
-        createdMemeVisual?.Filename.Should().Be(filename);
+        createdMemeVisual?.File.Should().Be(filename);
     }
 
     [Fact]
@@ -96,8 +96,8 @@ public class MemeVisualsControllerTest : MemeTestBase
         var createdMemeVisual2 = ActionResultUtils.ActionResultToValueAndAssertCreated(createTask2);
 
         (await _context.Visuals.CountAsync()).Should().Be(2);
-        createdMemeVisual?.Filename.Should().Be(filename);
-        createdMemeVisual2?.Filename.Should().NotBe(filename);
+        createdMemeVisual?.File.Should().Be(filename);
+        createdMemeVisual2?.File.Should().NotBe(filename);
     }
 
     [Fact]

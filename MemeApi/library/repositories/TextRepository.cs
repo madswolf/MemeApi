@@ -94,22 +94,26 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
         return true;
     }
 
-    public async Task<MemeText> CreateText(string text, MemeTextPosition position, IEnumerable<string>? topicNames = null, string? userId = null)
+    public async Task<MemeText> CreateText(string text, MemeTextPosition position, List<string>? topicNames = null, string? userId = null)
     {
         var user = await _userRepository.GetUser(userId);
         return await CreateText(text, position, topicNames, user);
     }
 
-    public async Task<MemeText> CreateText(string text, MemeTextPosition position, IEnumerable<string>? topicNames = null, User? user = null)
+    public async Task<MemeText> CreateText(string text, MemeTextPosition position, List<string>? topicNames = null, User? user = null)
     {
-        var topics = await _topicRepository.GetTopicsByNameForUser(topicNames, user?.Id);
-
+        var (existingVotable, filteredTopics) =
+            await _topicRepository.GetOrUpdateVotableIfExistsAndFilterTopics<MemeText>(text.ToContentHash(), user, topicNames);
+        if (existingVotable != null) return existingVotable;
+        
+        var topics = await _topicRepository.GetTopicsByNameForUser(filteredTopics, user?.Id); 
         var memeText = new MemeText
         {
             Id = Guid.NewGuid().ToString(),
             Topics = topics,
             Text = text,
             Position = position,
+            ContentHash = text.ToContentHash()
         };
 
         if (user != null) memeText.Owner = user;

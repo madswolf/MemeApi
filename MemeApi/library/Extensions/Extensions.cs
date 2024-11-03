@@ -21,6 +21,31 @@ namespace MemeApi.library.Extensions;
 
 public static class Extensions
 {
+    public static T ToVotableOfType<T>(this Votable votable) where T : Votable, new()
+    {
+        if (votable is not T votableOfType)
+        {
+            Console.WriteLine($"Votable with content hash: {votable.ContentHash} and Id: {votable.Id} is not of Type: {typeof(T)}");
+            return new T();
+        }
+        
+        return votableOfType;
+    }
+    public static string ToContentHash(this Meme meme)
+    {
+        return $"{meme.Visual.ContentHash}-{meme.TopText?.ContentHash}-{meme.BottomText?.ContentHash}";
+    }
+    
+    public static string ToContentHash(this string? text)
+    {
+        return text == null ? "" : Encoding.UTF8.GetBytes(text).ToContentHash();
+    }
+    
+    public static string ToContentHash(this byte[] content)
+    {
+        using var sha256 = SHA256.Create();
+        return BitConverter.ToString(sha256.ComputeHash(content));
+    }
     public static IIncludableQueryable<T, List<Topic>> IncludeTopicsAndVotes<T>(this DbSet<T> set) where T : Votable
     {
         return set.Include(v => v.Owner).Include(v => v.Votes).Include(v => v.Topics);
@@ -127,7 +152,7 @@ public static class Extensions
 
     public static VisualDTO ToVisualDTO(this MemeVisual visual, string mediaHost)
     {
-        return new VisualDTO(visual.Id, visual.Filename, visual.Owner.ToUserInfo(mediaHost), visual.Topics?.Select(t => t.Name).ToList(), visual.CreatedAt);
+        return new VisualDTO(visual.Id, mediaHost + "visual/" + visual.Filename, visual.Owner.ToUserInfo(mediaHost), visual.Topics?.Select(t => t.Name).ToList(), visual.CreatedAt);
     }
 
     public static UserInfoDTO? ToUserInfo(this User? u, string mediaHost)

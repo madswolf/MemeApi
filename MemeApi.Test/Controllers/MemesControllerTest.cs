@@ -40,7 +40,7 @@ public class MemesControllerTest : MemeTestBase
         (await _context.Memes.CountAsync()).Should().Be(1);
         (await _context.Visuals.CountAsync()).Should().Be(1);
 
-        createdMeme?.MemeVisual.Filename.Should().Be(filename);
+        createdMeme?.MemeVisual.File.Should().Be(filename);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class MemesControllerTest : MemeTestBase
         result.Should().BeOfType<OkObjectResult>();
         var foundMemeText = (result as OkObjectResult)?.Value as MemeDTO;
 
-        foundMemeText?.MemeVisual.Filename.Should().Be(visual.Filename);
+        foundMemeText?.MemeVisual.File.Should().Be(visual.Filename);
         foundMemeText?.Id.Should().Be(meme.Id);
     }
 
@@ -107,7 +107,7 @@ public class MemesControllerTest : MemeTestBase
         (await _context.Memes.CountAsync()).Should().Be(1);
         (await _context.Visuals.CountAsync()).Should().Be(1);
 
-        createdMeme?.MemeVisual.Filename.Should().Be(filename);
+        createdMeme?.MemeVisual.File.Should().Be(filename);
 
         ResetConnection();
         controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
@@ -158,7 +158,7 @@ public class MemesControllerTest : MemeTestBase
         (await _context.Memes.CountAsync()).Should().Be(1);
         (await _context.Visuals.CountAsync()).Should().Be(1);
 
-        createdMeme?.MemeVisual.Filename.Should().Be(filename);
+        createdMeme?.MemeVisual.File.Should().Be(filename);
 
         //ResetConnection();
         //controller = new MemesController(_memeRepository, _memeRenderingService);

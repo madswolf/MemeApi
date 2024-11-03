@@ -53,19 +53,25 @@ public class MemeRepository
 
         if (memeDTO.TopText != null)
         {
-            var toptext = await _textRepository.CreateText(memeDTO.TopText, MemeTextPosition.TopText, memeDTO.Topics, user);
-            meme.TopText = toptext;
-            meme.TopTextId = toptext.Id;
+            var topText = await _textRepository.CreateText(memeDTO.TopText, MemeTextPosition.TopText, memeDTO.Topics, user);
+            meme.TopText = topText;
+            meme.TopTextId = topText.Id;
         }
 
         if (memeDTO.BottomText != null)
         {
-            var bottomtext = await _textRepository.CreateText(memeDTO.BottomText, MemeTextPosition.BottomText, memeDTO.Topics, user);
-            meme.BottomText = bottomtext;
-            meme.BottomTextId = bottomtext.Id;
+            var bottomText = await _textRepository.CreateText(memeDTO.BottomText, MemeTextPosition.BottomText, memeDTO.Topics, user);
+            meme.BottomText = bottomText;
+            meme.BottomTextId = bottomText.Id;
         }
 
-        var topics = await _topicRepository.GetTopicsByNameForUser(memeDTO.Topics, userId );
+        meme.ContentHash = meme.ToContentHash();
+
+        var (existingVotable, filteredTopics) =
+            await _topicRepository.GetOrUpdateVotableIfExistsAndFilterTopics<Meme>(meme.ContentHash, user, memeDTO.Topics);
+        if (existingVotable != null) return existingVotable;
+        
+        var topics = await _topicRepository.GetTopicsByNameForUser(filteredTopics, userId );
 
         if (topics.Any(t => t == null)) return null;
 
@@ -86,13 +92,13 @@ public class MemeRepository
         var memeVisual = await _visualRepository.GetVisual(memeDTO.VisualId);
         if (memeVisual == null) return null;
 
-        var toptext = memeDTO.TopTextId != null ? await _textRepository.GetText(memeDTO.TopTextId) : null;
-        var bottomtext = memeDTO.BottomTextId != null ? await _textRepository.GetText(memeDTO.BottomTextId) : null;
+        var topText = memeDTO.TopTextId != null ? await _textRepository.GetText(memeDTO.TopTextId) : null;
+        var bottomText = memeDTO.BottomTextId != null ? await _textRepository.GetText(memeDTO.BottomTextId) : null;
         var topics = await _topicRepository.GetTopicsByNameForUser(memeDTO.Topics, userId);
 
         if (topics.Any(t => t == null)) return null;
 
-        return await UpsertByComponents(memeVisual,toptext, bottomtext);
+        return await UpsertByComponents(memeVisual,topText, bottomText);
     }
 
     public async Task<Meme> UpsertByComponents(MemeVisual visual, MemeText? topText, MemeText? bottomText, Topic? topic = null)
@@ -109,6 +115,8 @@ public class MemeRepository
                 BottomText = bottomText,
                 Topics = [topic]
             };
+            
+            meme.ContentHash = meme.ToContentHash();
 
             await CreateMemeRaw(meme);
         }
