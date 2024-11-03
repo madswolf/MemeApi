@@ -46,12 +46,7 @@ public class TopicRepository
         return await _context.Topics.Where(t => t.Name == name).FirstOrDefaultAsync();
     }
 
-    public async Task<List<Topic>> GetTopicsByNameForUser(IEnumerable<string>? topicNames, string? userId = null)
-    {
-        return await GetTopicsByNameOrDefault(topicNames, userId);
-    }
-
-    public async Task<List<Topic>> GetTopicsByNameOrDefault(IEnumerable<string>? topicNames, string? userId = null)
+    public async Task<List<Topic>> GetTopicsByNameForUser(IEnumerable<string>? topicNames, string? userId = null, bool includeDefault = true)
     {
         if(topicNames != null)
         {
@@ -61,7 +56,7 @@ public class TopicRepository
                 .Where(t => topicNames.Contains(t.Name)).ToListAsync();
 
             var filteredTopics = topics.Where(t => t.CanUserPost(userId)).ToList();
-            if (filteredTopics.Count == 0) return [await _context.Topics.FirstAsync(t => t.Name == _settings.GetDefaultTopicName())];
+            if (filteredTopics.Count == 0 && includeDefault) return [await _context.Topics.FirstAsync(t => t.Name == _settings.GetDefaultTopicName())];
             return filteredTopics;
         }
 
@@ -156,5 +151,32 @@ public class TopicRepository
         topic.Moderators.Add(user);
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<(T?, List<string>?)> GetOrUpdateVotableIfExistsAndFilterTopics<T>(string contentHash, User? user, List<string>? topicNames) where T : Votable, new()
+    {
+        var votables = await GetIfExists(contentHash);
+        if (votables.Count == 0) return (null, topicNames);
+
+        var topics = votables.SelectMany(v => v.Topics).GroupBy(t => t.Id).Select(g => g.First()).ToList();
+        var topicNamesWithoutContent = topicNames?.Where(t => !topics.Exists(topic => topic.Name == t)).ToList();
+
+        if (topicNamesWithoutContent is { Count: 0 }) return (votables.First().ToVotableOfType<T>(), []);
+
+        var userOwnedVotable = votables.FirstOrDefault(v => v.OwnerId == user?.Id);
+        if (userOwnedVotable == null || user == null) return (null, topicNamesWithoutContent); // remember to filter topics that already have given content
+
+        var topicsWithoutContent = await GetTopicsByNameForUser(topicNamesWithoutContent, user.Id, includeDefault: false);
+        userOwnedVotable.Topics.AddRange(topicsWithoutContent);
+        return (userOwnedVotable.ToVotableOfType<T>(), []);
+    }
+    
+    public async Task<List<Votable>> GetIfExists(string contentHash)
+    {
+        return await _context.Votables
+            .Include(v => v.Owner)
+            .Include(v => v.Topics)
+            .Where(v => v.ContentHash == contentHash)
+            .ToListAsync();
     }
 }

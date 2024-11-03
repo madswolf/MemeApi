@@ -33,7 +33,7 @@ public class MemeCreationDTO
     /// <summary>
     /// The list of topics that the Meme belongs to.
     /// </summary>
-    public IEnumerable<string>? Topics { get; set; }
+    public List<string>? Topics { get; set; }
 
     /// <summary>
     /// An optional datetime for migrations.

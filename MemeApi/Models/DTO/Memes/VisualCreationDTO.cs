@@ -25,7 +25,7 @@ public record VisualCreationDTO
     /// <summary>
     /// The list of topics that the Visual belongs to.
     /// </summary>
-    public IEnumerable<string>? Topics { get; set; }
+    public List<string>? Topics { get; set; }
 
     /// <summary>
     /// An optional datetime for migrations.
