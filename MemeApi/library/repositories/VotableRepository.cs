@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using MemeApi.library.Services.Files;
 using MemeApi.Models.DTO.Memes;
 using Microsoft.EntityFrameworkCore.Query;
 
@@ -19,11 +20,14 @@ public class VotableRepository
 {
     private readonly MemeContext _context;
     private readonly MemeApiSettings _settings;
+    private readonly IFileLoader _fileLoader;
+    
 
-    public VotableRepository(MemeContext context, MemeApiSettings settings)
+    public VotableRepository(MemeContext context, MemeApiSettings settings, IFileLoader fileLoader)
     {
         _context = context;
         _settings = settings;
+        _fileLoader = fileLoader;
     }
 
     public async Task<List<Vote>> GetVotes()
@@ -156,5 +160,127 @@ public class VotableRepository
             : itemsInRange.OrderByDescending(v => v.voteAverage);
 
         return orderedItems.Take(takeCount);
+    }
+
+    public async Task<bool> RegenerateContentHash(string id, bool isMeme)
+    {
+        IQueryable<Votable> iQueryable;
+        if (isMeme)
+        {
+            iQueryable = _context.Memes
+                .Include(m => m.TopText)
+                .Include(m => m.BottomText)
+                .Include(m => m.Visual);
+        }
+        else
+        {
+            iQueryable = _context.Votables;
+        }
+            
+        var votable = iQueryable.FirstOrDefault(v => v.Id == id);
+        if (votable == null) return false;
+
+        switch (votable)
+        {
+            case MemeVisual visual:
+                var file = await _fileLoader.LoadFile("visual/" + visual.Filename);
+                visual.ContentHash = file.ToContentHash();
+                break;
+            case MemeText text:
+                text.ContentHash = text.Text.ToContentHash();
+                break;
+            case Meme meme:
+                meme.ContentHash = meme.ToContentHash();
+                break;
+        }
+        
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task ReassignReferences(string votableId, string targetId)
+    {
+        var votable = _context.Votables.Include(v => v.Topics).Include(v => v.Votes).First(v => v.Id == votableId);
+        var target = _context.Votables.First(v => v.Id == targetId);
+        await ReassignReferences(votable, target);
+    }
+
+    public async Task<Votable?> VerifyContentDuplicates(string votableId)
+    {
+        var targetVotable = _context.Votables
+            .FirstOrDefault(v => v.Id == votableId);
+        if (targetVotable == null) return null;
+
+        var votables = _context.Votables
+            .Include(v => v.Topics)
+            .Include(v => v.Votes)
+            .Where(v => v.ContentHash == targetVotable.ContentHash)
+            .OrderBy(v => v.CreatedAt)
+            .ToList();
+
+        var votablesHaveTopicOverlap = votables.SelectMany(v => v.Topics).GroupBy(t => t.Id).Any(g => g.Count() != 1);
+        if (votablesHaveTopicOverlap)
+        {
+            var (newListOfVotables, topics) =
+                votables.Aggregate((new List<Votable>(), new List<string>()), (acc, item) =>
+                {
+                    var items = acc.Item1;
+                    var topics = acc.Item2;
+                    item.Topics = item.Topics.Where(t => !acc.Item2.Contains(t.Id)).ToList();
+                    items.Add(item);
+                    topics.AddRange(item.Topics.Select(t => t.Id));
+                    return (items, topics);
+                });
+
+            var votablesWithNoTopicsAfterRemovingCollisions = newListOfVotables.Where(v => v.Topics.Count == 0).ToList();
+
+            var oldestVotable = votables.First();
+            foreach (var votable in votablesWithNoTopicsAfterRemovingCollisions)
+            {
+                await ReassignReferences(votable, oldestVotable);
+            }
+            
+            _context.Votables.RemoveRange(votablesWithNoTopicsAfterRemovingCollisions);
+            await _context.SaveChangesAsync();
+            
+            if (votablesWithNoTopicsAfterRemovingCollisions.Contains(targetVotable))
+            {
+                targetVotable.Id = "deleted";
+            }
+        }
+
+        return targetVotable;
+    }
+
+    public async Task ReassignReferences(Votable votableWithReferencesToReassign, Votable target)
+    {
+        var topics = votableWithReferencesToReassign.Topics;
+        var Votes = votableWithReferencesToReassign.Votes;
+        
+        if (votableWithReferencesToReassign is not Meme)
+        {
+            var id = votableWithReferencesToReassign.Id;
+            var memesReferencingVotable = await _context.Memes
+                .Where(m => m.BottomTextId == id || m.TopTextId == id || m.VisualId == id).ToListAsync();
+            
+            foreach (var meme in memesReferencingVotable)
+            {
+                if (meme.BottomTextId == id) meme.BottomTextId = target.Id;
+                if (meme.TopTextId == id) meme.TopTextId = target.Id;
+                if (meme.VisualId == id) meme.VisualId = target.Id;
+            }
+        }
+        
+        foreach (var vote in Votes)
+        {
+            vote.ElementId = target.Id;
+        }
+        
+        if (topics.Count != 0)
+        {
+            throw new ArgumentException($"The votable with the Id:{votableWithReferencesToReassign.Id} is still referenced in the following topics: {topics.Select(t => t.Name)}");
+        }
+
+        await _context.SaveChangesAsync();
     }
 }
