@@ -156,4 +156,36 @@ public class TopicsController : ControllerBase
         
         return Ok(_votableRepository.TopVotableInRange(votableType, start, end, topic, takeCount, orderAscending));
     }
+    
+    /// <summary>
+    /// Regenerate the content hash for the given votable ID
+    /// </summary>
+    [HttpGet("votable/{id}/RegenerateContentHash")]
+    public async Task<ActionResult> RegenerateContentHash(string id, [FromQuery]bool isMeme = false)
+    {
+        var success = await _votableRepository.RegenerateContentHash(id, isMeme);
+        if (!success) return NotFound(id);
+        return Ok();
+    }
+    
+    /// <summary>
+    /// Regenerate the content hash for the given votable ID
+    /// </summary>
+    [HttpGet("votable/{id}/{targetId}")]
+    public async Task<ActionResult> TestReassignReferences(string id, string targetId)
+    {
+        await _votableRepository.ReassignReferences(id, targetId);
+        return Ok();
+    }
+    
+    /// <summary>
+    /// Regenerate the content hash for the given votable ID
+    /// </summary>
+    [HttpGet("votable/{id}/verify")]
+    public async Task<ActionResult> TestReassignReferences(string id)
+    {
+        await _votableRepository.VerifyContentDuplicates(id);
+        return Ok();
+    }
+
 }

@@ -33,7 +33,7 @@ public static class Extensions
     }
     public static string ToContentHash(this Meme meme)
     {
-        return $"{meme.Visual.ContentHash}-{meme.TopText?.ContentHash}-{meme.BottomText?.ContentHash}";
+        return $"{meme.Visual.ContentHash}{meme.TopText?.ContentHash}{meme.BottomText?.ContentHash}".ToContentHash();
     }
     
     public static string ToContentHash(this string? text)
