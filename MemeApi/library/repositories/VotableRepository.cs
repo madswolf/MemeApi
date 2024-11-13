@@ -180,6 +180,7 @@ public class VotableRepository
         var votable = iQueryable.FirstOrDefault(v => v.Id == id);
         if (votable == null) return false;
 
+        
         switch (votable)
         {
             case MemeVisual visual:
@@ -187,7 +188,7 @@ public class VotableRepository
                 visual.ContentHash = file.ToContentHash();
                 break;
             case MemeText text:
-                text.ContentHash = text.Text.ToContentHash();
+                text.ContentHash = (text.Text + text.Position).ToContentHash();
                 break;
             case Meme meme:
                 meme.ContentHash = meme.ToContentHash();
