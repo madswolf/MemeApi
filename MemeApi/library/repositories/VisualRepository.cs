@@ -89,17 +89,32 @@ public class VisualRepository
 
         if(user != null) memeVisual.Owner = user;
 
-        if (_context.Visuals.Any(x => x.Filename == memeVisual.Filename))
+        var skipUpload = false;
+        var visuals = _context.Visuals.Where(x => x.Filename == memeVisual.Filename);
+        if (visuals.Any())
         {
-            memeVisual.Filename = RandomString(5) + memeVisual.Filename;
+            var visualWithSameContent = visuals.FirstOrDefault(v =>
+                v.ContentHash == memeVisual.ContentHash &&
+                v.Filename == memeVisual.Filename);
+            
+            if (visualWithSameContent != null)
+            {
+                skipUpload = true;
+            }
+            else
+            {
+                memeVisual.Filename = RandomString(5) + memeVisual.Filename;
+            }
         }
-        using var memoryStream = new MemoryStream();
-        await visual.CopyToAsync(memoryStream);
 
-        await _fileSaver.SaveFile(memoryStream.ToArray(), "visual/", memeVisual.Filename, visual.ContentType);
+        if (!skipUpload)
+        {
+            using var memoryStream = new MemoryStream();
+            await visual.CopyToAsync(memoryStream);
+            await _fileSaver.SaveFile(memoryStream.ToArray(), "visual/", memeVisual.Filename, visual.ContentType);
+        }
 
         _context.Visuals.Add(memeVisual);
-        var changes = _context.ChangeTracker.Entries();
         await _context.SaveChangesAsync();
         return memeVisual;
     }

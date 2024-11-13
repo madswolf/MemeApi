@@ -155,13 +155,13 @@ public class TopicRepository
 
     public async Task<(T?, List<string>?)> GetOrUpdateVotableIfExistsAndFilterTopics<T>(string contentHash, User? user, List<string>? topicNames) where T : Votable, new()
     {
-        var votables = await GetIfExists(contentHash);
+        var votables = (await GetIfExists(contentHash)).OrderBy(v => v.CreatedAt).ToList();
         if (votables.Count == 0) return (null, topicNames);
 
         var topics = votables.SelectMany(v => v.Topics).GroupBy(t => t.Id).Select(g => g.First()).ToList();
         var topicNamesWithoutContent = topicNames?.Where(t => !topics.Exists(topic => topic.Name == t)).ToList();
 
-        if (topicNamesWithoutContent is { Count: 0 }) return (votables.First().ToVotableOfType<T>(), []);
+        if (topicNamesWithoutContent == null || topicNamesWithoutContent.Count == 0) return (votables.First().ToVotableOfType<T>(), []);
 
         var userOwnedVotable = votables.FirstOrDefault(v => v.OwnerId == user?.Id);
         if (userOwnedVotable == null || user == null) return (null, topicNamesWithoutContent); // remember to filter topics that already have given content

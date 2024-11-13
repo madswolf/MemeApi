@@ -65,7 +65,7 @@ public class MemeTestBase : IAsyncLifetime
         _visualRepository = new VisualRepository(_context, new FileSaverStub(), new FileRemoverStub(), _topicRepository, _userRepository);
         _textRepository = new TextRepository(_context, _topicRepository, _userRepository);
         _memeRepository = new MemeRepository(_context, _visualRepository, _textRepository, _topicRepository, _settings, _userRepository);
-        _votableRepository = new VotableRepository(_context, _settings);
+        _votableRepository = new VotableRepository(_context, _settings, new WebFileLoader(_settings));
 
         _userManager = new FakeUserManager();
         _signInManager = new FakeSignInManager();
@@ -183,7 +183,7 @@ public class MemeTestBase : IAsyncLifetime
         _visualRepository = new VisualRepository(_context, new FileSaverStub(), new FileRemoverStub(), _topicRepository, _userRepository);
         _textRepository = new TextRepository(_context, _topicRepository, _userRepository);
         _memeRepository = new MemeRepository(_context, _visualRepository, _textRepository, _topicRepository, _settings, _userRepository);
-        _votableRepository = new VotableRepository(_context, _settings);
+        _votableRepository = new VotableRepository(_context, _settings, new WebFileLoader(_settings));
     }
 
     public async Task DisposeAsync() => await _fixture.ResetDatabase();

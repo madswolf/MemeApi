@@ -12,6 +12,9 @@ visuals = requests.get(API_HOST + "visuals/")
 memes = requests.get(API_HOST + "memes/")
 
 votables = []
+global failed_votables
+failed_votables = []
+
 if(not texts.ok or not visuals.ok or not memes.ok):
     print("failed")
 
@@ -29,6 +32,7 @@ for entry in memes:
     votables.append({"id":entry['id'], "type": "meme"})
 
 def regenerate_contenthash_for_votable(entry):
+    global failed_votables
     params = {
         'isMeme': entry['type'] == "meme"
     }
@@ -38,16 +42,18 @@ def regenerate_contenthash_for_votable(entry):
 
     if response.status_code not in (200, 404):
         print(response.status_code, "something went wrong")
+        failed_votables.append(id)
         quit()
 
 def verify_uniqueness_for_votable(entry):
-    
+    global failed_votables
     id = entry["id"]
     response = requests.get(API_HOST + f'topics/votable/{id}/verify')
     print(entry["type"], id, response.status_code, "verify")
 
     if response.status_code not in (200, 404):
         print(response.status_code, "something went wrong")
+        failed_votables.append(id)
         quit()
 
 # Run the processing of votables in parallel
@@ -61,3 +67,6 @@ with ThreadPoolExecutor() as executor:
     futures = [executor.submit(verify_uniqueness_for_votable, entry) for entry in votables]
     for future in as_completed(futures):
         future.result()  # Ensures all threads complete
+
+
+print(failed_votables)
