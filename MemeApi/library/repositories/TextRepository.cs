@@ -103,7 +103,7 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
     public async Task<MemeText> CreateText(string text, MemeTextPosition position, List<string>? topicNames = null, User? user = null)
     {
         var (existingVotable, filteredTopics) =
-            await _topicRepository.GetOrUpdateVotableIfExistsAndFilterTopics<MemeText>(text.ToContentHash(), user, topicNames);
+            await _topicRepository.GetOrUpdateVotableIfExistsAndFilterTopics<MemeText>((text + position).ToContentHash(), user, topicNames);
         if (existingVotable != null) return existingVotable;
         
         var topics = await _topicRepository.GetTopicsByNameForUser(filteredTopics, user?.Id); 
@@ -113,7 +113,7 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
             Topics = topics,
             Text = text,
             Position = position,
-            ContentHash = text.ToContentHash()
+            ContentHash = (text + position).ToContentHash()
         };
 
         if (user != null) memeText.Owner = user;

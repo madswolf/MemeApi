@@ -171,16 +171,6 @@ public class TopicsController : ControllerBase
     /// <summary>
     /// Regenerate the content hash for the given votable ID
     /// </summary>
-    [HttpGet("votable/{id}/{targetId}")]
-    public async Task<ActionResult> TestReassignReferences(string id, string targetId)
-    {
-        await _votableRepository.ReassignReferences(id, targetId);
-        return Ok();
-    }
-    
-    /// <summary>
-    /// Regenerate the content hash for the given votable ID
-    /// </summary>
     [HttpGet("votable/{id}/verify")]
     public async Task<ActionResult> TestReassignReferences(string id)
     {
