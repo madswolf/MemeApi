@@ -10,6 +10,6 @@ public class MemeVisual : Votable
 
     public override VotableComponentDTO ToComponentDTO( string mediaHost)
     {
-        return new VotableComponentDTO(mediaHost + "visual/" + Filename, Id, VoteAverage(), CreatedAt, Owner.UserName ?? "No one");
+        return new VotableComponentDTO(mediaHost + "visual/" + Filename, Id, VoteAverage(), CreatedAt, Owner?.UserName ?? "No one");
     }
 }

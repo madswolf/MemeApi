@@ -10,6 +10,6 @@ public class MemeText : Votable
     public MemeTextPosition Position { get; set; }
     public override VotableComponentDTO ToComponentDTO(string _)
     {
-        return new VotableComponentDTO(Text, Id, VoteAverage(), CreatedAt, Owner.UserName ?? "No one");
+        return new VotableComponentDTO(Text, Id, VoteAverage(), CreatedAt, Owner?.UserName ?? "No one");
     }
 }
