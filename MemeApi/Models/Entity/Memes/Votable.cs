@@ -29,7 +29,8 @@ public abstract class Votable
         var voteSum = Votes.Sum(v => v.VoteNumber);
         var totalVotes = Votes.Count;
         if (voteSum == 0 || totalVotes == 0) return 0.0;
+        var average = voteSum/(totalVotes * 1.0);
         
-        return voteSum/(totalVotes * 1.0);
+        return average + (totalVotes * 1e-6);
     }
 }
