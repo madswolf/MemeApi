@@ -31,15 +31,13 @@ public class MemeOfTheDayService : IMemeOfTheDayService
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var seedNumber = new Random().Next(10);
-        
-        Meme meme = await _memeRepository.RandomMemeByComponents(topicName: _settings.GetMemeOfTheDayTopicName());
+        string? bottomText = null;
         if(seedNumber < 5)
         {
-            meme.BottomText = new MemeText
-            {
-                Text = "Den er ikke random",
-            };
+            bottomText = "Den er ikke random";
         }
+        
+        Meme meme = await _memeRepository.RandomMemeByComponents(topicName: _settings.GetMemeOfTheDayTopicName(), bottomText: bottomText);
 
         var webhookUrl = _settings.GetMemeOfTheDayWehbhook();
 
