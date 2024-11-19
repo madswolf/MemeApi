@@ -31,13 +31,7 @@ public class MemeOfTheDayService : IMemeOfTheDayService
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var seedNumber = new Random().Next(10);
-        string? bottomText = null;
-        if(seedNumber < 5)
-        {
-            bottomText = "Den er ikke random";
-        }
-        
-        Meme meme = await _memeRepository.RandomMemeByComponents(topicName: _settings.GetMemeOfTheDayTopicName(), bottomText: bottomText);
+        Meme meme = await _memeRepository.RandomMemeByComponents(topicName: _settings.GetMemeOfTheDayTopicName());
 
         var webhookUrl = _settings.GetMemeOfTheDayWehbhook();
 
@@ -53,6 +47,7 @@ public class MemeOfTheDayService : IMemeOfTheDayService
             form.Add(json_payload, "payload_json");
             var response = await httpClient.PostAsync(webhookUrl, form, stoppingToken);
             if (response == null) Console.WriteLine("Response was null");
+            
             Console.WriteLine(await LogHttpResponse(response));
 
             httpClient.Dispose();
@@ -71,13 +66,13 @@ public class MemeOfTheDayService : IMemeOfTheDayService
         //_mailSender.sendMemeOfTheDayMail(recipient, _memeRenderingService.RenderMeme(meme));
     }
 
-    private static StringContent CreateJsonPayload(string message)
+    private StringContent CreateJsonPayload(string message)
     {
         return new StringContent(
-        "{" +
+            "{" +
             "\"content\":\"" + message + "\"," +
             "\"username\":\"Hjerneskade(Meme Of The Day)\"," +
-            "\"avatar_url\":\"https://media.mads.monster/default.jpg\"" +
+            "\"avatar_url\":\"" + _settings.GetMediaHost() + "default.jpg\"" +
         "}",
         Encoding.UTF8, "application/json");
     }
