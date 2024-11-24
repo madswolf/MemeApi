@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
+using MemeApi.Models.Entity.Lottery;
 
 namespace MemeApi.Models.Context;
 
@@ -210,6 +211,23 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
                 entity => entity.HasOne(tv => tv.Topic).WithMany().HasForeignKey(tv => tv.TopicID),
                 entity => entity.HasKey(tm => new { tm.VotableId, tm.TopicID }));
         });
+        
+        modelBuilder.Entity<Lottery>().ToTable("Lotteries");
+        modelBuilder.Entity<LotteryItem>()
+            .ToTable("Lotteries")
+            .HasOne(item => item.Lottery)
+            .WithMany()
+            .HasForeignKey(item => item.LotteryId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<LotteryTicket>()
+            .ToTable("LotteryTickets")
+            .HasOne(ticket => ticket.Item)
+            .WithMany(item => item.Tickets)
+            .HasForeignKey(ticket => ticket.ItemId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
 
         var admin = new User
         {
