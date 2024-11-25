@@ -12,7 +12,7 @@ public class Lottery
     
     public LotteryStatus Status { get; set; }
     
-    public List<LotteryItem> Items { get; set; }
+    public List<LotteryBracket> Brackets { get; set; }
 }
 
 public enum LotteryStatus

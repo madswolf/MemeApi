@@ -19,4 +19,10 @@ public record LotteryCreationDTO
     /// </summary>
     [Required]
     public int TicketCost { get; init; }
+    
+    /// <summary>
+    /// List of Item Brackets for the lottery
+    /// </summary>
+    [Required]
+    public List<(string BracketName, int ProbabilityWeight)> Brackets { get; init; }
 }

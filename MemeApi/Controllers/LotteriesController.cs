@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using MemeApi.library;
 using MemeApi.library.Extensions;
+using MemeApi.library.repositories;
 using MemeApi.library.Repositories;
 using MemeApi.Models.DTO.Lotteries;
 using MemeApi.Models.DTO.Places;
@@ -19,11 +20,13 @@ namespace MemeApi.Controllers;
 public class LotteriesController : ControllerBase
 {
     private readonly LotteryRepository _lotteryRepository;
+    private readonly UserRepository _userRepository;
     private readonly MemeApiSettings _settings;
 
-    public LotteriesController(LotteryRepository lotteryRepository, MemeApiSettings settings)
+    public LotteriesController(LotteryRepository lotteryRepository, MemeApiSettings settings, UserRepository userRepository)
     {
         _lotteryRepository = lotteryRepository;
+        _userRepository = userRepository;
         _settings = settings;
     }
 
@@ -41,13 +44,13 @@ public class LotteriesController : ControllerBase
     /// <summary>
     /// Add an item to a lottery
     /// </summary>
-    [HttpPost("{lotteryId}/items")]
-    public async Task<ActionResult<MemePlaceDTO>> AddLotteryItem([FromBody]LotteryItemCreationDTO lotteryItemCreationDto, string lotteryId)
+    [HttpPost("{bracketId}/items")]
+    public async Task<ActionResult<MemePlaceDTO>> AddLotteryItem([FromBody]LotteryItemCreationDTO lotteryItemCreationDto, string bracketId)
     {
-        var lottery = await _lotteryRepository.GetLottery(lotteryId);
-        if (lottery == null) return NotFound("A lottery with the given id does not exist.");
+        var bracket = await _lotteryRepository.GetLotteryBracket(bracketId);
+        if (bracket == null) return NotFound("A bracket with the given id does not exist.");
 
-        var item = await _lotteryRepository.AddLotteryItem(lotteryItemCreationDto, lottery);
+        var item = await _lotteryRepository.AddLotteryItem(lotteryItemCreationDto, bracket);
         return Ok(item);
     }
     
@@ -83,11 +86,17 @@ public class LotteriesController : ControllerBase
     public async Task<ActionResult<MemePlaceDTO>> BuyLotteryTicket(string lotteryId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var lottery = await _lotteryRepository.GetLottery(lotteryId);
+        var user = await _userRepository.GetUser(userId, true);
         
+        if(user == null) return NotFound("A user with the given Id does not exist.");
+        
+        var lottery = await _lotteryRepository.GetLottery(lotteryId);
         if (lottery == null) return NotFound("A lottery with the given id does not exist.");
 
-        var item = await _lotteryRepository.AddLotteryItem(lotteryItemCreationDto, lottery);
+        if(lottery.TicketCost > user.DubloonEvents.CountDubloons()) 
+            BadRequest("Not enough dubloons to make buy a Lottery ticket. Dubloons needed: " + lottery.TicketCost);
+        
+        var item = await _lotteryRepository.BuyTicket(lottery, user);
         return Ok(item);
     }
     

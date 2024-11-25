@@ -7,13 +7,11 @@ public class LotteryItem
 {
     public string Id { get; set; }
     
-    public string LotteryId { get; set; }
+    public string BracketId { get; set; }
     
-    public Lottery Lottery { get; set; }
+    public LotteryBracket Bracket { get; set; }
 
     public string Name { get; set; }
-    
-    public int ProbabilityWeight { get; set; }
     
     public int ItemCount { get; set; }
     

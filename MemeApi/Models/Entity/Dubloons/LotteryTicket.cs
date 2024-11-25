@@ -15,7 +15,7 @@ public class LotteryTicket : DubloonEvent
         Id,
         Owner.UserName,
         (int)Math.Floor(Dubloons),
-        Item.LotteryId,
+        Item.Bracket.LotteryId,
         ItemId,
         Item.Name
     );

@@ -124,9 +124,15 @@ public class VotableRepository
             return false;
         }
         votable.Topics.Remove(topicUserModerates);
+        
         if(votable.Topics.Count == 0 && hardDelete != null && hardDelete == true)
         {
-                _context.Votables.Remove(votable);
+            var votes = _context.Votes.Where(vote => vote.ElementId == votable.Id);
+            if (votes.Any())
+            {
+                return false; // you cannot currently delete votables with votes on them
+            }
+            _context.Votables.Remove(votable);
         }
         await _context.SaveChangesAsync();
 

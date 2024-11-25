@@ -32,6 +32,8 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
     public DbSet<PlacePixelPrice> PixelPrices { get; set; }
     public DbSet<Lottery> Lotteries { get; set; }
     
+    public DbSet<LotteryBracket> LotteryBrackets { get; set; }
+    
     public DbSet<LotteryItem> LotteryItems { get; set; }
     
     public DbSet<LotteryTicket> LotteryTickets { get; set; }
@@ -218,13 +220,22 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
                 entity => entity.HasOne(tv => tv.Topic).WithMany().HasForeignKey(tv => tv.TopicID),
                 entity => entity.HasKey(tm => new { tm.VotableId, tm.TopicID }));
         });
-        
+
         modelBuilder.Entity<Lottery>().ToTable("Lotteries");
+        
+        modelBuilder.Entity<LotteryBracket>()
+            .ToTable("LotteryBrackets")
+            .HasOne(bracket => bracket.Lottery)
+            .WithMany(lottery => lottery.Brackets)
+            .HasForeignKey(bracket => bracket.LotteryId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+        
         modelBuilder.Entity<LotteryItem>()
             .ToTable("LotteryItems")
-            .HasOne(item => item.Lottery)
-            .WithMany(lottery => lottery.Items)
-            .HasForeignKey(item => item.LotteryId)
+            .HasOne(item => item.Bracket)
+            .WithMany(bracket => bracket.Items)
+            .HasForeignKey(item => item.BracketId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
