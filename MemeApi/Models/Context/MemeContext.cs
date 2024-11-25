@@ -28,7 +28,14 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
     public DbSet<DubloonEvent> DubloonEvents { get; set; }
     public DbSet<MemePlace> MemePlaces { get; set; }
     public DbSet<PlaceSubmission> PlaceSubmissions { get; set; }
+    
     public DbSet<PlacePixelPrice> PixelPrices { get; set; }
+    public DbSet<Lottery> Lotteries { get; set; }
+    
+    public DbSet<LotteryItem> LotteryItems { get; set; }
+    
+    public DbSet<LotteryTicket> LotteryTickets { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -214,9 +221,9 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
         
         modelBuilder.Entity<Lottery>().ToTable("Lotteries");
         modelBuilder.Entity<LotteryItem>()
-            .ToTable("Lotteries")
+            .ToTable("LotteryItems")
             .HasOne(item => item.Lottery)
-            .WithMany()
+            .WithMany(lottery => lottery.Items)
             .HasForeignKey(item => item.LotteryId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);

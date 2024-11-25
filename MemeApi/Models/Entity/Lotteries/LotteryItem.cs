@@ -13,6 +13,10 @@ public class LotteryItem
 
     public string Name { get; set; }
     
+    public int ProbabilityWeight { get; set; }
+    
+    public int ItemCount { get; set; }
+    
     public string ThumbNailFileName { get; set; }
     
     public List<LotteryTicket> Tickets { get; set; }
