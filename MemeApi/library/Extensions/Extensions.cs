@@ -14,6 +14,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using MemeApi.Models.DTO.Lotteries;
+using MemeApi.Models.Entity.Lottery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 
@@ -34,6 +36,16 @@ public static class Extensions
     public static string ToContentHash(this Meme meme)
     {
         return $"{meme.Visual.ContentHash}{meme.TopText?.ContentHash}{meme.BottomText?.ContentHash}".ToContentHash();
+    }
+    
+    public static string PrependRandomString(this string baseString)
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        var random = new Random();
+        var prefix = new string(Enumerable.Repeat(chars, 5)
+            .Select(s => s[random.Next(s.Length)]).ToArray());
+        
+        return prefix + baseString;
     }
     
     public static string ToContentHash(this string? text)
@@ -101,21 +113,6 @@ public static class Extensions
         return list[random.Next(list.Count)];
     }
 
-    public static T RandomItem<T>(this IEnumerable<T> source)
-    {
-        return source.PickRandom(1).Single();
-    }
-
-    public static IEnumerable<T> PickRandom<T>(this IEnumerable<T> source, int count)
-    {
-        return source.Shuffle().Take(count);
-    }
-
-    public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source)
-    {
-        return source.OrderBy(x => Guid.NewGuid());
-    }
-
     public static MemeText RandomItem(this IQueryable<MemeText> list, string seed = "")
     {
         if (seed == "")
@@ -127,7 +124,7 @@ public static class Extensions
         return list.OrderBy(x => x.Id).Skip(skip).First();
     }
 
-    public static VoteDTO ToVoteDTO(this Vote vote) => new VoteDTO()
+    public static VoteDTO ToVoteDTO(this Vote vote) => new()
     {
         Id = vote.Id,
         VotableId = vote.ElementId,
@@ -137,7 +134,24 @@ public static class Extensions
         CreatedAt = vote.CreatedAt,
         LastUpdateAt = vote.LastUpdatedAt
     };
+    
+    public static LotteryDTO ToLotteryDTO(this Lottery lottery, string mediaHost) => new()
+    {
+        Id = lottery.Id,
+        Name = lottery.Name,
+        TicketCost = lottery.TicketCost,
+        Items = lottery.Items.Select(item => item.ToLotteryItemDTO(mediaHost)).ToList(),
+    };
 
+    public static LotteryItemDTO ToLotteryItemDTO(this LotteryItem item, string mediaHost) => new()
+    {
+        ItemId = item.Id,
+        ItemName = item.Name,
+        InitialItemCount = item.ItemCount,
+        ItemProbabilityWeight = item.ProbabilityWeight,
+        CurrentItemCount = item.Tickets.Count,
+        ItemThumbnail = mediaHost + item.ThumbNailFileName
+    };
 
     public static TopicDTO ToTopicDTO(this Topic t)
     {

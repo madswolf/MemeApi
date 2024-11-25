@@ -111,7 +111,7 @@ public class UserRepository
 
                 if (_memeContext.Users.Any(x => x.ProfilePicFile == user.ProfilePicFile))
                 {
-                    user.ProfilePicFile = VisualRepository.RandomString(5) + user.ProfilePicFile;
+                    user.ProfilePicFile = user.ProfilePicFile.PrependRandomString();
                 }
                 using var memoryStream = new MemoryStream();
                 await updateDto.NewProfilePic.CopyToAsync(memoryStream);

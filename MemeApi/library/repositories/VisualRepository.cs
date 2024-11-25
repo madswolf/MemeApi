@@ -21,7 +21,6 @@ public class VisualRepository
     private readonly IFileSaver _fileSaver;
     private readonly IFileRemover _fileRemover;
     private readonly UserRepository _userRepository;
-    private static readonly Random Random = Random.Shared;
     public VisualRepository(MemeContext context, IFileSaver fileSaver, IFileRemover fileRemover, TopicRepository topicRepository, UserRepository userRepository)
     {
         _context = context;
@@ -48,8 +47,6 @@ public class VisualRepository
 
     public MemeVisual GetRandomVisualInTopic(Topic topic, string seed = "")
     {
-        var list = _context.Visuals.Include(v => v.Topics).Where(v => v.Topics.Contains(topic)).ToList();
-        var thing = _context.Visuals.Include(v => v.Topics);
         var regex = new Regex("^.*\\.gif$");
         return _context.Visuals.Include(v => v.Topics).Where(v => v.Topics.Contains(topic)).ToList().Where(x => !regex.IsMatch(x.Filename)).ToList().RandomItem(seed);
     }
@@ -57,13 +54,6 @@ public class VisualRepository
     public async Task<MemeVisual?> GetVisual(string? id)
     {
         return await _context.Visuals.Include(x => x.Votes).Include(v => v.Owner).FirstOrDefaultAsync(v => v.Id == id);
-    }
-
-    public static string RandomString(int length)
-    {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        return new string(Enumerable.Repeat(chars, length)
-            .Select(s => s[Random.Next(s.Length)]).ToArray());
     }
 
     public async Task<MemeVisual> CreateMemeVisual(IFormFile visual, string filename, List<string>? topicNames = null, string? userId = null) 
@@ -103,7 +93,7 @@ public class VisualRepository
             }
             else
             {
-                memeVisual.Filename = RandomString(5) + memeVisual.Filename;
+                memeVisual.Filename = memeVisual.Filename.PrependRandomString();
             }
         }
 
