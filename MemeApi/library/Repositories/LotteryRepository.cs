@@ -8,6 +8,7 @@ using MemeApi.Models.Entity.Lottery;
 using Microsoft.EntityFrameworkCore;
 using MemeApi.library.Extensions;
 using MemeApi.library.Services.Files;
+using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Dubloons;
 
 namespace MemeApi.library.Repositories;
@@ -33,6 +34,15 @@ public class LotteryRepository
             TicketCost = lotteryCreationDTO.TicketCost
         };
 
+        var brackets = lotteryCreationDTO.Brackets.Select((tuple, _) => new LotteryBracket()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = tuple.BracketName,
+            ProbabilityWeight = tuple.ProbabilityWeight,
+            Lottery = lottery
+        });
+        
+        _context.LotteryBrackets.AddRange(brackets);
         _context.Lotteries.Add(lottery);
         await _context.SaveChangesAsync();
         
@@ -44,22 +54,29 @@ public class LotteryRepository
         return await _context.Lotteries.FirstOrDefaultAsync(lottery => lottery.Id == lotteryId);
     }
     
+    public async Task<LotteryBracket?> GetLotteryBracket(string bracketId)
+    {
+        return await _context.LotteryBrackets
+            .Include(bracket => bracket.Lottery)
+            .FirstOrDefaultAsync(lottery => lottery.Id == bracketId);
+    }
+    
     public async Task<List<Lottery>> GetLotteries()
     {
         return await _context.Lotteries
-            .Include(lottery => lottery.Items)
+            .Include(lottery => lottery.Brackets)
+            .ThenInclude(bracket => bracket.Items)
             .ThenInclude(item => item.Tickets)
             .ToListAsync();
     }
     
-    public async Task<LotteryItem> AddLotteryItem(LotteryItemCreationDTO lotteryItemCreationDto, Lottery lottery)
+    public async Task<LotteryItem> AddLotteryItem(LotteryItemCreationDTO lotteryItemCreationDto, LotteryBracket bracket)
     {
         var item = new LotteryItem()
         {
             Id = Guid.NewGuid().ToString(),
-            Lottery = lottery,
+            Bracket = bracket,
             Name = lotteryItemCreationDto.ItemName,
-            ProbabilityWeight = lotteryItemCreationDto.ItemProbabilityWeight,
             ItemCount = lotteryItemCreationDto.ItemCount,
             ThumbNailFileName = lotteryItemCreationDto.ItemThumbnail.FileName
         };
@@ -73,7 +90,7 @@ public class LotteryRepository
         var thumbnail = lotteryItemCreationDto.ItemThumbnail;
         await _fileSaver.SaveFile(thumbnail.ToByteArray(), "lotteryitems/", item.ThumbNailFileName, thumbnail.ContentType);
         
-        _context.Lotteries.Add(lottery);
+        _context.LotteryItems.Add(item);
         await _context.SaveChangesAsync();
         
         return item;
@@ -100,8 +117,38 @@ public class LotteryRepository
         return lottery;
     }
 
-    public async Task<LotteryTicket> BuyTicket(Lottery lottery, string userId)
+    public async Task<LotteryTicket> BuyTicket(Lottery lottery, User user)
     {
-        var item = 
+        var random = new Random();
+        
+        var brackets = lottery.Brackets.OrderBy(bracket => bracket.Id).ToList();
+        var totalWeight = brackets.Sum(bracket => bracket.ProbabilityWeight);
+
+        var randomValue = random.Next(totalWeight);
+        var cumulativeWeight = 0;
+        var selectedIndex = 0;
+
+        for (var i = 0; i < brackets.Count; i++)
+        {
+            cumulativeWeight += brackets[i].ProbabilityWeight;
+            if (randomValue < cumulativeWeight)
+            {
+                selectedIndex = i;
+                break;
+            }
+        }
+
+        var randomBracket = brackets[selectedIndex];
+        var randomItem = randomBracket.Items[random.Next(randomBracket.Items.Count)];
+
+        var ticket = new LotteryTicket()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Dubloons = -lottery.TicketCost,
+            Item = randomItem,
+            Owner = user
+        };
+        _context.LotteryTickets.Add(ticket);
+        return ticket;
     }
 }

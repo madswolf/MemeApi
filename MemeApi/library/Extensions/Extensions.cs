@@ -140,7 +140,15 @@ public static class Extensions
         Id = lottery.Id,
         Name = lottery.Name,
         TicketCost = lottery.TicketCost,
-        Items = lottery.Items.Select(item => item.ToLotteryItemDTO(mediaHost)).ToList(),
+        Brackets = lottery.Brackets.Select(bracket => bracket.ToLotteryBracketDTO(mediaHost)).ToList(),
+    };
+    
+    public static LotteryBracketDTO ToLotteryBracketDTO(this LotteryBracket bracket, string mediaHost) => new()
+    {
+        BracketId = bracket.Id,
+        BracketName = bracket.Name,
+        BracketProbabilityWeight = bracket.ProbabilityWeight,
+        Items = bracket.Items.Select(item => item.ToLotteryItemDTO(mediaHost)).ToList(),
     };
 
     public static LotteryItemDTO ToLotteryItemDTO(this LotteryItem item, string mediaHost) => new()
@@ -148,7 +156,6 @@ public static class Extensions
         ItemId = item.Id,
         ItemName = item.Name,
         InitialItemCount = item.ItemCount,
-        ItemProbabilityWeight = item.ProbabilityWeight,
         CurrentItemCount = item.Tickets.Count,
         ItemThumbnail = mediaHost + item.ThumbNailFileName
     };

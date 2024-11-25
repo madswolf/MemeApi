@@ -19,9 +19,12 @@ public record LotteryDTO
     public string Name { get; init; }
     
     /// <summary>
-    /// Price of tickets for the lottery
+    /// Price of tickets for the Lottery
     /// </summary>
     public int TicketCost { get; init; }
     
-    public List<LotteryItemDTO> Items { get; init; }
+    /// <summary>
+    /// List of Item Brackets in the Lottery
+    /// </summary>
+    public List<LotteryBracketDTO> Brackets { get; init; }
 }
