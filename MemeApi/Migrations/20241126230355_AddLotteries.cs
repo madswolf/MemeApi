@@ -19,7 +19,8 @@ namespace MemeApi.Migrations
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    TicketCost = table.Column<int>(type: "integer", nullable: false)
+                    TicketCost = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -27,21 +28,42 @@ namespace MemeApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "LotteryItems",
+                name: "LotteryBrackets",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
                     LotteryId = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
+                    ProbabilityWeight = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LotteryBrackets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_LotteryBrackets_Lotteries_LotteryId",
+                        column: x => x.LotteryId,
+                        principalTable: "Lotteries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LotteryItems",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    BracketId = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    ItemCount = table.Column<int>(type: "integer", nullable: false),
                     ThumbNailFileName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_LotteryItems", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_LotteryItems_Lotteries_LotteryId",
-                        column: x => x.LotteryId,
-                        principalTable: "Lotteries",
+                        name: "FK_LotteryItems_LotteryBrackets_BracketId",
+                        column: x => x.BracketId,
+                        principalTable: "LotteryBrackets",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -71,9 +93,14 @@ namespace MemeApi.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_LotteryItems_LotteryId",
-                table: "LotteryItems",
+                name: "IX_LotteryBrackets_LotteryId",
+                table: "LotteryBrackets",
                 column: "LotteryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LotteryItems_BracketId",
+                table: "LotteryItems",
+                column: "BracketId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_LotteryTickets_ItemId",
@@ -89,6 +116,9 @@ namespace MemeApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "LotteryItems");
+
+            migrationBuilder.DropTable(
+                name: "LotteryBrackets");
 
             migrationBuilder.DropTable(
                 name: "Lotteries");

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using MemeApi.library;
@@ -35,8 +36,10 @@ public class LotteriesController : ControllerBase
     /// Create a Lottery
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<MemePlaceDTO>> CreateLottery([FromBody]LotteryCreationDTO lotteryCreationDTO)
+    public async Task<ActionResult> CreateLottery([FromBody]LotteryCreationDTO lotteryCreationDTO)
     {
+        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret())
+            return Unauthorized("You do not have access to this action");
         var lottery = await _lotteryRepository.CreateLottery(lotteryCreationDTO);
         return Ok(lottery);
     }
@@ -45,11 +48,14 @@ public class LotteriesController : ControllerBase
     /// Add an item to a lottery
     /// </summary>
     [HttpPost("{bracketId}/items")]
-    public async Task<ActionResult<MemePlaceDTO>> AddLotteryItem([FromBody]LotteryItemCreationDTO lotteryItemCreationDto, string bracketId)
+    public async Task<ActionResult> AddLotteryItem([FromForm]LotteryItemCreationDTO lotteryItemCreationDto, string bracketId)
     {
+        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret())
+            return Unauthorized("You do not have access to this action");
         var bracket = await _lotteryRepository.GetLotteryBracket(bracketId);
         if (bracket == null) return NotFound("A bracket with the given id does not exist.");
-
+        if (bracket.Lottery.Status != LotteryStatus.Initialized) return Conflict("You cannot add items to a lottery after it has been opened");
+        
         var item = await _lotteryRepository.AddLotteryItem(lotteryItemCreationDto, bracket);
         return Ok(item);
     }
@@ -59,7 +65,7 @@ public class LotteriesController : ControllerBase
     /// It includes a list of all items/categories of items, their probability weight and the initial and current stock of each
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<MemePlaceDTO>> GetLotteries()
+    public async Task<ActionResult<LotteryDTO>> GetLotteries()
     {
         var lotteries = await _lotteryRepository.GetLotteries();
         
@@ -70,20 +76,21 @@ public class LotteriesController : ControllerBase
     /// Set status of a lottery
     /// </summary>
     [HttpPost("{lotteryId}/SetStatus")]
-    public async Task<ActionResult<MemePlaceDTO>> SetLotteryStatus(string lotteryId, [FromBody]LotteryStatus status)
+    public async Task<ActionResult> SetLotteryStatus(string lotteryId, [FromBody]LotteryStatus status)
     {
+        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret())
+            return Unauthorized("You do not have access to this action");
         var lottery = await _lotteryRepository.SetLotteryStatus(lotteryId, status);
         if (lottery == null) return NotFound("A lottery with the given id does not exist.");
 
-        return Ok(lottery);
+        return Ok();
     }
     
-    //buy a ticket, lotteryId
     /// <summary>
-    /// Add an item to a lottery
+    /// Draw a ticket from the given Lottery
     /// </summary>
-    [HttpPost("{lotteryId}/BuyTicket")]
-    public async Task<ActionResult<MemePlaceDTO>> BuyLotteryTicket(string lotteryId)
+    [HttpPost("{lotteryId}/DrawTicket")]
+    public async Task<ActionResult<LotteryTicketDrawDTO>> DrawLotteryTicket(string lotteryId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var user = await _userRepository.GetUser(userId, true);
@@ -92,12 +99,17 @@ public class LotteriesController : ControllerBase
         
         var lottery = await _lotteryRepository.GetLottery(lotteryId);
         if (lottery == null) return NotFound("A lottery with the given id does not exist.");
-
+        if (lottery.Status != LotteryStatus.Open) return Conflict("You cannot currently buy tickets for the lottery with the given Id");
+        
         if(lottery.TicketCost > user.DubloonEvents.CountDubloons()) 
             BadRequest("Not enough dubloons to make buy a Lottery ticket. Dubloons needed: " + lottery.TicketCost);
         
-        var item = await _lotteryRepository.BuyTicket(lottery, user);
-        return Ok(item);
+        var items = await _lotteryRepository.DrawTicket(lottery, user);
+        return Ok(new LotteryTicketDrawDTO
+        {
+            Items = items,
+            WinningItem = items.Count-1
+        });
     }
     
     //Get a receipt of all items won on a lottery
