@@ -56,6 +56,7 @@ public class LotteryRepository
         return await _context.Lotteries
             .Include(lottery => lottery.Brackets)
             .ThenInclude(bracket => bracket.Items)
+            .ThenInclude(item => item.Tickets)
             .FirstOrDefaultAsync(lottery => lottery.Id == lotteryId);
     }
     
@@ -126,16 +127,26 @@ public class LotteryRepository
     {
         var random = new Random();
         
-        var brackets = lottery.Brackets.OrderBy(bracket => bracket.Id).ToList();
-        var totalWeight = brackets.Sum(bracket => bracket.ProbabilityWeight);
+        
+        
+        var bracketItemPairs = lottery.Brackets
+            .Select(bracket =>
+                {
+                    var items = bracket.Items.Where(item => (item.ItemCount - item.Tickets.Count) > 0).ToList();
+                    return (Bracket: bracket, Items: items);
+                }
+            )
+            .Where(bracket => bracket.Items.Count != 0)
+            .OrderBy(tuple => tuple.Bracket.Id).ToList();
+        var totalWeight = bracketItemPairs.Sum(tuple => tuple.Bracket.ProbabilityWeight);
 
         var randomValue = random.Next(totalWeight);
         var cumulativeWeight = 0;
         var winningBracketIndex = 0;
 
-        for (var i = 0; i < brackets.Count; i++)
+        for (var i = 0; i < bracketItemPairs.Count; i++)
         {
-            cumulativeWeight += brackets[i].ProbabilityWeight;
+            cumulativeWeight += bracketItemPairs[i].Bracket.ProbabilityWeight;
             if (randomValue < cumulativeWeight)
             {
                 winningBracketIndex = i;
@@ -143,13 +154,13 @@ public class LotteryRepository
             }
         }
 
-        var winningBracket = brackets[winningBracketIndex];
-        var winningItem = winningBracket.Items[random.Next(winningBracket.Items.Count)];
-        brackets.RemoveAt(winningBracketIndex);
+        var winningPair = bracketItemPairs[winningBracketIndex];
+        var winningItem = winningPair.Items[random.Next(winningPair.Items.Count)];
+        bracketItemPairs.RemoveAt(winningBracketIndex);
 
         var mediaHost = _settings.GetMediaHost();
         var randomItems = 
-            brackets.Select(bracket => bracket.Items[random.Next(bracket.Items.Count)])
+            bracketItemPairs.Select(tuple => tuple.Items[random.Next(tuple.Items.Count)])
                 .ToList()
                 .Append(winningItem)
                 .Select(item => mediaHost + "lotteryitems/" + item.ThumbNailFileName);
