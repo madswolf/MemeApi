@@ -16,12 +16,14 @@ namespace MemeApi.library.Repositories;
 public class LotteryRepository
 {
     private readonly MemeContext _context;
-    private readonly FileSaver _fileSaver;
+    private readonly IFileSaver _fileSaver;
+    private readonly MemeApiSettings _settings;
 
-    public LotteryRepository(MemeContext context, FileSaver fileSaver)
+    public LotteryRepository(MemeContext context, IFileSaver fileSaver, MemeApiSettings settings)
     {
         _context = context;
         _fileSaver = fileSaver;
+        _settings = settings;
     }
 
     public async Task<Lottery> CreateLottery(LotteryCreationDTO lotteryCreationDTO)
@@ -51,7 +53,10 @@ public class LotteryRepository
 
     public async Task<Lottery?> GetLottery(string lotteryId)
     {
-        return await _context.Lotteries.FirstOrDefaultAsync(lottery => lottery.Id == lotteryId);
+        return await _context.Lotteries
+            .Include(lottery => lottery.Brackets)
+            .ThenInclude(bracket => bracket.Items)
+            .FirstOrDefaultAsync(lottery => lottery.Id == lotteryId);
     }
     
     public async Task<LotteryBracket?> GetLotteryBracket(string bracketId)
@@ -117,7 +122,7 @@ public class LotteryRepository
         return lottery;
     }
 
-    public async Task<LotteryTicket> BuyTicket(Lottery lottery, User user)
+    public async Task<List<string>> DrawTicket(Lottery lottery, User user)
     {
         var random = new Random();
         
@@ -126,29 +131,39 @@ public class LotteryRepository
 
         var randomValue = random.Next(totalWeight);
         var cumulativeWeight = 0;
-        var selectedIndex = 0;
+        var winningBracketIndex = 0;
 
         for (var i = 0; i < brackets.Count; i++)
         {
             cumulativeWeight += brackets[i].ProbabilityWeight;
             if (randomValue < cumulativeWeight)
             {
-                selectedIndex = i;
+                winningBracketIndex = i;
                 break;
             }
         }
 
-        var randomBracket = brackets[selectedIndex];
-        var randomItem = randomBracket.Items[random.Next(randomBracket.Items.Count)];
+        var winningBracket = brackets[winningBracketIndex];
+        var winningItem = winningBracket.Items[random.Next(winningBracket.Items.Count)];
+        brackets.RemoveAt(winningBracketIndex);
 
+        var mediaHost = _settings.GetMediaHost();
+        var randomItems = 
+            brackets.Select(bracket => bracket.Items[random.Next(bracket.Items.Count)])
+                .ToList()
+                .Append(winningItem)
+                .Select(item => mediaHost + "lotteryitems/" + item.ThumbNailFileName);
+        
         var ticket = new LotteryTicket()
         {
             Id = Guid.NewGuid().ToString(),
             Dubloons = -lottery.TicketCost,
-            Item = randomItem,
+            Item = winningItem,
             Owner = user
         };
         _context.LotteryTickets.Add(ticket);
-        return ticket;
+        await _context.SaveChangesAsync();
+        
+        return randomItems.ToList();
     }
 }

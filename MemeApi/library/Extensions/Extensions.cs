@@ -156,7 +156,7 @@ public static class Extensions
         ItemId = item.Id,
         ItemName = item.Name,
         InitialItemCount = item.ItemCount,
-        CurrentItemCount = item.Tickets.Count,
+        CurrentItemCount = item.ItemCount - item.Tickets.Count,
         ItemThumbnail = mediaHost + item.ThumbNailFileName
     };
 

@@ -24,5 +24,11 @@ public record LotteryCreationDTO
     /// List of Item Brackets for the lottery
     /// </summary>
     [Required]
-    public List<(string BracketName, int ProbabilityWeight)> Brackets { get; init; }
+    public List<BracketCreationDTO> Brackets { get; init; }
+}
+
+public class BracketCreationDTO
+{
+    public string BracketName { get; set; }
+    public int ProbabilityWeight { get; set; }
 }

@@ -6,8 +6,6 @@ using Lottery;
 
 public class LotteryTicket : DubloonEvent
 {
-    public string Id { get; set; }
-    
     public string ItemId { get; set; }
     
     public LotteryItem Item { get; set; }

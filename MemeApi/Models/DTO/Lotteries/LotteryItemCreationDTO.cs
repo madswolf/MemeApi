@@ -24,11 +24,5 @@ public record LotteryItemCreationDTO
     /// The weight of the probability for the Item
     /// </summary>
     [Required]
-    public int ItemProbabilityWeight { get; init; }
-    
-    /// <summary>
-    /// The weight of the probability for the Item
-    /// </summary>
-    [Required]
-    public FormFile ItemThumbnail { get; init; }
+    public IFormFile ItemThumbnail { get; init; }
 }

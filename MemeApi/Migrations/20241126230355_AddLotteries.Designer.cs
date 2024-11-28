@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MemeApi.Migrations
 {
     [DbContext(typeof(MemeContext))]
-    [Migration("20241124004510_AddLotteries")]
+    [Migration("20241126230355_AddLotteries")]
     partial class AddLotteries
     {
         /// <inheritdoc />
@@ -60,6 +60,9 @@ namespace MemeApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
                     b.Property<int>("TicketCost")
                         .HasColumnType("integer");
 
@@ -68,7 +71,7 @@ namespace MemeApi.Migrations
                     b.ToTable("Lotteries", (string)null);
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.Lottery.LotteryItem", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Lottery.LotteryBracket", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -81,13 +84,39 @@ namespace MemeApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("ProbabilityWeight")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LotteryId");
+
+                    b.ToTable("LotteryBrackets", (string)null);
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.Lottery.LotteryItem", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BracketId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ItemCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("ThumbNailFileName")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LotteryId");
+                    b.HasIndex("BracketId");
 
                     b.ToTable("LotteryItems", (string)null);
                 });
@@ -134,43 +163,43 @@ namespace MemeApi.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "114d71da-31cb-4f42-afa9-13f4caa53cbc",
+                            Id = "48a86b8b-b2d2-4307-a46c-49a561e7f261",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes created 2020-2023",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Swu-legacy",
-                            OwnerId = "a03da430-8570-4967-b811-27b920afe7f9"
+                            OwnerId = "fce3fc42-cbb4-4a3e-9fef-01e5a048c6f7"
                         },
                         new
                         {
-                            Id = "25389ad3-2a09-4aa5-a39d-4257b95bf35b",
+                            Id = "d4a8e3e8-4300-4caf-849b-a2e31e5addf7",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes are back baby!",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Rotte-Grotte",
-                            OwnerId = "a03da430-8570-4967-b811-27b920afe7f9"
+                            OwnerId = "fce3fc42-cbb4-4a3e-9fef-01e5a048c6f7"
                         },
                         new
                         {
-                            Id = "6e996d31-56db-486f-90d9-9796b4ec1999",
+                            Id = "012fddce-e395-4593-bc86-f9cae111cd81",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes are back baby!",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Bean-den",
-                            OwnerId = "a03da430-8570-4967-b811-27b920afe7f9"
+                            OwnerId = "fce3fc42-cbb4-4a3e-9fef-01e5a048c6f7"
                         },
                         new
                         {
-                            Id = "ea6031dd-9775-4ad8-bd1e-e8fc537c6864",
+                            Id = "de649f27-8409-4edd-9b2c-f3fd982da28a",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes of the day",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "MemeOfTheDay",
-                            OwnerId = "a03da430-8570-4967-b811-27b920afe7f9"
+                            OwnerId = "fce3fc42-cbb4-4a3e-9fef-01e5a048c6f7"
                         });
                 });
 
@@ -446,17 +475,17 @@ namespace MemeApi.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "a03da430-8570-4967-b811-27b920afe7f9",
+                            Id = "fce3fc42-cbb4-4a3e-9fef-01e5a048c6f7",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "0b07748d-3a5c-45a9-a0df-33bf49d60fae",
+                            ConcurrencyStamp = "ef69c9ce-0635-4221-a23a-b74b007c89c7",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "",
                             EmailConfirmed = false,
-                            LastLoginAt = new DateTime(2024, 11, 24, 0, 45, 9, 444, DateTimeKind.Utc).AddTicks(1408),
+                            LastLoginAt = new DateTime(2024, 11, 26, 23, 3, 55, 31, DateTimeKind.Utc).AddTicks(2516),
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             LockoutEnabled = false,
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "24-11-2024 00:45:09",
+                            SecurityStamp = "26-11-2024 23:03:55",
                             TwoFactorEnabled = false,
                             UserName = ""
                         });
@@ -710,15 +739,26 @@ namespace MemeApi.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.Lottery.LotteryItem", b =>
+            modelBuilder.Entity("MemeApi.Models.Entity.Lottery.LotteryBracket", b =>
                 {
                     b.HasOne("MemeApi.Models.Entity.Lottery.Lottery", "Lottery")
-                        .WithMany()
+                        .WithMany("Brackets")
                         .HasForeignKey("LotteryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Lottery");
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.Lottery.LotteryItem", b =>
+                {
+                    b.HasOne("MemeApi.Models.Entity.Lottery.LotteryBracket", "Bracket")
+                        .WithMany("Items")
+                        .HasForeignKey("BracketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Bracket");
                 });
 
             modelBuilder.Entity("MemeApi.Models.Entity.Memes.Topic", b =>
@@ -1000,6 +1040,16 @@ namespace MemeApi.Migrations
                         .HasForeignKey("MemeApi.Models.Entity.Memes.MemeVisual", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.Lottery.Lottery", b =>
+                {
+                    b.Navigation("Brackets");
+                });
+
+            modelBuilder.Entity("MemeApi.Models.Entity.Lottery.LotteryBracket", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("MemeApi.Models.Entity.Lottery.LotteryItem", b =>
