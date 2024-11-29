@@ -176,6 +176,11 @@ public static class Extensions
         return new VisualDTO(visual.Id, mediaHost + "visual/" + visual.Filename, visual.Owner.ToUserInfo(mediaHost), visual.Topics?.Select(t => t.Name).ToList(), visual.CreatedAt);
     }
 
+    public static string ToThumbnailUrl(this LotteryItem item, string mediaHost)
+    {
+        return mediaHost + "lotteryitems/" + item.ThumbNailFileName;
+    }
+
     public static UserInfoDTO? ToUserInfo(this User? u, string mediaHost)
     {
         if (u == null) return null;
