@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 
 namespace MemeApi.library;
 
@@ -104,6 +105,17 @@ public class MemeApiSettings
     public string GetBotSecret()
     {
         return TryGetConfig("Bot_Secret");
+    }
+
+    public List<string> GetEasterEggs()
+    {
+        var list = _config.GetSection("Easter_Eggs").Get<List<string>>();
+        if (list == null)
+        {
+            throw new ArgumentNullException("Setting for Easter_Eggs is missing");
+        }
+
+        return list;
     }
 
     private string TryGetConfig(string key)

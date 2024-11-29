@@ -123,11 +123,9 @@ public class LotteryRepository
         return lottery;
     }
 
-    public async Task<List<string>> DrawTicket(Lottery lottery, User user)
+    public async Task<(List<string> items, string winningItem)> DrawTicket(Lottery lottery, User user)
     {
         var random = new Random();
-        
-        
         
         var bracketItemPairs = lottery.Brackets
             .Select(bracket =>
@@ -138,9 +136,62 @@ public class LotteryRepository
             )
             .Where(bracket => bracket.Items.Count != 0)
             .OrderBy(tuple => tuple.Bracket.Id).ToList();
-        var totalWeight = bracketItemPairs.Sum(tuple => tuple.Bracket.ProbabilityWeight);
 
-        var randomValue = random.Next(totalWeight);
+        var winningBracketIndex = WeightedRandomIndex(bracketItemPairs, random);
+
+        var winningPair = bracketItemPairs[winningBracketIndex];
+        var winningItem = winningPair.Items[random.Next(winningPair.Items.Count)];
+         
+        var ticket = new LotteryTicket()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Dubloons = -lottery.TicketCost,
+            Item = winningItem,
+            Owner = user
+        };
+        _context.LotteryTickets.Add(ticket);
+        await _context.SaveChangesAsync();
+
+        if (bracketItemPairs.Count > 1)
+        {
+            bracketItemPairs.RemoveAt(winningBracketIndex);
+        }
+        
+        var mediaHost = _settings.GetMediaHost();
+        var randomItems =
+            bracketItemPairs
+                .Select(tuple => tuple.Items[random.Next(tuple.Items.Count)].ToThumbnailUrl(mediaHost))
+                .ToList();
+
+        var extraItemCount = 9 - randomItems.Count;
+        var extraItems = new List<string>(new String[extraItemCount]);
+        
+        var includeEasterEgg = random.Next(2) == 0;
+        if (includeEasterEgg)
+        {
+            var easterEgg = _settings.GetEasterEggs();
+            extraItems[extraItemCount - 1] = easterEgg[random.Next(easterEgg.Count)];
+            extraItemCount -= 1;
+        }
+        
+        for (var i = 0; i < extraItemCount; i++)
+        {
+            var randomBracketIndex = WeightedRandomIndex(bracketItemPairs, random);
+            var pair = bracketItemPairs[randomBracketIndex];
+            extraItems[i] = pair.Items[random.Next(pair.Items.Count)].ToThumbnailUrl(mediaHost);
+        }
+        
+
+        randomItems.AddRange(extraItems);
+        
+        return (randomItems, winningItem.ToThumbnailUrl(mediaHost));
+    }
+    
+    
+
+    private static int WeightedRandomIndex(List<(LotteryBracket Bracket, List<LotteryItem> Items)> bracketItemPairs, Random random)
+    {
+        var randomValue = random.Next(bracketItemPairs.Sum(tuple => tuple.Bracket.ProbabilityWeight));
         var cumulativeWeight = 0;
         var winningBracketIndex = 0;
 
@@ -154,27 +205,6 @@ public class LotteryRepository
             }
         }
 
-        var winningPair = bracketItemPairs[winningBracketIndex];
-        var winningItem = winningPair.Items[random.Next(winningPair.Items.Count)];
-        bracketItemPairs.RemoveAt(winningBracketIndex);
-
-        var mediaHost = _settings.GetMediaHost();
-        var randomItems = 
-            bracketItemPairs.Select(tuple => tuple.Items[random.Next(tuple.Items.Count)])
-                .ToList()
-                .Append(winningItem)
-                .Select(item => mediaHost + "lotteryitems/" + item.ThumbNailFileName);
-        
-        var ticket = new LotteryTicket()
-        {
-            Id = Guid.NewGuid().ToString(),
-            Dubloons = -lottery.TicketCost,
-            Item = winningItem,
-            Owner = user
-        };
-        _context.LotteryTickets.Add(ticket);
-        await _context.SaveChangesAsync();
-        
-        return randomItems.ToList();
+        return winningBracketIndex;
     }
 }
