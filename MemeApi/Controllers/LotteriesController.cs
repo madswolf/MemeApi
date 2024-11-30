@@ -104,13 +104,47 @@ public class LotteriesController : ControllerBase
         if(lottery.TicketCost > user.DubloonEvents.CountDubloons()) 
             BadRequest("Not enough dubloons to draw a Lottery ticket. Dubloons needed: " + lottery.TicketCost);
         
-        var (items,winningItem) = await _lotteryRepository.DrawTicket(lottery, user);
+        var (items,(winningItem, winningItemName, winRarity)) = await _lotteryRepository.DrawTicket(lottery, user);
         return Ok(new LotteryTicketDrawDTO
         {
             Items = items,
-            WinningItem = winningItem
+            WinningItem = winningItem,
+            WinningItemName = winningItemName,
+            WinningRarity = winRarity
         });
     }
     
-    //Get a receipt of all items won on a lottery
+    /// <summary>
+    /// Get a receipt of all items won on a lottery
+    /// </summary>
+    [HttpGet("{lotteryId}/receipt")]
+    public async Task<ActionResult<LotteryTicketDrawDTO>> GetReceipt(string lotteryId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = await _userRepository.GetUser(userId, true);
+        
+        if(user == null) return NotFound("A user with the given Id does not exist.");
+        
+        var lottery = await _lotteryRepository.GetLottery(lotteryId);
+        if (lottery == null) return NotFound("A lottery with the given id does not exist.");
+
+        var tickets = _lotteryRepository.GetLotteryTickets(user, lottery);
+        var items = tickets
+            .GroupBy(ticket => ticket.ItemId)
+            .Select(g => new LotteryItemReceiptDTO
+            {
+                ItemId = g.Key,
+                ItemName = g.First().Item.Name,
+                ItemCount = g.Count()
+            })
+            .ToList();
+        
+        return Ok(new LotteryReceiptDTO()
+        {
+            LotteryId = lotteryId,
+            TotalTicketCount = tickets.Count,
+            TotalDubloonsSpent = tickets.Count * lottery.TicketCost,
+            Items = items
+        });
+    }
 }
