@@ -123,7 +123,8 @@ public class LotteryRepository
         return lottery;
     }
 
-    public async Task<(List<string> items, string winningItem)> DrawTicket(Lottery lottery, User user)
+    public async Task<(List<string> items, (string winningItem, string winningItemName, int winRarity))>
+        DrawTicket(Lottery lottery, User user)
     {
         var random = new Random();
         
@@ -137,7 +138,7 @@ public class LotteryRepository
             .Where(bracket => bracket.Items.Count != 0)
             .OrderBy(tuple => tuple.Bracket.Id).ToList();
 
-        var winningBracketIndex = WeightedRandomIndex(bracketItemPairs, random);
+        var (winningBracketIndex, winRarity) = WeightedRandomIndex(bracketItemPairs, random);
 
         var winningPair = bracketItemPairs[winningBracketIndex];
         var winningItem = winningPair.Items[random.Next(winningPair.Items.Count)];
@@ -176,7 +177,7 @@ public class LotteryRepository
         
         for (var i = 0; i < extraItemCount; i++)
         {
-            var randomBracketIndex = WeightedRandomIndex(bracketItemPairs, random);
+            var (randomBracketIndex, _) = WeightedRandomIndex(bracketItemPairs, random);
             var pair = bracketItemPairs[randomBracketIndex];
             extraItems[i] = pair.Items[random.Next(pair.Items.Count)].ToThumbnailUrl(mediaHost);
         }
@@ -184,14 +185,25 @@ public class LotteryRepository
 
         randomItems.AddRange(extraItems);
         
-        return (randomItems, winningItem.ToThumbnailUrl(mediaHost));
+        return (randomItems, (winningItem.ToThumbnailUrl(mediaHost), winningItem.Name, winRarity));
+    }
+    
+    public  List<LotteryTicket> GetLotteryTickets(User user, Lottery lottery)
+    {
+        return _context.LotteryTickets
+            .Include(ticket => ticket.Item)
+            .ThenInclude(item => item.Bracket)
+            .Where(ticket => ticket.Owner == user && ticket.Item.Bracket.LotteryId == lottery.Id)
+            .ToList();
     }
     
     
-
-    private static int WeightedRandomIndex(List<(LotteryBracket Bracket, List<LotteryItem> Items)> bracketItemPairs, Random random)
+    private static (int WinningIndex, int LikelihoodPercentage) WeightedRandomIndex(
+        List<(LotteryBracket Bracket, List<LotteryItem> Items)> bracketItemPairs, 
+        Random random)
     {
-        var randomValue = random.Next(bracketItemPairs.Sum(tuple => tuple.Bracket.ProbabilityWeight));
+        var totalWeight = bracketItemPairs.Sum(tuple => tuple.Bracket.ProbabilityWeight);
+        var randomValue = random.Next(totalWeight);
         var cumulativeWeight = 0;
         var winningBracketIndex = 0;
 
@@ -205,6 +217,14 @@ public class LotteryRepository
             }
         }
 
-        return winningBracketIndex;
+        var winningBracketWeight = bracketItemPairs[winningBracketIndex].Bracket.ProbabilityWeight;
+        
+        var lowerWeightSum = bracketItemPairs
+            .Where(tuple => tuple.Bracket.ProbabilityWeight > winningBracketWeight)
+            .Sum(tuple => tuple.Bracket.ProbabilityWeight);
+
+        var lowerWeightLikelihoodPercentage = (int)Math.Round((double)lowerWeightSum / totalWeight * 100);
+
+        return (winningBracketIndex, lowerWeightLikelihoodPercentage);
     }
 }
