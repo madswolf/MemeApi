@@ -102,7 +102,7 @@ public class LotteriesController : ControllerBase
         if (lottery.Status != LotteryStatus.Open) return Conflict("You cannot currently buy tickets for the lottery with the given Id");
         
         if(lottery.TicketCost > user.DubloonEvents.CountDubloons()) 
-            BadRequest("Not enough dubloons to draw a Lottery ticket. Dubloons needed: " + lottery.TicketCost);
+            return BadRequest("Not enough dubloons to draw a Lottery ticket. Dubloons needed: " + lottery.TicketCost);
         
         var (items,(winningItem, winningItemName, winRarity)) = await _lotteryRepository.DrawTicket(lottery, user);
         return Ok(new LotteryTicketDrawDTO
