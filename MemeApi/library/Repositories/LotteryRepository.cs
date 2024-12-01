@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MemeApi.Models.Context;
 using MemeApi.Models.DTO.Lotteries;
@@ -105,12 +106,7 @@ public class LotteryRepository
     public async Task<Lottery?> SetLotteryStatus(string lotteryId, LotteryStatus status)
     {
         var lottery = await _context.Lotteries.FirstOrDefaultAsync(lottery => lottery.Id == lotteryId);
-
-        if (lottery != null)
-        {
-            lottery.Status = status;
-        }
-
+        
         LotteryStatus? newStatus = (CurrentStaus:lottery?.Status, SubmittedStatus:status) switch
         {
             (LotteryStatus.Initialized, LotteryStatus.Open) => LotteryStatus.Open,
@@ -118,7 +114,11 @@ public class LotteryRepository
             (_, _) => null,
         };
 
-        if (newStatus != null && lottery != null) lottery.Status = (LotteryStatus)newStatus;
+        if (newStatus != null && lottery != null)
+        {
+            lottery.Status = (LotteryStatus)newStatus;
+            await _context.SaveChangesAsync();
+        }
 
         return lottery;
     }
@@ -136,17 +136,27 @@ public class LotteryRepository
                 }
             )
             .Where(bracket => bracket.Items.Count != 0)
-            .OrderBy(tuple => tuple.Bracket.Id).ToList();
+            .OrderByDescending(tuple => tuple.Bracket.ProbabilityWeight).ToList();
 
         var (winningBracketIndex, winRarity) = WeightedRandomIndex(bracketItemPairs, random);
 
         var winningPair = bracketItemPairs[winningBracketIndex];
         var winningItem = winningPair.Items[random.Next(winningPair.Items.Count)];
-         
+
+        var dubloons = -lottery.TicketCost;
+        
+        var tickets = GetLotteryTickets(user, lottery, true);
+        var hasUsedAllDailyDiscounts = tickets.Count != 0;
+        
+        var refundPrice = GetRefundPercentageByName(winningItem);
+        if (!hasUsedAllDailyDiscounts) dubloons += (int)(lottery.TicketCost * 1);
+        if (refundPrice != null) dubloons += (int)(lottery.TicketCost * ((int)refundPrice/100.0)); 
+        
+        
         var ticket = new LotteryTicket()
         {
             Id = Guid.NewGuid().ToString(),
-            Dubloons = -lottery.TicketCost,
+            Dubloons = dubloons,
             Item = winningItem,
             Owner = user
         };
@@ -188,15 +198,31 @@ public class LotteryRepository
         return (randomItems, (winningItem.ToThumbnailUrl(mediaHost), winningItem.Name, winRarity));
     }
     
-    public  List<LotteryTicket> GetLotteryTickets(User user, Lottery lottery)
+    
+    public  List<LotteryTicket> GetLotteryTickets(User user, Lottery lottery, bool filter = false)
     {
+        var offset = new TimeSpan(6, 0, 0);
+        var now = (DateTime.UtcNow + offset).Date;
+        
         return _context.LotteryTickets
             .Include(ticket => ticket.Item)
             .ThenInclude(item => item.Bracket)
-            .Where(ticket => ticket.Owner == user && ticket.Item.Bracket.LotteryId == lottery.Id)
+            .Where(ticket => ticket.Owner == user && ticket.Item.Bracket.LotteryId == lottery.Id && (!filter || (ticket.EventTimestamp + offset).Date == now))
             .ToList();
     }
-    
+
+    private static int? GetRefundPercentageByName(LotteryItem lotteryItem)
+    {
+        var pattern = @"^(\d+)\s*(.*)$";
+        var match = Regex.Match(lotteryItem.Name, pattern);
+
+        if (!match.Success || !int.TryParse(match.Groups[1].Value, out var percentage))
+        {
+            return null;
+        }
+
+        return percentage;
+    }
     
     private static (int WinningIndex, int LikelihoodPercentage) WeightedRandomIndex(
         List<(LotteryBracket Bracket, List<LotteryItem> Items)> bracketItemPairs, 

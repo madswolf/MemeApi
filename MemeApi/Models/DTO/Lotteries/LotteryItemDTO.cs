@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace MemeApi.Models.DTO.Lotteries;
+﻿namespace MemeApi.Models.DTO.Lotteries;
 
 /// <summary>
 /// A DTO for Lottery Items
@@ -26,12 +24,6 @@ public record LotteryItemDTO
     /// Current count of Lottery items
     /// </summary>
     public int CurrentItemCount { get; init; }
-
-    
-    /// <summary>
-    /// The weight of the probability for the Item
-    /// </summary>
-    public int ItemProbabilityWeight { get; init; }
     
     /// <summary>
     /// The weight of the probability for the Item

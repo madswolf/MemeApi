@@ -88,6 +88,7 @@ services.AddScoped<TextRepository>();
 services.AddScoped<VotableRepository>();
 services.AddScoped<TopicRepository>();
 services.AddScoped<MemePlaceRepository>();
+services.AddScoped<LotteryRepository>();
 
 services.AddSingleton<MemeApiSettings>();
 
