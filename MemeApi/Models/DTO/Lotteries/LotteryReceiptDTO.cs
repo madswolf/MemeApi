@@ -5,9 +5,11 @@ namespace MemeApi.Models.DTO.Lotteries;
 public record LotteryReceiptDTO
 {
     public string LotteryId { get; init; }
+    
+    public int LotteryTicketPrice { get; init; }
     public int TotalTicketCount { get; init; }
     public int TotalDubloonsSpent { get; init; }
-    public List<LotteryItemReceiptDTO> Items { get; init; }
+    public List<string> Items { get; init; }
 }
 
 public record LotteryItemReceiptDTO
