@@ -123,7 +123,7 @@ public class LotteryRepository
         return lottery;
     }
 
-    public async Task<(List<string> items, (string winningItem, string winningItemName, int winRarity))>
+    public async Task<(List<string>? items, (string winningItem, string winningItemName, int winRarity, bool wasFree))>
         DrawTicket(Lottery lottery, User user)
     {
         var random = new Random();
@@ -147,11 +147,18 @@ public class LotteryRepository
         
         var tickets = GetLotteryTickets(user, lottery, true);
         var hasUsedAllDailyDiscounts = tickets.Count != 0;
+
+        var isFreeSpin = false;
+        if (!hasUsedAllDailyDiscounts)
+        {
+            isFreeSpin = true;
+            dubloons += (int)(lottery.TicketCost * 1);
+        }
+        if (Math.Abs(user.DubloonEvents.CountDubloons()) < Math.Abs(dubloons))
+            return (null, default);
         
         var refundPrice = GetRefundPercentageByName(winningItem);
-        if (!hasUsedAllDailyDiscounts) dubloons += (int)(lottery.TicketCost * 1);
-        if (refundPrice != null) dubloons += (int)(lottery.TicketCost * ((int)refundPrice/100.0)); 
-        
+        if (refundPrice != null) dubloons += (int)(lottery.TicketCost * ((int)refundPrice/100.0));
         
         var ticket = new LotteryTicket()
         {
@@ -195,7 +202,7 @@ public class LotteryRepository
 
         randomItems.AddRange(extraItems);
         
-        return (randomItems, (winningItem.ToThumbnailUrl(mediaHost), winningItem.Name, winRarity));
+        return (randomItems, (winningItem.ToThumbnailUrl(mediaHost), winningItem.Name, winRarity, isFreeSpin));
     }
     
     

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -100,17 +101,19 @@ public class LotteriesController : ControllerBase
         var lottery = await _lotteryRepository.GetLottery(lotteryId);
         if (lottery == null) return NotFound("A lottery with the given id does not exist.");
         if (lottery.Status != LotteryStatus.Open) return Conflict("You cannot currently buy tickets for the lottery with the given Id");
-        
-        if(lottery.TicketCost > user.DubloonEvents.CountDubloons()) 
+
+        var (items,(winningItem, winningItemName, winRarity, wasFree)) = await _lotteryRepository.DrawTicket(lottery, user);
+                
+        if(items == null) 
             return BadRequest("Not enough dubloons to draw a Lottery ticket. Dubloons needed: " + lottery.TicketCost);
-        
-        var (items,(winningItem, winningItemName, winRarity)) = await _lotteryRepository.DrawTicket(lottery, user);
+
         return Ok(new LotteryTicketDrawDTO
         {
             Items = items,
             WinningItem = winningItem,
             WinningItemName = winningItemName,
-            WinningRarity = winRarity
+            WinningRarity = winRarity,
+            WasFree = wasFree
         });
     }
     
@@ -131,19 +134,15 @@ public class LotteriesController : ControllerBase
         var tickets = _lotteryRepository.GetLotteryTickets(user, lottery);
         var items = tickets
             .GroupBy(ticket => ticket.ItemId)
-            .Select(g => new LotteryItemReceiptDTO
-            {
-                ItemId = g.Key,
-                ItemName = g.First().Item.Name,
-                ItemCount = g.Count()
-            })
+            .Select(g => $"{g.First().Item.Name}: {g.Count()}")
             .ToList();
         
         return Ok(new LotteryReceiptDTO()
         {
             LotteryId = lotteryId,
+            LotteryTicketPrice = lottery.TicketCost,
             TotalTicketCount = tickets.Count,
-            TotalDubloonsSpent = tickets.Count * lottery.TicketCost,
+            TotalDubloonsSpent = Convert.ToInt32(Math.Floor(tickets.CountDubloons())),
             Items = items
         });
     }

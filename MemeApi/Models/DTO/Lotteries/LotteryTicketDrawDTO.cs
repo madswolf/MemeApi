@@ -8,4 +8,6 @@ public record LotteryTicketDrawDTO
         public string WinningItem { get; init; }
         public string WinningItemName { get; init; } 
         public int WinningRarity { get; init; }
+        
+        public bool WasFree { get; init; }
 }
