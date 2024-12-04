@@ -8,7 +8,7 @@ public record LotteryReceiptDTO
     
     public int LotteryTicketPrice { get; init; }
     public int TotalTicketCount { get; init; }
-    public int TotalDubloonsSpent { get; init; }
+    public int NetDubloonProfit { get; init; }
     public List<string> Items { get; init; }
 }
 
