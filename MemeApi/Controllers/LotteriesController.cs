@@ -142,7 +142,7 @@ public class LotteriesController : ControllerBase
             LotteryId = lotteryId,
             LotteryTicketPrice = lottery.TicketCost,
             TotalTicketCount = tickets.Count,
-            TotalDubloonsSpent = Convert.ToInt32(Math.Floor(tickets.CountDubloons())),
+            NetDubloonProfit = Convert.ToInt32(Math.Floor(tickets.CountDubloons())),
             Items = items
         });
     }
