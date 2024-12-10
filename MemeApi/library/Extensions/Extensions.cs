@@ -157,7 +157,7 @@ public static class Extensions
         ItemName = item.Name,
         InitialItemCount = item.ItemCount,
         CurrentItemCount = item.ItemCount - item.Tickets.Count,
-        ItemThumbnail = mediaHost + item.ThumbNailFileName
+        ItemThumbnail = mediaHost + "lotteryitems/"+ item.ThumbNailFileName
     };
 
     public static TopicDTO ToTopicDTO(this Topic t)

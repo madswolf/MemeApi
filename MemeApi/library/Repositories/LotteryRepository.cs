@@ -111,6 +111,7 @@ public class LotteryRepository
         {
             (LotteryStatus.Initialized, LotteryStatus.Open) => LotteryStatus.Open,
             (LotteryStatus.Open, LotteryStatus.Closed) => LotteryStatus.Closed,
+            (LotteryStatus.Open, LotteryStatus.Initialized) => LotteryStatus.Initialized,
             (_, _) => null,
         };
 
@@ -131,7 +132,7 @@ public class LotteryRepository
         var bracketItemPairs = lottery.Brackets
             .Select(bracket =>
                 {
-                    var items = bracket.Items.Where(item => (item.ItemCount - item.Tickets.Count) > 0).ToList();
+                    var items = bracket.Items.Where(item => (item.ItemCount - item.Tickets.Count) > 0 || item.ItemCount == -1).ToList();
                     return (Bracket: bracket, Items: items);
                 }
             )

@@ -95,6 +95,8 @@ public class LotteriesController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var user = await _userRepository.GetUser(userId, true);
+        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret())
+            return Unauthorized("You do not have access to this action");        
         
         if(user == null) return NotFound("A user with the given Id does not exist.");
         
@@ -121,7 +123,7 @@ public class LotteriesController : ControllerBase
     /// Get a receipt of all items won on a lottery
     /// </summary>
     [HttpGet("{lotteryId}/receipt")]
-    public async Task<ActionResult<LotteryTicketDrawDTO>> GetReceipt(string lotteryId)
+    public async Task<ActionResult<LotteryTicketDrawDTO>> GetReceipt(string lotteryId, [FromQuery] bool verbose = false)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var user = await _userRepository.GetUser(userId, true);
@@ -134,7 +136,12 @@ public class LotteriesController : ControllerBase
         var tickets = _lotteryRepository.GetLotteryTickets(user, lottery);
         var items = tickets
             .GroupBy(ticket => ticket.ItemId)
-            .Select(g => $"{g.First().Item.Name}: {g.Count()}")
+            .Select(g =>
+            {
+                var ticket = g.OrderByDescending(t => t.EventTimestamp).First();
+                var key = verbose ? $"({ticket.ItemId},{ticket.EventTimestamp})" : ticket.Item.Name;
+                return $"{key}:  {g.Count()}";
+            })
             .ToList();
         
         return Ok(new LotteryReceiptDTO()
