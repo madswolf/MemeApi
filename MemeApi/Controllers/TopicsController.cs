@@ -6,8 +6,6 @@ using MemeApi.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime;
-using System.Runtime.InteropServices.JavaScript;
 using System.Security.Claims;
 using System.Threading.Tasks;
 

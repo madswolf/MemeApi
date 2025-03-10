@@ -13,6 +13,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using MemeApi.Models.Entity.Places;
 
 namespace MemeApi.Controllers;
 
@@ -198,16 +199,13 @@ public class MemePlacesController : ControllerBase
         var changedPixels = submissionDTO.ImageWithChanges.ToSubmissionPixelChanges(latestRender);
         if (changedPixels.Count == 0)
             return BadRequest("The submission did not change any pixels. Please try again.");
-        var currentPixelPrice = place.CurrentPixelPrice();
-        if (currentPixelPrice == null)
-        {
-            Console.WriteLine("Failed to get the current pixel price");
+        
+        var requiredFunds = place.SubmissionPriceForUser(changedPixels.Count, user);
+        if (requiredFunds == null)
             return BadRequest("Failed to get the current pixel price");
-        }
-
-        var requiredFunds = Math.Ceiling(changedPixels.Count * currentPixelPrice.PricePerPixel);
+        
         var currentFunds = user.DubloonEvents.CountDubloons();
-
+        
         if (currentFunds < requiredFunds)
             return BadRequest("Not enough dubloons to make submission. Dubloons needed: " + requiredFunds);
 
@@ -216,7 +214,7 @@ public class MemePlacesController : ControllerBase
             user, 
             changedPixels, 
             submissionDTO.ImageWithChanges,
-            requiredFunds
+            (double)requiredFunds
         );
 
         var isSucessfulRender = await _memePlaceRepository.RenderDelta(place);
