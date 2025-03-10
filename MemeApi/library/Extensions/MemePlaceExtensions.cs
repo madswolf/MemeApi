@@ -7,11 +7,41 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using MemeApi.Models.Entity;
 
 namespace MemeApi.library.Extensions;
 
 public static class MemePlaceExtensions
 {
+
+    public static double? SubmissionPriceForUser(this MemePlace place, int changedPixelsCount, User user)
+    {
+        var currentPixelPrice = place.CurrentPixelPrice();
+        if (currentPixelPrice == null)
+        {
+            Console.WriteLine("Failed to get the current pixel price");
+            return null;
+        }
+        
+        var maxDubloonGain = 100;
+        var dubloonGainPerDay = 100 / 7.0;
+
+        var latestUserSubmission = place.PlaceSubmissions
+            .Where(p => p.OwnerId == user.Id)
+            .OrderByDescending(p => p.CreatedAt)
+            .FirstOrDefault();
+        
+        var latestSubmissionDate = latestUserSubmission?.CreatedAt.Date ?? DateTime.UtcNow.AddDays(-8).Date;
+        var currentDate = DateTime.UtcNow.Date;
+        var daysSinceSubmission = Math.Max(0, (currentDate - latestSubmissionDate).Days);
+        
+        var dubloonGain = Math.Min(maxDubloonGain, daysSinceSubmission * dubloonGainPerDay);
+        
+        var pixelChangePrice = changedPixelsCount * currentPixelPrice.PricePerPixel;
+        var requiredFunds = Math.Ceiling(pixelChangePrice - dubloonGain);
+        
+        return requiredFunds;
+    }
 
     public static PlacePixelPrice? CurrentPixelPrice(this MemePlace place)
     {
