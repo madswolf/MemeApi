@@ -216,13 +216,17 @@ public class MemePlacesController : ControllerBase
             submissionDTO.ImageWithChanges,
             (double)requiredFunds
         );
-
-        var isSucessfulRender = await _memePlaceRepository.RenderDelta(place);
-
-        if (!isSucessfulRender)
+        
+        var isSuccessfulRender = await _memePlaceRepository.RenderDelta(place);
+        
+        if (!isSuccessfulRender)
             Console.WriteLine("Failed To render new submission");
 
+        if (place.IsBumpingSubmission(submission))
+        {
+            // add code to bump to mails & chats
+        }
+        
         return Ok(submission.ToPlaceSubmissionDTO());
-
     }
 } 
