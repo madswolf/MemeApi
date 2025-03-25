@@ -14,6 +14,24 @@ namespace MemeApi.library.Extensions;
 public static class MemePlaceExtensions
 {
 
+    public static bool IsBumpingSubmission(this MemePlace place, PlaceSubmission submission)
+    {
+        var containsSubmission = place.PlaceSubmissions.Any(s => s.Id == submission.Id);
+        if (!containsSubmission)
+            throw new ArgumentException($"Submission with ID:{submission.Id} was not part of Place with ID: {place.Id}");
+        
+        var weekOfSubmission = ISOWeek.GetWeekOfYear(submission.CreatedAt);
+        var firstSubmissionInWeekByUser = place.PlaceSubmissions
+            .Where(s =>
+                s.OwnerId == submission.OwnerId &&
+                ISOWeek.GetWeekOfYear(s.CreatedAt) == weekOfSubmission
+            )
+            .OrderBy(s => s.CreatedAt)
+            .FirstOrDefault();
+
+        return firstSubmissionInWeekByUser?.Id == submission.Id;
+    }
+    
     public static double? SubmissionPriceForUser(this MemePlace place, int changedPixelsCount, User user)
     {
         var currentPixelPrice = place.CurrentPixelPrice();
@@ -26,10 +44,7 @@ public static class MemePlaceExtensions
         var maxDubloonGain = 100;
         var dubloonGainPerDay = 100 / 7.0;
 
-        var latestUserSubmission = place.PlaceSubmissions
-            .Where(p => p.OwnerId == user.Id)
-            .OrderByDescending(p => p.CreatedAt)
-            .FirstOrDefault();
+        var latestUserSubmission = place.LatestSubmissionByUser(user);
         
         var latestSubmissionDate = latestUserSubmission?.CreatedAt.Date ?? DateTime.UtcNow.AddDays(-8).Date;
         var currentDate = DateTime.UtcNow.Date;
@@ -41,6 +56,14 @@ public static class MemePlaceExtensions
         var requiredFunds = Math.Ceiling(pixelChangePrice - dubloonGain);
         
         return requiredFunds;
+    }
+
+    public static PlaceSubmission? LatestSubmissionByUser(this MemePlace place, User user)
+    {
+        return place.PlaceSubmissions
+            .Where(p => p.OwnerId == user.Id)
+            .OrderByDescending(p => p.CreatedAt)
+            .FirstOrDefault();
     }
 
     public static PlacePixelPrice? CurrentPixelPrice(this MemePlace place)
