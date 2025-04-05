@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MemeApi.library.Extensions;
@@ -13,6 +14,105 @@ namespace MemeApi.Test.Extensions;
 
 public class MemePlaceExtensionsTest
 {
+    
+    [Fact]
+    public async Task GIVEN_MemePlace_AND_User_With_No_Submissions_WHEN_SubmittingChanges_THEN_SubmissionIsBumping()
+    {
+        // given
+        var user = new User { Id = Guid.NewGuid().ToString() };
+        
+        var place = new MemePlace
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "Test",
+            PlaceSubmissions = [],
+            PriceHistory = [new PlacePixelPrice(){PricePerPixel = 1}]
+        };
+
+        var submission = new PlaceSubmission
+        {
+            Owner = user,
+            CreatedAt = DateTime.Parse("04-07-2025", CultureInfo.InvariantCulture),
+            Place = place,
+        };
+        place.PlaceSubmissions.Add(submission);
+        
+        var isBumping = place.IsBumpingSubmission(submission);
+        isBumping.Should().Be(true);
+    }
+    
+    [Fact]
+    public async Task GIVEN_MemePlace_AND_User_With_SubmissionInPastWeek_WHEN_SubmittingChanges_THEN_SubmissionIsNotBumping()
+    {
+        // given
+        var user = new User { Id = Guid.NewGuid().ToString() };
+        
+        var place = new MemePlace
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "Test",
+            PlaceSubmissions = [],
+            PriceHistory = [new PlacePixelPrice(){PricePerPixel = 1}]
+        };
+
+        var previousSubmssion = new PlaceSubmission
+        {
+            Id = "1",
+            Owner = user,
+            CreatedAt = DateTime.Parse("04-07-2025", CultureInfo.InvariantCulture),
+            Place = place,
+        };
+        place.PlaceSubmissions.Add(previousSubmssion);
+        
+        var submission = new PlaceSubmission
+        {
+            Id = "2",
+            Owner = user,
+            CreatedAt = DateTime.Parse("04-07-2025", CultureInfo.InvariantCulture).AddDays(2),
+            Place = place,
+        };
+        place.PlaceSubmissions.Add(submission);
+        
+        var isBumping = place.IsBumpingSubmission(submission);
+        isBumping.Should().Be(false);
+    }
+    
+    [Fact]
+    public async Task GIVEN_MemePlace_AND_User_With_SubmissionInPastWeekButSubmissionIsInNewCalendarWeek_WHEN_SubmittingChanges_THEN_SubmissionIsBumping()
+    {
+        // given
+        var user = new User { Id = Guid.NewGuid().ToString() };
+        
+        var place = new MemePlace
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "Test",
+            PlaceSubmissions = [],
+            PriceHistory = [new PlacePixelPrice(){PricePerPixel = 1}]
+        };
+
+        var previousSubmssion = new PlaceSubmission
+        {
+            Id = "1",
+            Owner = user,
+            CreatedAt = DateTime.Parse("04-07-2025", CultureInfo.InvariantCulture).AddDays(-1),
+            Place = place,
+        };
+        place.PlaceSubmissions.Add(previousSubmssion);
+        
+        var submission = new PlaceSubmission
+        {
+            Id = "2",
+            Owner = user,
+            CreatedAt = DateTime.Parse("04-07-2025", CultureInfo.InvariantCulture),
+            Place = place,
+        };
+        place.PlaceSubmissions.Add(submission);
+        
+        var isBumping = place.IsBumpingSubmission(submission);
+        isBumping.Should().Be(true);
+    }
+    
     [Fact]
     public async Task GIVEN_MemePlace_AND_User_With_No_Submissions_WHEN_GettingSubmissionPrice_THEN_Price_Is_Discounted()
     {
