@@ -173,7 +173,7 @@ namespace MemeApi.library.Repositories
                 ));
         }
 
-        public async Task<byte[]?> GetLatestPlaceRender(string placeId)
+        public async Task<byte[]> GetLatestPlaceRender(string placeId)
         {
             return await _fileLoader.LoadFile($"places/{placeId}_latest.png");
         }
@@ -183,7 +183,7 @@ namespace MemeApi.library.Repositories
             return await _fileLoader.LoadFile($"placesubmissions/{submissionId}.png");
         }
 
-        public async Task<bool> RenderDelta(MemePlace place)
+        public async Task<(bool, byte[]?)> RenderDelta(MemePlace place)
         {
             var lockObject = PlaceLocks.GetOrAdd(place.Id, new SemaphoreSlim(1, 1));
             await lockObject.WaitAsync();
@@ -191,31 +191,35 @@ namespace MemeApi.library.Repositories
             try
             {
                 var latestRender = await _fileLoader.LoadFile($"places/{place.Id}_latest.png");
-                if (latestRender == null) return false;
+                if (latestRender == null) return (false, null);
 
                 var renderTime = latestRender.GetExifComment();
-                if (renderTime == null) return false;
+                if (renderTime == null) return (false, null);
 
                 var renderDateTime = DateTime.Parse(renderTime);
                 var submissions =
                     place.PlaceSubmissions
-                    .Where(p => renderDateTime < p.CreatedAt && p.IsDeleted == false)
-                    .ToList();
+                        .Where(p => renderDateTime < p.CreatedAt && p.IsDeleted == false)
+                        .ToList();
 
-                if (submissions.Count == 0) return true;
+                if (submissions.Count == 0) return (true, null);
 
                 var submissionImages = await FetchSubmissionRenders(submissions);
-                if (submissionImages == null || submissionImages.Any(s => s == null)) return false;
+                if (submissionImages == null || submissionImages.Any(s => s == null)) return (false, null);
 
                 using var latestRenderBitmap = SKBitmap.Decode(latestRender);
 
                 var render = RenderSubmissionsToBase(latestRenderBitmap, submissionImages);
 
                 await SavePlaceRender(latestRenderBitmap, place.Id);
+                return (true, render.ToByteArray());
             }
-            finally { lockObject.Release(); }
-
-            return true;
+            catch { return (false, null); }
+            
+            finally
+            {
+                lockObject.Release();
+            }
         }
 
         private async Task SavePlaceRender(SKBitmap latestRenderBitmap, string placeId)

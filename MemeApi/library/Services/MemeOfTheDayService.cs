@@ -17,66 +17,40 @@ public class MemeOfTheDayService : IMemeOfTheDayService
 {
     private readonly MemeRepository _memeRepository;
     private readonly MemeApiSettings _settings;
+    private readonly DiscordWebhookSender _discordSender;
     private readonly IMemeRenderingService _memeRenderingService;
     private readonly IMailSender _mailSender;
 
-    public MemeOfTheDayService(MemeRepository memeRepository, IMemeRenderingService memeRenderingService, IMailSender mailSender, MemeApiSettings settings)
+    public MemeOfTheDayService(MemeRepository memeRepository, IMemeRenderingService memeRenderingService, IMailSender mailSender, MemeApiSettings settings, DiscordWebhookSender discordSender)
     {
         _memeRepository = memeRepository;
         _memeRenderingService = memeRenderingService;
         _mailSender = mailSender;
         _settings = settings;
+        _discordSender = discordSender;
     }
 
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var seedNumber = new Random().Next(10);
         Meme meme = await _memeRepository.RandomMemeByComponents(topicName: _settings.GetMemeOfTheDayTopicName());
+        var imageContent = await _memeRenderingService.RenderMeme(meme);
+        
+        var seedNumber = new Random().Next(10);
+        var message = seedNumber != 1 ? "Meme Of the Day" : messages.RandomItem();
 
-        var webhookUrl = _settings.GetMemeOfTheDayWehbhook();
-
-        using HttpClient httpClient = new();
-        MultipartFormDataContent form = [];
-        try
-        {
-            var imageContent = await _memeRenderingService.RenderMeme(meme);
-            var message = seedNumber != 1 ? "Meme Of the Day" : messages.RandomItem();
-            var json_payload = CreateJsonPayload(message);
-
-            form.Add(new ByteArrayContent(imageContent, 0, imageContent.Length), "image/png", meme.ToFilenameString());
-            form.Add(json_payload, "payload_json");
-            var response = await httpClient.PostAsync(webhookUrl, form, stoppingToken);
-            if (response == null) Console.WriteLine("Response was null");
-            
-            Console.WriteLine(await LogHttpResponse(response));
-
-            httpClient.Dispose();
-        }
-        catch (Exception)
+        var success = await _discordSender.SendMessageWithImage(imageContent, meme.ToFilenameString(), message, stoppingToken);
+        if (!success)
         {
             var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO(_settings.GetMediaHost()));
 
-            Console.Error.WriteLine(Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X"));
-            Console.WriteLine(Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X"));
-            Console.WriteLine("Failed meme");
             Console.Error.WriteLine("Failed meme");
+            Console.Error.WriteLine(Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X"));
         }
 
         //TODO: add subscribers
         //_mailSender.sendMemeOfTheDayMail(recipient, _memeRenderingService.RenderMeme(meme));
     }
-
-    private StringContent CreateJsonPayload(string message)
-    {
-        return new StringContent(
-            "{" +
-            "\"content\":\"" + message + "\"," +
-            "\"username\":\"Hjerneskade(Meme Of The Day)\"," +
-            "\"avatar_url\":\"" + _settings.GetMediaHost() + "default.jpg\"" +
-        "}",
-        Encoding.UTF8, "application/json");
-    }
-
+    
     // auto generated text messages
     private static readonly List<string> messages =
     [
@@ -111,27 +85,5 @@ public class MemeOfTheDayService : IMemeOfTheDayService
             "Toni... don't hurry up with that 😅",
             "Skaftet",
         ];
-
-    public async Task<string> LogHttpResponse(HttpResponseMessage response)
-    {
-        var log = new StringBuilder();
-
-        log.AppendLine($"Status Code: {response.StatusCode}");
-
-        log.AppendLine("Headers:");
-        foreach (var header in response.Headers)
-        {
-            log.AppendLine($"{header.Key}: {string.Join(", ", header.Value)}");
-        }
-
-        if (response.Content != null)
-        {
-            var content = await response.Content.ReadAsStringAsync();
-            log.AppendLine("Content:");
-            log.AppendLine(content);
-        }
-
-        return log.ToString();
-    }
 }
 

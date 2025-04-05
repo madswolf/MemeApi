@@ -13,6 +13,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using MemeApi.library.Services;
 using MemeApi.Models.Entity.Places;
 
 namespace MemeApi.Controllers;
@@ -27,15 +28,18 @@ public class MemePlacesController : ControllerBase
     private readonly MemeApiSettings _settings;
     private readonly MemePlaceRepository _memePlaceRepository;
     private readonly UserRepository _userRepository;
+    private readonly DiscordWebhookSender _discordSender;
+    
 
     /// <summary>
     /// A controller for creating and managing visual meme components.
     /// </summary>
-    public MemePlacesController(MemePlaceRepository memePlaceRepository, MemeApiSettings settings, UserRepository userRepository)
+    public MemePlacesController(MemePlaceRepository memePlaceRepository, MemeApiSettings settings, UserRepository userRepository, DiscordWebhookSender discordSender)
     {
         _memePlaceRepository = memePlaceRepository;
         _settings = settings;
         _userRepository = userRepository;
+        _discordSender = discordSender;
     }
 
     /// <summary>
@@ -217,14 +221,16 @@ public class MemePlacesController : ControllerBase
             (double)requiredFunds
         );
         
-        var isSuccessfulRender = await _memePlaceRepository.RenderDelta(place);
+        var (isSuccessfulRender, render) = await _memePlaceRepository.RenderDelta(place);
         
         if (!isSuccessfulRender)
-            Console.WriteLine("Failed To render new submission");
+            Console.Error.WriteLine("Failed To render new submission");
 
-        if (place.IsBumpingSubmission(submission))
+        if (place.IsBumpingSubmission(submission) && isSuccessfulRender)
         {
-            // add code to bump to mails & chats
+            // consider bumping mails
+            render ??= await _memePlaceRepository.GetLatestPlaceRender(place.Id);
+            await _discordSender.SendMessageWithImage(render, "MemePlace", "Someone submitted changes to the canvas");
         }
         
         return Ok(submission.ToPlaceSubmissionDTO());
