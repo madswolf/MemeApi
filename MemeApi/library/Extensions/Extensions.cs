@@ -1,21 +1,19 @@
-﻿using MemeApi.library.Services.Files;
-using MemeApi.Models.DTO;
-using MemeApi.Models.DTO.Dubloons;
-using MemeApi.Models.DTO.Memes;
-using MemeApi.Models.Entity;
-using MemeApi.Models.Entity.Dubloons;
-using MemeApi.Models.Entity.Memes;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using MemeApi.Models.DTO;
+using MemeApi.Models.DTO.Dubloons;
 using MemeApi.Models.DTO.Lotteries;
+using MemeApi.Models.DTO.Memes;
+using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Dubloons;
 using MemeApi.Models.Entity.Lottery;
+using MemeApi.Models.Entity.Memes;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 
@@ -245,7 +243,7 @@ public static class Extensions
 
         if (secondsDifference <= beginningOfFirstDecayPhase)
             return initialDubloonCount;
-        else if (secondsDifference <= endOfFirstDecayPhase)
+        if (secondsDifference <= endOfFirstDecayPhase)
         {
             return Interpolate(
                 secondsDifference,
@@ -254,7 +252,8 @@ public static class Extensions
                 lowerDecayBound: beginningOfFirstDecayPhase,
                 upperDecayBound: endOfFirstDecayPhase);
         }
-        else if (secondsDifference <= (endOfSecondDecayPhase))
+
+        if (secondsDifference <= (endOfSecondDecayPhase))
         {
             return Interpolate(
                 secondsDifference,
@@ -263,7 +262,8 @@ public static class Extensions
                 lowerDecayBound: endOfFirstDecayPhase,
                 upperDecayBound: endOfSecondDecayPhase);
         }
-        else if (secondsDifference <= (endOfThirdDecayPhase))
+
+        if (secondsDifference <= (endOfThirdDecayPhase))
         {
             return Interpolate(
                 secondsDifference,
@@ -272,8 +272,8 @@ public static class Extensions
                 lowerDecayBound: endOfSecondDecayPhase,
                 upperDecayBound: endOfThirdDecayPhase);
         }
-        else
-            return 0;
+
+        return 0;
     }
 
     private static double Interpolate(double secondsDifference, double upperDubloonBound, double lowerDubloonBound, double lowerDecayBound, double upperDecayBound)

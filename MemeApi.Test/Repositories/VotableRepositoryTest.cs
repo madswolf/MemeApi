@@ -1,10 +1,10 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Threading.Tasks;
+using FluentAssertions;
 using MemeApi.library.Extensions;
 using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Memes;
 using MemeApi.Test.library;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace MemeApi.Test.Repositories;
@@ -16,25 +16,30 @@ public class VotableRepositoryTest(IntegrationTestFactory databaseFixture) : Mem
     {
         // given
 
-        var meme = new Meme() {
+        var meme = new Meme
+        {
             Id = Guid.NewGuid().ToString(),
-            Visual = new MemeVisual()
+            Visual = new MemeVisual
             {
                 Id = Guid.NewGuid().ToString(),
+                ContentHash = "",
                 Filename = "stuff"
             },
-            TopText = new MemeText()
+            TopText = new MemeText
             {
                 Id = Guid.NewGuid().ToString(),
                 Text = "test",
+                ContentHash = "",
                 Position = MemeTextPosition.TopText,
             },
-            BottomText = new MemeText()
+            BottomText = new MemeText
             {
                 Id = Guid.NewGuid().ToString(),
                 Text = "test2",
+                ContentHash = "",
                 Position = MemeTextPosition.BottomText,
-            }
+            },
+            ContentHash = ""
         };
 
         _context.Memes.Add(meme);
@@ -62,14 +67,16 @@ public class VotableRepositoryTest(IntegrationTestFactory databaseFixture) : Mem
     public async Task GIVEN_ExistingNonMemeOfTheDayMeme_WHEN_Voting_THEN_DubloonEventNotCreatedRewarding100Dubloons()
     {
         var defaultTopic = await _topicRepository.GetTopicByName(_settings.GetDefaultTopicName());
-        var meme = new Meme()
+        var meme = new Meme
         {
             Id = Guid.NewGuid().ToString(),
-            Visual = new MemeVisual()
+            Visual = new MemeVisual
             {
                 Id = Guid.NewGuid().ToString(),
+                ContentHash = "",
                 Filename = "stuff"
             },
+            ContentHash = "",
             Topics = [defaultTopic]
         };
 
@@ -100,10 +107,11 @@ public class VotableRepositoryTest(IntegrationTestFactory databaseFixture) : Mem
     {
         var defaultTopic = await _topicRepository.GetTopicByName(_settings.GetDefaultTopicName());
 
-        var visual = new MemeVisual()
+        var visual = new MemeVisual
         {
             Id = Guid.NewGuid().ToString(),
             Filename = "stuff",
+            ContentHash = "",
             Topics = [defaultTopic]
         };
             
@@ -139,14 +147,16 @@ public class VotableRepositoryTest(IntegrationTestFactory databaseFixture) : Mem
     public async Task GIVEN_ExistingMemeOfTheDayMeme_WHEN_VotingAfterAMinute_THEN_DubloonEventCreatedRewarding10Dubloons(double seconds, double upperBound, double lowerBound)
     {
         var memeOfTheDayTopic = await _topicRepository.GetTopicByName(_settings.GetMemeOfTheDayTopicName());
-        var meme = new Meme()
+        var meme = new Meme
         {
             Id = Guid.NewGuid().ToString(),
-            Visual = new MemeVisual()
+            Visual = new MemeVisual
             {
                 Id = Guid.NewGuid().ToString(),
-                Filename = "stuff"
+                Filename = "stuff",
+                ContentHash = ""
             },
+            ContentHash = "",
             Topics = [memeOfTheDayTopic]
         };
 

@@ -3,8 +3,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MemeApi.library.Extensions;
-using MemeApi.Models.Entity.Memes;
 
 namespace MemeApi.library.Services;
 

@@ -1,13 +1,13 @@
-﻿using MemeApi.Models.DTO.Places;
-using MemeApi.Models.Entity.Places;
-using Microsoft.AspNetCore.Http;
-using SkiaSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using MemeApi.Models.DTO.Places;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Places;
+using Microsoft.AspNetCore.Http;
+using SkiaSharp;
 
 namespace MemeApi.library.Extensions;
 
@@ -78,7 +78,7 @@ public static class MemePlaceExtensions
         return place.PlaceSubmissions.OrderByDescending(s => s.CreatedAt).FirstOrDefault(p => p.IsDeleted == false);
     }
 
-    public static MemePlaceDTO ToMemePlaceDTO(this MemePlace place) => new MemePlaceDTO()
+    public static MemePlaceDTO ToMemePlaceDTO(this MemePlace place) => new MemePlaceDTO
     {
         Id = place.Id,
         Name = place.Name,

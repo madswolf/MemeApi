@@ -1,8 +1,8 @@
-﻿using MemeApi.library.Extensions;
+﻿using System.IO;
+using System.Threading.Tasks;
+using MemeApi.library.Extensions;
 using MemeApi.Models.Entity.Memes;
 using SkiaSharp;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace MemeApi.library.Services.Files;
 

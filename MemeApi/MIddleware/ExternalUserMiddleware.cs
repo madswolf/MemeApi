@@ -1,8 +1,8 @@
-﻿using MemeApi.library.Extensions;
-using Microsoft.AspNetCore.Http;
-using System.Linq;
+﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using MemeApi.library.Extensions;
+using Microsoft.AspNetCore.Http;
 
 public class ExternalUserMiddleware
 {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -8,7 +7,6 @@ using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Repositories;
 using MemeApi.Models.DTO.Lotteries;
-using MemeApi.Models.DTO.Places;
 using MemeApi.Models.Entity.Lottery;
 using Microsoft.AspNetCore.Mvc;
 
@@ -144,7 +142,7 @@ public class LotteriesController : ControllerBase
             })
             .ToList();
         
-        return Ok(new LotteryReceiptDTO()
+        return Ok(new LotteryReceiptDTO
         {
             LotteryId = lotteryId,
             LotteryTicketPrice = lottery.TicketCost,

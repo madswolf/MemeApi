@@ -1,5 +1,5 @@
-﻿using MemeApi.Models.Entity.Memes;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using MemeApi.Models.Entity.Memes;
 
 namespace MemeApi.library.Services.Files;
 

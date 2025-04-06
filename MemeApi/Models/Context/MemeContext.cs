@@ -1,13 +1,13 @@
-﻿using MemeApi.library;
+﻿using System;
+using MemeApi.library;
 using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Dubloons;
+using MemeApi.Models.Entity.Lottery;
 using MemeApi.Models.Entity.Memes;
 using MemeApi.Models.Entity.Places;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using MemeApi.Models.Entity.Lottery;
 
 namespace MemeApi.Models.Context;
 
@@ -68,7 +68,7 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
         modelBuilder.Entity<User>()
             .HasMany(u => u.PlaceSubmissions)
             .WithOne(p => p.Owner)
-            .IsRequired(true)
+            .IsRequired()
             .HasForeignKey(p => p.OwnerId)
             .OnDelete(DeleteBehavior.Cascade);
 
@@ -76,32 +76,32 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .ToTable("MemePlaces")
             .HasMany(m => m.PlaceSubmissions)
             .WithOne(p => p.Place)
-            .IsRequired(true)
+            .IsRequired()
             .HasForeignKey(p => p.PlaceId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<MemePlace>()
             .Property(u => u.CreatedAt)
-            .IsRequired(true)
+            .IsRequired()
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         modelBuilder.Entity<MemePlace>()
             .HasMany(m => m.PriceHistory)
             .WithOne(p => p.Place)
-            .IsRequired(true)
+            .IsRequired()
             .HasForeignKey(p => p.PlaceId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<PlacePixelPrice>()
             .ToTable("PlacePixelPrices")
             .Property(p => p.PriceChangeTime)
-            .IsRequired(true)
+            .IsRequired()
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         modelBuilder.Entity<PlaceSubmission>()
             .ToTable("PlaceSubmissions")
             .Property(u => u.CreatedAt)
-            .IsRequired(true)
+            .IsRequired()
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         modelBuilder.Entity<PlacePixelPurchase>()

@@ -1,14 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
-using System.Security.Principal;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.library.Extensions;
-using MemeApi.library.repositories;
 using MemeApi.library.Services;
 using MemeApi.Models.DTO;
 using MemeApi.Models.DTO.Dubloons;
@@ -17,12 +12,8 @@ using MemeApi.Models.Entity.Dubloons;
 using MemeApi.Models.Entity.Memes;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
 
@@ -83,7 +74,8 @@ namespace MemeApi.Test.Controllers
             var meme = new Meme
             {
                 Id = Guid.NewGuid().ToString(),
-                Visual = new MemeVisual { Id = Guid.NewGuid().ToString(), Filename = "test" }
+                ContentHash = "",
+                Visual = new MemeVisual { Id = Guid.NewGuid().ToString(), Filename = "test", ContentHash = "",}
             };
             var vote = new Vote
             {
@@ -92,7 +84,8 @@ namespace MemeApi.Test.Controllers
                 Element = meme,
             };
 
-            var dailyVote = new DailyVote() {
+            var dailyVote = new DailyVote
+            {
                 Id = Guid.NewGuid().ToString(),
                 Dubloons = 100,
                 Vote = vote,
@@ -146,7 +139,8 @@ namespace MemeApi.Test.Controllers
             var meme = new Meme
             {
                 Id = Guid.NewGuid().ToString(),
-                Visual = new MemeVisual { Id = Guid.NewGuid().ToString(), Filename = "test" }
+                ContentHash = "",
+                Visual = new MemeVisual { Id = Guid.NewGuid().ToString(), Filename = "test", ContentHash = "", }
             };
             var vote = new Vote
             {
@@ -155,7 +149,7 @@ namespace MemeApi.Test.Controllers
                 Element = meme,
             };
 
-            var dailyVote = new DailyVote()
+            var dailyVote = new DailyVote
             {
                 Id = Guid.NewGuid().ToString(),
                 Dubloons = 10,

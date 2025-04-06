@@ -1,20 +1,20 @@
-﻿using MemeApi.library.Extensions;
-using MemeApi.library.repositories;
-using MemeApi.library.Services.Files;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using System;
-using Microsoft.Net.Http.Headers;
-using System.Runtime;
 using MemeApi.library;
-using System.Security.Claims;
-using MemeApi.Models.Entity.Memes;
+using MemeApi.library.Extensions;
+using MemeApi.library.repositories;
+using MemeApi.library.Services.Files;
 using MemeApi.Models.DTO.Memes;
+using MemeApi.Models.Entity.Memes;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
 
 namespace MemeApi.Controllers;
 
@@ -139,7 +139,7 @@ public class MemesController : ControllerBase
         var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO(_settings.GetMediaHost()));
         var cleanedHeaderValue = Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X");
 
-        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var watch = Stopwatch.StartNew();
 
         var file = File(await _memeRendererService.RenderMeme(meme), "image/png");
 
@@ -153,7 +153,7 @@ public class MemesController : ControllerBase
         {
             FileNameStar = meme.ToFilenameString()
         }.ToString();
-        Response.Headers.Append(new ("X-File-Render-Time", elapsedMs.ToString() + "ms"));
+        Response.Headers.Append(new ("X-File-Render-Time", elapsedMs + "ms"));
 
         return file;
     }

@@ -1,15 +1,14 @@
-﻿using MemeApi.library.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using MemeApi.library.Extensions;
 using MemeApi.Models.Context;
 using MemeApi.Models.DTO.Memes;
 using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Memes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MemeApi.library.repositories;
 

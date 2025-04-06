@@ -1,6 +1,6 @@
-﻿using MemeApi.Models.DTO.Dubloons;
+﻿using System;
+using MemeApi.Models.DTO.Dubloons;
 using MemeApi.Models.Entity.Memes;
-using System;
 
 namespace MemeApi.Models.Entity.Dubloons;
 

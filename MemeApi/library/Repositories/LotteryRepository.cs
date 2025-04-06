@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using MemeApi.Models.Context;
-using MemeApi.Models.DTO.Lotteries;
-using MemeApi.Models.Entity.Lottery;
-using Microsoft.EntityFrameworkCore;
 using MemeApi.library.Extensions;
 using MemeApi.library.Services.Files;
+using MemeApi.Models.Context;
+using MemeApi.Models.DTO.Lotteries;
 using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Dubloons;
+using MemeApi.Models.Entity.Lottery;
+using Microsoft.EntityFrameworkCore;
 
 namespace MemeApi.library.Repositories;
 
@@ -37,7 +37,7 @@ public class LotteryRepository
             TicketCost = lotteryCreationDTO.TicketCost
         };
 
-        var brackets = lotteryCreationDTO.Brackets.Select((tuple, _) => new LotteryBracket()
+        var brackets = lotteryCreationDTO.Brackets.Select((tuple, _) => new LotteryBracket
         {
             Id = Guid.NewGuid().ToString(),
             Name = tuple.BracketName,
@@ -79,7 +79,7 @@ public class LotteryRepository
     
     public async Task<LotteryItem> AddLotteryItem(LotteryItemCreationDTO lotteryItemCreationDto, LotteryBracket bracket)
     {
-        var item = new LotteryItem()
+        var item = new LotteryItem
         {
             Id = Guid.NewGuid().ToString(),
             Bracket = bracket,
@@ -153,7 +153,7 @@ public class LotteryRepository
         if (!hasUsedAllDailyDiscounts)
         {
             isFreeSpin = true;
-            dubloons += (int)(lottery.TicketCost * 1);
+            dubloons += lottery.TicketCost * 1;
         }
         if (Math.Abs(user.DubloonEvents.CountDubloons()) < Math.Abs(dubloons))
             return (null, default);
@@ -161,7 +161,7 @@ public class LotteryRepository
         var refundPrice = GetRefundPercentageByName(winningItem);
         if (refundPrice != null) dubloons += (int)(lottery.TicketCost * ((int)refundPrice/100.0));
         
-        var ticket = new LotteryTicket()
+        var ticket = new LotteryTicket
         {
             Id = Guid.NewGuid().ToString(),
             Dubloons = dubloons,

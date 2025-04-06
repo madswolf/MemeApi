@@ -1,4 +1,10 @@
-﻿using MemeApi.library.Extensions;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MemeApi.library.Extensions;
 using MemeApi.library.Services.Files;
 using MemeApi.Models.Context;
 using MemeApi.Models.DTO.Places;
@@ -8,12 +14,6 @@ using MemeApi.Models.Entity.Places;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SkiaSharp;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MemeApi.library.Repositories
 {

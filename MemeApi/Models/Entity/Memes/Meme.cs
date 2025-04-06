@@ -1,7 +1,6 @@
 ﻿#nullable disable warnings
-using MemeApi.Models.DTO.Memes;
 using System.Text.Json;
-using MemeApi.library.Extensions;
+using MemeApi.Models.DTO.Memes;
 
 namespace MemeApi.Models.Entity.Memes;
 

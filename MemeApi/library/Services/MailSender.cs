@@ -39,7 +39,7 @@ public class MailSender : IMailSender
 
         var message = new MailMessage(fromAddress, recipient)
         {
-            Subject = "Meme of the day: " + DateTime.UtcNow.Date.ToString(),
+            Subject = "Meme of the day: " + DateTime.UtcNow.Date,
             IsBodyHtml = true
         };
 

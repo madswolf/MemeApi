@@ -1,13 +1,13 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Memes;
 using MemeApi.Test.library;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace MemeApi.Test.Repositories;
@@ -18,7 +18,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
     public async Task GIVEN_ExistingTopic_WHEN_CreatingTopicWithSameName_THEN_TopicNotCreated()
     {
         // given
-        var owner = new User() { Id = Guid.NewGuid().ToString() };
+        var owner = new User { Id = Guid.NewGuid().ToString() };
         _context.Users.Add(owner);
         await _context.SaveChangesAsync();
     
@@ -39,7 +39,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
     public async Task GIVEN_Votable_WHEN_OwnerOfTopicDeleting_THEN_VotableDeleted()
     {
         // given
-        var owner = new User() { Id = Guid.NewGuid().ToString() };
+        var owner = new User { Id = Guid.NewGuid().ToString() };
         var topic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
@@ -49,9 +49,10 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
             HasRestrictedPosting = true,
             Moderators = []
         };
-        var text = new MemeText { Id = Guid.NewGuid().ToString(), Text = "test", Topics = [topic]};
+        var text = new MemeText { Id = Guid.NewGuid().ToString(), Text = "test", Topics = [topic], ContentHash = ""};
         _context.Texts.Add(text);
         await _context.SaveChangesAsync();
+        
         // When
         var result = await _votableRepository.DeleteVotable(text, owner);
 
@@ -64,8 +65,8 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
     public async Task GIVEN_TopicWithRestrictedPosting_WHEN_NotAllowedUserPosts_THEN_PostDoesNotHaveTopic()
     {
         // given
-        var owner = new User() { Id = Guid.NewGuid().ToString() };
-        var user = new User() { Id = Guid.NewGuid().ToString() };
+        var owner = new User { Id = Guid.NewGuid().ToString() };
+        var user = new User { Id = Guid.NewGuid().ToString() };
         var topic = new Topic {
             Id = Guid.NewGuid().ToString(),
             Name = "Test",
@@ -93,8 +94,8 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
     public async Task GIVEN_TopicWithRestrictedPosting_WHEN_AllowedUserPosts_THEN_PostDoesHaveTopic()
     {
         // given
-        var owner = new User() { Id = Guid.NewGuid().ToString() };
-        var user = new User() { Id = Guid.NewGuid().ToString() };
+        var owner = new User { Id = Guid.NewGuid().ToString() };
+        var user = new User { Id = Guid.NewGuid().ToString() };
         var topic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
@@ -135,7 +136,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
     public async Task GIVEN_DefaultTopic_WHEN_UserPosts_THEN_PostDoesHaveDefaultTopic()
     {
         var defaultTopic = await _topicRepository.GetDefaultTopic();
-        var user = new User() { Id = Guid.NewGuid().ToString() };
+        var user = new User { Id = Guid.NewGuid().ToString() };
 
         _context.Users.Add(user);
         _context.SaveChanges();
@@ -153,8 +154,8 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
     public async Task GIVEN_Votable_WHEN_ModeratorOfTopicDeleting_THEN_VotableDeleted()
     {
         // given
-        var owner = new User() { Id = Guid.NewGuid().ToString() };
-        var user = new User() { Id = Guid.NewGuid().ToString() };
+        var owner = new User { Id = Guid.NewGuid().ToString() };
+        var user = new User { Id = Guid.NewGuid().ToString() };
         var topic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
@@ -169,7 +170,8 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         {
             Id = Guid.NewGuid().ToString(),
             Topics = [topic],
-            Text = "test"
+            Text = "test",
+            ContentHash = ""
         };
         _context.Texts.Add(text);
         await _context.SaveChangesAsync();
@@ -186,8 +188,8 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
     public async Task GIVEN_Votable_WHEN_NonModeratorOrOwnerOfTopicDeleting_THEN_VotableNotDeleted()
     {
         // given
-        var owner = new User() { Id = Guid.NewGuid().ToString() };
-        var user = new User() { Id = Guid.NewGuid().ToString() };
+        var owner = new User { Id = Guid.NewGuid().ToString() };
+        var user = new User { Id = Guid.NewGuid().ToString() };
         var topic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
@@ -201,6 +203,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         {
             Id = Guid.NewGuid().ToString(),
             Text = "test",
+            ContentHash = "",
             Topics = [topic]
         };
         _context.Texts.Add(text);
@@ -218,7 +221,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
     public async Task GIVEN_VotableInMultipleTopics_WHEN_OwnerDeleting_THEN_VotableNotDeletedButRemovedFromTopic()
     {
         // given
-        var owner = new User() { Id = Guid.NewGuid().ToString() };
+        var owner = new User { Id = Guid.NewGuid().ToString() };
         var topic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
@@ -233,7 +236,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
             Id = Guid.NewGuid().ToString(),
             Name = "Test2",
             Description = "test",
-            Owner = new User() { Id = Guid.NewGuid().ToString() },
+            Owner = new User { Id = Guid.NewGuid().ToString() },
             HasRestrictedPosting = true,
             Moderators = []
         };
@@ -241,6 +244,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         {
             Id = Guid.NewGuid().ToString(),
             Text = "test",
+            ContentHash = "",
             Topics = [topic, topic2]
         };
         _context.Texts.Add(text);
@@ -261,8 +265,8 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
     public async Task GIVEN_VotableInMultipleTopics_WHEN_ModeratorDeleting_THEN_VotableNotDeletedButRemovedFromTopic()
     {
         // given
-        var owner = new User() { Id = Guid.NewGuid().ToString() };
-        var user = new User() { Id = Guid.NewGuid().ToString() };
+        var owner = new User { Id = Guid.NewGuid().ToString() };
+        var user = new User { Id = Guid.NewGuid().ToString() };
         var topic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
@@ -277,7 +281,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
             Id = Guid.NewGuid().ToString(),
             Name = "Test2",
             Description = "test",
-            Owner = new User() { Id = Guid.NewGuid().ToString() },
+            Owner = new User { Id = Guid.NewGuid().ToString() },
             HasRestrictedPosting = true,
             Moderators = []
         };
@@ -285,6 +289,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         {
             Id = Guid.NewGuid().ToString(),
             Text = "test",
+            ContentHash = "",
             Topics = [topic, topic2]
         };
         _context.Texts.Add(text);

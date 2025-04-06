@@ -1,4 +1,9 @@
-﻿using MemeApi.library.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using MemeApi.library.Extensions;
 using MemeApi.library.Services.Files;
 using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
@@ -6,11 +11,6 @@ using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Dubloons;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MemeApi.library.repositories;
 

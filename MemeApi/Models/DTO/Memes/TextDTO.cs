@@ -1,5 +1,4 @@
-﻿using MemeApi.Models.Entity;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MemeApi.Models.DTO.Memes;

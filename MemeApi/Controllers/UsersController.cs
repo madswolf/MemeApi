@@ -1,4 +1,10 @@
-﻿using MemeApi.library;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Mail;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using MemeApi.library;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Services;
@@ -8,12 +14,6 @@ using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace MemeApi.Controllers;
 
@@ -164,7 +164,7 @@ public class UsersController : ControllerBase
 
         if (receiver == null)
         {
-            receiver = new User()
+            receiver = new User
             {
                 Id = dubloonTransferDTO.OtherUserId,
                 UserName = dubloonTransferDTO.OtherUserName,

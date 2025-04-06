@@ -1,4 +1,6 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Threading.Tasks;
+using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.library.Extensions;
 using MemeApi.Models.DTO.Memes;
@@ -7,8 +9,6 @@ using MemeApi.Test.library;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace MemeApi.Test.Controllers;
@@ -28,7 +28,7 @@ public class MemeTextsControllerTest : MemeTestBase
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
         // given
-        var memeText = new TextCreationDTO()
+        var memeText = new TextCreationDTO
         {
             Text = "Test",
             Position = memePosition
@@ -51,10 +51,11 @@ public class MemeTextsControllerTest : MemeTestBase
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
         // given
-        var memeText = new MemeText()
+        var memeText = new MemeText
         {
             Id = Guid.NewGuid().ToString(),
             Text = "Test",
+            ContentHash = "",
             Position = MemeTextPosition.BottomText
         };
         _context.Texts.Add(memeText);
@@ -111,10 +112,11 @@ public class MemeTextsControllerTest : MemeTestBase
 
         // given
 
-        var memeText = new MemeText()
+        var memeText = new MemeText
         {
             Id = Guid.NewGuid().ToString(),
             Text = "Test",
+            ContentHash = "",
             Position = MemeTextPosition.BottomText
         };
         _context.Texts.Add(memeText);

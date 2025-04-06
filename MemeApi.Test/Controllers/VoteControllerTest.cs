@@ -104,7 +104,7 @@ namespace MemeApi.Test.Controllers
                 Email = "Test",
                 PasswordHash = "Test"
             };
-            memeText = new MemeText()
+            memeText = new MemeText
             {
                 Text = "Test",
                 Position = MemeTextPosition.BottomText

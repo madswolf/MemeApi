@@ -1,13 +1,13 @@
-﻿using MemeApi.library.repositories;
-using MemeApi.library.Services;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using NCrontab;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MemeApi.library.repositories;
+using MemeApi.library.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using NCrontab;
 
 namespace MemeApi.library;
 
