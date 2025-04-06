@@ -1,13 +1,13 @@
-﻿using MemeApi.library.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using MemeApi.library.Extensions;
 using MemeApi.Models.Context;
 using MemeApi.Models.DTO;
 using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Memes;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MemeApi.library.repositories;
 
@@ -99,10 +99,8 @@ public class TopicRepository
             {
                 return false;
             }
-            else
-            {
-                throw;
-            }
+
+            throw;
         }
 
         return true;
@@ -113,7 +111,7 @@ public class TopicRepository
         var user = await _userRepository.GetUser(userId);
         if (user == null) return null;
 
-        var topic = new Topic()
+        var topic = new Topic
         {
             Id = Guid.NewGuid().ToString(),
             Owner = user,

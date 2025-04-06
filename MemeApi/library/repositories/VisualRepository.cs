@@ -69,7 +69,7 @@ public class VisualRepository
         if (existingVotable != null) return existingVotable;
         var topics = await _topicRepository.GetTopicsByNameForUser(filteredTopics, user?.Id);
 
-        var memeVisual = new MemeVisual()
+        var memeVisual = new MemeVisual
         {
             Id = Guid.NewGuid().ToString(),
             Filename = filename,

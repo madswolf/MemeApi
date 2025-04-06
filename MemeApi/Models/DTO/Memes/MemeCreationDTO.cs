@@ -1,9 +1,8 @@
 ﻿#nullable disable warnings
-using MemeApi;
-using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace MemeApi.Models.DTO.Memes;
 

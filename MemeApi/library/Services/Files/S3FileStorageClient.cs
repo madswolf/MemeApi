@@ -1,9 +1,9 @@
-﻿using Amazon.S3.Model;
-using Amazon.S3;
-using Microsoft.AspNetCore.Http;
+﻿using System;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
-using System;
+using Amazon.S3;
+using Amazon.S3.Model;
 
 namespace MemeApi.library.Services.Files;
 
@@ -46,7 +46,7 @@ public class S3FileStorageClient : IFileSaver, IFileRemover
 
         var response = await _client.PutObjectAsync(putRequest);
 
-        if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
+        if (response.HttpStatusCode == HttpStatusCode.OK)
         {
             Console.WriteLine("File uploaded successfully");
         }
@@ -65,7 +65,7 @@ public class S3FileStorageClient : IFileSaver, IFileRemover
 
         var response = await _client.DeleteObjectAsync(deleteRequest);
 
-        if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
+        if (response.HttpStatusCode == HttpStatusCode.OK)
         {
             Console.WriteLine("File uploaded successfully");
         }

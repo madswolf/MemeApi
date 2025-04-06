@@ -1,12 +1,4 @@
-﻿using MemeApi.Models.Context;
-using MemeApi.Models.Entity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace MemeApi.Controllers
+﻿namespace MemeApi.Controllers
 {
     //[Route("[controller]")]
     //[ApiController]

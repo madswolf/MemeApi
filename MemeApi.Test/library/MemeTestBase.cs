@@ -1,4 +1,10 @@
-﻿using MemeApi.Controllers;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Security.Claims;
+using System.Security.Principal;
+using System.Threading.Tasks;
+using MemeApi.Controllers;
 using MemeApi.library;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
@@ -13,12 +19,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Security.Claims;
-using System.Security.Principal;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace MemeApi.Test.library;
@@ -82,8 +82,8 @@ public class MemeTestBase : IAsyncLifetime
 
     protected static void SetUserNameIdentifier(UsersController controller, string userId)
     {
-        var claims = new List<Claim>()
-            {
+        var claims = new List<Claim>
+        {
                 new Claim(ClaimTypes.NameIdentifier, userId.ExternalUserIdToGuid()),
             };
         var identity = new ClaimsIdentity(claims, "Test");
@@ -125,7 +125,7 @@ public class MemeTestBase : IAsyncLifetime
                     new Mock<IUserClaimsPrincipalFactory<TUser>>().Object,
                     new Mock<IOptions<IdentityOptions>>().Object,
                     new Mock<ILogger<SignInManager<TUser>>>().Object,
-                    new Mock<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>().Object
+                    new Mock<IAuthenticationSchemeProvider>().Object
                   );
 
         return signInManager.Object;

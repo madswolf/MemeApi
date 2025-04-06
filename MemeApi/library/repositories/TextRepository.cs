@@ -1,12 +1,12 @@
-﻿using MemeApi.library.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using MemeApi.library.Extensions;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Memes;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MemeApi.library.repositories;
 
@@ -85,10 +85,8 @@ public class TextRepository(MemeContext context, TopicRepository topicRepository
             {
                 return false;
             }
-            else
-            {
-                throw;
-            }
+
+            throw;
         }
 
         return true;

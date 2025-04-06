@@ -1,4 +1,7 @@
-﻿using DotNet.Testcontainers.Builders;
+﻿using System.Data.Common;
+using System.Linq;
+using System.Threading.Tasks;
+using DotNet.Testcontainers.Builders;
 using MemeApi.Models.Context;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -6,9 +9,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Respawn;
-using System.Data.Common;
-using System.Linq;
-using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
 using Xunit;
 

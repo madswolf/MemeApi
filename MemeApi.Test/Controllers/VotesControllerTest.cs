@@ -1,4 +1,7 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.library.Extensions;
 using MemeApi.Models.DTO.Dubloons;
@@ -7,9 +10,6 @@ using MemeApi.Models.Entity.Memes;
 using MemeApi.Test.library;
 using MemeApi.Test.utils;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace MemeApi.Test.Controllers;
@@ -30,14 +30,16 @@ public class VotesControllerTest : MemeTestBase
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
         controller.Request.Headers["Bot_Secret"] = _settings.GetBotSecret();
         var memeOfTheDayTopic = await _topicRepository.GetTopicByName(_settings.GetMemeOfTheDayTopicName());
-        var meme = new Meme()
+        var meme = new Meme
         {
             Id = Guid.NewGuid().ToString(),
-            Visual = new MemeVisual()
+            Visual = new MemeVisual
             {
                 Id = Guid.NewGuid().ToString(),
-                Filename = "stuff"
+                Filename = "stuff",
+                ContentHash = "",
             },
+            ContentHash = "",
             Topics = [memeOfTheDayTopic]
         };
 
@@ -46,7 +48,7 @@ public class VotesControllerTest : MemeTestBase
 
         // given
 
-        var postVoteDTO = new PostVoteDTO()
+        var postVoteDTO = new PostVoteDTO
         {
             ElementIDs = [meme.Id],
             VoteNumber = votenumber,
@@ -79,14 +81,16 @@ public class VotesControllerTest : MemeTestBase
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
         controller.Request.Headers["Bot_Secret"] = _settings.GetBotSecret();
         var memeOfTheDayTopic = await _topicRepository.GetTopicByName(_settings.GetMemeOfTheDayTopicName());
-        var meme = new Meme()
+        var meme = new Meme
         {
             Id = Guid.NewGuid().ToString(),
-            Visual = new MemeVisual()
+            Visual = new MemeVisual
             {
                 Id = Guid.NewGuid().ToString(),
+                ContentHash = "",
                 Filename = "stuff"
             },
+            ContentHash = "",
             Topics = [memeOfTheDayTopic]
         };
         var userId = Guid.NewGuid().ToString();
@@ -104,7 +108,7 @@ public class VotesControllerTest : MemeTestBase
 
         // given
 
-        var postVoteDTO = new PostVoteDTO()
+        var postVoteDTO = new PostVoteDTO
         {
             ElementIDs = [meme.Id],
             VoteNumber = 5,
@@ -133,14 +137,16 @@ public class VotesControllerTest : MemeTestBase
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
         controller.Request.Headers["Bot_Secret"] = _settings.GetBotSecret();
         var memeOfTheDayTopic = await _topicRepository.GetTopicByName(_settings.GetMemeOfTheDayTopicName());
-        var meme = new Meme()
+        var meme = new Meme
         {
             Id = Guid.NewGuid().ToString(),
-            Visual = new MemeVisual()
+            Visual = new MemeVisual
             {
                 Id = Guid.NewGuid().ToString(),
-                Filename = "stuff"
+                Filename = "stuff",
+                ContentHash = ""
             },
+            ContentHash = "",
             Topics = [memeOfTheDayTopic]
         };
         var userId = Guid.NewGuid().ToString();
@@ -168,7 +174,7 @@ public class VotesControllerTest : MemeTestBase
 
         // given
 
-        var postVoteDTO = new PostVoteDTO()
+        var postVoteDTO = new PostVoteDTO
         {
             ElementIDs = [meme.Id],
             VoteNumber = 4,
@@ -196,21 +202,23 @@ public class VotesControllerTest : MemeTestBase
         var controller = new VotesController(_votableRepository, _textRepository, _visualRepository, _memeRepository, _userRepository, _settings);
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
-        var meme = new Meme()
+        var meme = new Meme
         {
             Id = Guid.NewGuid().ToString(),
-            Visual = new MemeVisual()
+            Visual = new MemeVisual
             {
                 Id = Guid.NewGuid().ToString(),
-                Filename = "stuff"
-            }
+                Filename = "stuff",
+                ContentHash = ""
+            },
+            ContentHash = ""
         };
 
         _context.Memes.Add(meme);
         await _context.SaveChangesAsync();
 
         // given
-        var postVoteDTO = new PostVoteDTO()
+        var postVoteDTO = new PostVoteDTO
         {
             ElementIDs = [meme.Id],
             VoteNumber = 5,

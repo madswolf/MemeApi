@@ -1,17 +1,15 @@
-﻿namespace MemeApi.library.Services;
-
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Services.Files;
 using MemeApi.Models.Entity.Memes;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
+
+namespace MemeApi.library.Services;
 
 public class MemeOfTheDayService : IMemeOfTheDayService
 {

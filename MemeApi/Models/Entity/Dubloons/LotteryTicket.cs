@@ -1,8 +1,8 @@
 ﻿using System;
 using MemeApi.Models.DTO.Dubloons;
+using MemeApi.Models.Entity.Lottery;
 
 namespace MemeApi.Models.Entity.Dubloons;
-using Lottery;
 
 public class LotteryTicket : DubloonEvent
 {

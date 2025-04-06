@@ -1,18 +1,16 @@
-﻿using MemeApi.library.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using MemeApi.library.Extensions;
+using MemeApi.library.Services.Files;
 using MemeApi.Models.Context;
 using MemeApi.Models.DTO.Dubloons;
+using MemeApi.Models.DTO.Memes;
 using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Dubloons;
 using MemeApi.Models.Entity.Memes;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using MemeApi.library.Services.Files;
-using MemeApi.Models.DTO.Memes;
-using Microsoft.EntityFrameworkCore.Query;
 
 namespace MemeApi.library.repositories;
 

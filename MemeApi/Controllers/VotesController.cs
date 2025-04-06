@@ -1,17 +1,15 @@
-﻿using MemeApi.library;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using MemeApi.library;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO.Dubloons;
 using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Memes;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MemeApi.Controllers;
 
@@ -98,7 +96,7 @@ public class VotesController : ControllerBase
             userId = voteDTO.ExternalUserID?.ExternalUserIdToGuid();
             user = await _userRepository.GetUser(userId);
             if (user == null) {
-                user = new User()
+                user = new User
                 {
                     Id = userId,
                     UserName = voteDTO.ExternalUserName,
@@ -148,28 +146,24 @@ public class VotesController : ControllerBase
             { 
                 return Ok(await _votableRepository.ChangeVote(existingVote, (Upvote)voteDTO.UpVote, (int)voteDTO.VoteNumber));
             }
-            else
-            {
-                return await DeleteVote(existingVote.Id);
-            }
-        }
-        else
-        {
-            if (voteDTO.UpVote == Upvote.Unvote)
-            {
-                return BadRequest("Can't unvote because no vote exists");
-            }
-            vote = new Vote
-            {
-                Id = Guid.NewGuid().ToString(),
-                Upvote = voteDTO.UpVote == Upvote.Upvote,
-                Element = element,
-                User = user,
-                VoteNumber = (int)voteDTO.VoteNumber,
-            };
 
-            await _votableRepository.CreateVote(vote);
+            return await DeleteVote(existingVote.Id);
         }
+
+        if (voteDTO.UpVote == Upvote.Unvote)
+        {
+            return BadRequest("Can't unvote because no vote exists");
+        }
+        vote = new Vote
+        {
+            Id = Guid.NewGuid().ToString(),
+            Upvote = voteDTO.UpVote == Upvote.Upvote,
+            Element = element,
+            User = user,
+            VoteNumber = (int)voteDTO.VoteNumber,
+        };
+
+        await _votableRepository.CreateVote(vote);
 
         return CreatedAtAction("GetVote", new { id = vote.Id }, vote.ToVoteDTO());
     }

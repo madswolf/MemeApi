@@ -1,3 +1,7 @@
+using System;
+using System.IO;
+using System.Net;
+using System.Reflection;
 using MemeApi.library;
 using MemeApi.library.repositories;
 using MemeApi.library.Repositories;
@@ -7,17 +11,13 @@ using MemeApi.MIddleware;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using System;
-using System.IO;
-using System.Net;
-using System.Reflection;
+using Newtonsoft.Json;
 
 var appBuilder = WebApplication.CreateBuilder(args);
 var services = appBuilder.Services;
@@ -28,7 +28,7 @@ services.AddDbContext<MemeContext>(options => {
     options.UseNpgsql(connectionString);
 });
 services.AddControllers().AddNewtonsoftJson(options =>
-    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore
 );
 
 services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = false)
@@ -80,6 +80,7 @@ services.AddScoped<IMailSender, MailSender>();
 services.AddScoped<IMemeRenderingService, MemeRenderingService>();
 services.AddScoped<MailSender>();
 services.AddScoped<MemeRenderingService>();
+services.AddScoped<DiscordWebhookSender>();
 
 services.AddScoped<UserRepository>();
 services.AddScoped<MemeRepository>();
@@ -91,6 +92,7 @@ services.AddScoped<MemePlaceRepository>();
 services.AddScoped<LotteryRepository>();
 
 services.AddSingleton<MemeApiSettings>();
+
 
 services.AddScoped<IMemeOfTheDayService, MemeOfTheDayService>();
 services.AddHostedService<ConsumeScopedServiceHostedService>();

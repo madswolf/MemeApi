@@ -1,4 +1,6 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Threading.Tasks;
+using FluentAssertions;
 using MemeApi.Controllers;
 using MemeApi.Models.DTO.Memes;
 using MemeApi.Models.Entity.Memes;
@@ -6,8 +8,6 @@ using MemeApi.Test.library;
 using MemeApi.Test.utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace MemeApi.Test.Controllers;
@@ -26,7 +26,7 @@ public class MemesControllerTest : MemeTestBase
         // given
         var filename = "test.png";
 
-        var memeCreationDTO = new MemeCreationDTO()
+        var memeCreationDTO = new MemeCreationDTO
         {
             VisualFile = CreateFormFile(5, filename),
         };
@@ -40,7 +40,7 @@ public class MemesControllerTest : MemeTestBase
         (await _context.Memes.CountAsync()).Should().Be(1);
         (await _context.Visuals.CountAsync()).Should().Be(1);
 
-        createdMeme?.MemeVisual.File.Should().Be(filename);
+        createdMeme?.MemeVisual.File.Should().EndWith(filename);
     }
 
     [Fact]
@@ -49,9 +49,10 @@ public class MemesControllerTest : MemeTestBase
         var controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
 
         // given
-        var visual = new MemeVisual()
+        var visual = new MemeVisual
         {
             Id = Guid.NewGuid().ToString(),
+            ContentHash = "",
             Filename = "Test",
         };
 
@@ -59,6 +60,7 @@ public class MemesControllerTest : MemeTestBase
         {
             Id = Guid.NewGuid().ToString(),
             Visual = visual,
+            ContentHash = "",
             VisualId = visual.Id,
         };
 
@@ -76,7 +78,7 @@ public class MemesControllerTest : MemeTestBase
         result.Should().BeOfType<OkObjectResult>();
         var foundMemeText = (result as OkObjectResult)?.Value as MemeDTO;
 
-        foundMemeText?.MemeVisual.File.Should().Be(visual.Filename);
+        foundMemeText?.MemeVisual.File.Should().EndWith(visual.Filename);
         foundMemeText?.Id.Should().Be(meme.Id);
     }
 
@@ -91,7 +93,7 @@ public class MemesControllerTest : MemeTestBase
         // given
         var filename = "test.png";
 
-        var memeCreationDTO = new MemeCreationDTO()
+        var memeCreationDTO = new MemeCreationDTO
         {
             VisualFile = CreateFormFile(5, filename),
             TopText = "lol",
@@ -107,7 +109,7 @@ public class MemesControllerTest : MemeTestBase
         (await _context.Memes.CountAsync()).Should().Be(1);
         (await _context.Visuals.CountAsync()).Should().Be(1);
 
-        createdMeme?.MemeVisual.File.Should().Be(filename);
+        createdMeme?.MemeVisual.File.Should().EndWith(filename);
 
         ResetConnection();
         controller = new MemesController(_memeRepository, _memeRenderingService, _settings);
@@ -142,7 +144,7 @@ public class MemesControllerTest : MemeTestBase
         // given
         var filename = "test.png";
 
-        var memeCreationDTO = new MemeCreationDTO()
+        var memeCreationDTO = new MemeCreationDTO
         {
             VisualFile = CreateFormFile(5, filename),
             TopText = "lol",
@@ -158,7 +160,7 @@ public class MemesControllerTest : MemeTestBase
         (await _context.Memes.CountAsync()).Should().Be(1);
         (await _context.Visuals.CountAsync()).Should().Be(1);
 
-        createdMeme?.MemeVisual.File.Should().Be(filename);
+        createdMeme?.MemeVisual.File.Should().EndWith(filename);
 
         //ResetConnection();
         //controller = new MemesController(_memeRepository, _memeRenderingService);

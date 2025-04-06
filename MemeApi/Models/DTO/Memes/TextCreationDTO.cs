@@ -1,10 +1,8 @@
 ﻿#nullable disable warnings
-using MemeApi;
-using MemeApi.Models.Entity;
-using MemeApi.Models.Entity.Memes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using MemeApi.Models.Entity.Memes;
 
 namespace MemeApi.Models.DTO.Memes;
 
