@@ -175,7 +175,9 @@ namespace MemeApi.library.Repositories
 
         public async Task<byte[]> GetLatestPlaceRender(string placeId)
         {
-            return await _fileLoader.LoadFile($"places/{placeId}_latest.png");
+            return 
+                (await _fileLoader.LoadFile($"places/{placeId}_latest.png"))
+                .WriteExifComment(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
         }
 
         public async Task<byte[]?> GetPlaceSubmissionRender(string submissionId)
@@ -224,7 +226,7 @@ namespace MemeApi.library.Repositories
 
         private async Task SavePlaceRender(SKBitmap latestRenderBitmap, string placeId)
         {
-            var imageBytes = latestRenderBitmap.ToByteArray().WriteExifComment(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
+            var imageBytes = latestRenderBitmap.ToByteArray();
 
             await _fileSaver.SaveFile(imageBytes, "places/", $"{placeId}_latest.png", "image/png");
         }

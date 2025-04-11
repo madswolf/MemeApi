@@ -44,6 +44,9 @@ public class MemePlacesController : ControllerBase
     public async Task<ActionResult<MemePlaceDTO>> CreateMemePlace([FromForm]PlaceCreationDTO placeCreationDTO)
     {
         var place = await _memePlaceRepository.CreateMemePlace(placeCreationDTO);
+        var success = await _memePlaceRepository.RerenderPlace(place);
+        if (!success) Console.WriteLine($"Failed to rerender place with Id: {place.Id}");
+        
         return Ok(place.ToMemePlaceDTO());
     }
 
@@ -225,7 +228,11 @@ public class MemePlacesController : ControllerBase
         {
             // consider bumping mails
             render ??= await _memePlaceRepository.GetLatestPlaceRender(place.Id);
-            await _discordSender.SendMessageWithImage(render, "MemePlace", "Someone submitted changes to the canvas");
+            await _discordSender.SendMessageWithImage(
+                    render,
+                    render.GetExifComment().SanitizeString() + ".png",
+                    "Someone submitted changes to the canvas"
+                );
         }
         
         return Ok(submission.ToPlaceSubmissionDTO());
