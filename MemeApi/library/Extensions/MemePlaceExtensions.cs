@@ -13,6 +13,16 @@ namespace MemeApi.library.Extensions;
 
 public static class MemePlaceExtensions
 {
+    public static DateTime? ParseDateTimeFromPlaceFileName(this string filename)
+    {
+        filename = filename.Replace("_", " ");
+        filename = filename.Replace("x", ":");
+        filename = filename.Replace(".png", "");
+
+        string format = "yyyy-MM-dd HH:mm:ss";
+        DateTime.TryParseExact(filename, format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var datetime);
+        return datetime;
+    }
 
     public static bool IsBumpingSubmission(this MemePlace place, PlaceSubmission submission)
     {
@@ -126,21 +136,14 @@ public static class MemePlaceExtensions
 
     public static bool IsBasedOnLatestRender(this IFormFile file, MemePlace? place)
     {
-        var filename = file.FileName;
-        if (filename == null) return false;
-
-        var latestSubmission = place.LatestSubmission();
-
-        filename = filename.Replace("_", " ");
-        filename = filename.Replace("x", ":");
-        filename = filename.Replace(".png", "");
-
-        string format = "yyyy-MM-dd HH:mm:ss";
-        var sucess = DateTime.TryParseExact(filename, format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var renderedTimeOfSubmissionImage);
-
-        if (!sucess ||
+        var parsedDateTimeFromSubmissionImage = file.FileName.ParseDateTimeFromPlaceFileName();
+        if (parsedDateTimeFromSubmissionImage == null) return false;
+        
+        var latestSubmission = place?.LatestSubmission();
+       
+        if (
             latestSubmission != null &&
-            (renderedTimeOfSubmissionImage.TruncateToSeconds() < latestSubmission.CreatedAt.TruncateToSeconds()))
+            parsedDateTimeFromSubmissionImage?.TruncateToSeconds() < latestSubmission.CreatedAt.TruncateToSeconds())
             return false;
 
         return true;
@@ -203,7 +206,7 @@ public static class MemePlaceExtensions
         using var stream = new MemoryStream();
         using var imageStream = new SKManagedWStream(stream);
         bitMap.Encode(imageStream, SKEncodedImageFormat.Png, quality: 100);
-        return stream.ToArray();
+        return stream.ToArray().WriteExifComment(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
     }
 
     public static byte[] ToByteArray(this IFormFile file)
