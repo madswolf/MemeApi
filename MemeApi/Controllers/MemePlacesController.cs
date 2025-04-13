@@ -201,8 +201,9 @@ public class MemePlacesController : ControllerBase
         var changedPixels = submissionDTO.ImageWithChanges.ToSubmissionPixelChanges(latestRender);
         if (changedPixels.Count == 0)
             return BadRequest("The submission did not change any pixels. Please try again.");
-        
-        var requiredFunds = place.SubmissionPriceForUser(changedPixels.Count, user);
+
+        var isBumpingSubmission = place.IsBumpingForUser(user, DateTime.UtcNow);
+        var requiredFunds = place.SubmissionPriceForUser(changedPixels.Count, user, isBumpingSubmission);
         if (requiredFunds == null)
             return BadRequest("Failed to get the current pixel price");
         
@@ -224,14 +225,17 @@ public class MemePlacesController : ControllerBase
         if (!isSuccessfulRender)
             Console.Error.WriteLine("Failed To render new submission");
 
-        if (place.IsBumpingSubmission(submission) && isSuccessfulRender)
+        if (isBumpingSubmission && isSuccessfulRender)
         {
             // consider bumping mails
             render ??= await _memePlaceRepository.GetLatestPlaceRender(place.Id);
             await _discordSender.SendMessageWithImage(
                     render,
-                    render.GetExifComment().SanitizeString() + ".png",
-                    "Someone submitted changes to the canvas"
+                    $"{render.GetExifComment().SanitizeString()}.png",
+                    "Der er en ny klat",
+                    "Rottecanvas",
+                    $"{_settings.GetMediaHost()}profilePic/canvas.png",
+                    _settings.GetPlaceBumpWebhook()
                 );
         }
         

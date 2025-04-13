@@ -15,18 +15,17 @@ public class DiscordWebhookSender
         _settings = settings;
     }
     
-    public async Task<bool> SendMessageWithImage(byte[] imageContent, string fileName, string message, CancellationToken stoppingToken = default)
+    public async Task<bool> SendMessageWithImage(byte[] imageContent, string fileName, string message, string username, string avatarUrl, string webhookUrl, CancellationToken stoppingToken = default)
     {
         using HttpClient httpClient = new();
         MultipartFormDataContent form = [];
         
-        var json_payload = CreateJsonPayload(message);
+        var json_payload = CreateJsonPayload(message, username, avatarUrl);
 
         form.Add(new ByteArrayContent(imageContent, 0, imageContent.Length), "image/png", fileName);
         form.Add(json_payload, "payload_json");
         
         
-        var webhookUrl = _settings.GetMemeOfTheDayWehbhook();
         try
         {
             var response = await httpClient.PostAsync(webhookUrl, form, stoppingToken);
@@ -68,13 +67,13 @@ public class DiscordWebhookSender
         return log.ToString();
     }
 
-    private StringContent CreateJsonPayload(string message)
+    private StringContent CreateJsonPayload(string message, string username, string avatarUrl)
     {
         return new StringContent(
             "{" +
             "\"content\":\"" + message + "\"," +
-            "\"username\":\"Hjerneskade(Meme Of The Day)\"," +
-            "\"avatar_url\":\"" + _settings.GetMediaHost() + "default.jpg\"" +
+            "\"username\":\"" + username + "\"," +
+            "\"avatar_url\":\"" + avatarUrl + "\"" +
             "}",
             Encoding.UTF8, "application/json");
     }

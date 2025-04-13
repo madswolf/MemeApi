@@ -73,7 +73,7 @@ public class MemePlaceExtensionsTest
         place.PlaceSubmissions.Add(submission);
         
         // When
-        var isBumping = place.IsBumpingSubmission(submission);
+        var isBumping = place.IsBumpingSubmission();
         
         // Then
         isBumping.Should().Be(false);

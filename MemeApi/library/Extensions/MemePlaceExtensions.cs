@@ -24,25 +24,18 @@ public static class MemePlaceExtensions
         return datetime;
     }
 
-    public static bool IsBumpingSubmission(this MemePlace place, PlaceSubmission submission)
+    public static bool IsBumpingForUser(this MemePlace place, User user, DateTime timeStamp)
     {
-        var containsSubmission = place.PlaceSubmissions.Any(s => s.Id == submission.Id);
-        if (!containsSubmission)
-            throw new ArgumentException($"Submission with ID:{submission.Id} was not part of Place with ID: {place.Id}");
+        var currentWeek = ISOWeek.GetWeekOfYear(timeStamp);
         
-        var weekOfSubmission = ISOWeek.GetWeekOfYear(submission.CreatedAt);
-        var firstSubmissionInWeekByUser = place.PlaceSubmissions
-            .Where(s =>
-                s.OwnerId == submission.OwnerId &&
-                ISOWeek.GetWeekOfYear(s.CreatedAt) == weekOfSubmission
-            )
-            .OrderBy(s => s.CreatedAt)
-            .FirstOrDefault();
-
-        return firstSubmissionInWeekByUser?.Id == submission.Id;
+        return place.PlaceSubmissions
+            .Any(s =>
+                s.OwnerId == user.Id &&
+                ISOWeek.GetWeekOfYear(s.CreatedAt) == currentWeek
+            );
     }
     
-    public static double? SubmissionPriceForUser(this MemePlace place, int changedPixelsCount, User user)
+    public static double? SubmissionPriceForUser(this MemePlace place, int changedPixelsCount, User user, bool isBumpingSubmission)
     {
         var currentPixelPrice = place.CurrentPixelPrice();
         if (currentPixelPrice == null)
@@ -61,8 +54,9 @@ public static class MemePlaceExtensions
         var daysSinceSubmission = Math.Max(0, (currentDate - latestSubmissionDate).Days);
         
         var dubloonGain = Math.Min(maxDubloonGain, daysSinceSubmission * dubloonGainPerDay);
-        
-        var pixelChangePrice = changedPixelsCount * currentPixelPrice.PricePerPixel;
+
+        var bumpingPixelDiscount = 200;
+        var pixelChangePrice = Math.Max(0, changedPixelsCount - bumpingPixelDiscount) * currentPixelPrice.PricePerPixel;
         var requiredFunds = Math.Ceiling(pixelChangePrice - dubloonGain);
         
         return requiredFunds;

@@ -36,7 +36,15 @@ public class MemeOfTheDayService : IMemeOfTheDayService
         var seedNumber = new Random().Next(10);
         var message = seedNumber != 1 ? "Meme Of the Day" : messages.RandomItem();
 
-        var success = await _discordSender.SendMessageWithImage(imageContent, meme.ToFilenameString(), message, stoppingToken);
+        var success = await _discordSender.SendMessageWithImage(
+            imageContent,
+            meme.ToFilenameString(),
+            message,
+            "Hjerneskade(Meme Of The Day)",
+            $"{_settings.GetMediaHost()}default.jpg",
+            _settings.GetMemeOfTheDayWebhook(),
+            stoppingToken);
+        
         if (!success)
         {
             var jsonResponse = JsonConvert.SerializeObject(meme.ToMemeDTO(_settings.GetMediaHost()));

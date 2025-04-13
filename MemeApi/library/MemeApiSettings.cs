@@ -45,9 +45,14 @@ public class MemeApiSettings
         return TryGetConfig("Email_MemeOfTheDay_Password");
     }
 
-    public string GetMemeOfTheDayWehbhook()
+    public string GetMemeOfTheDayWebhook()
     {
         return TryGetConfig("MemeOfTheDay_WebHookURL");
+    }
+    
+    public string GetPlaceBumpWebhook()
+    {
+        return TryGetConfig("PlaceBump_WebHookURL");
     }
 
     public string GetDefaultTopicName()
