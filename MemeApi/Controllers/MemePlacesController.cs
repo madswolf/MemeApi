@@ -232,7 +232,7 @@ public class MemePlacesController : ControllerBase
             await _discordSender.SendMessageWithImage(
                     render,
                     $"{render.GetExifComment().SanitizeString()}.png",
-                    "Der er en ny klat",
+                    $"<@{_settings.GetPlaceOwnerId()}> Der er en ny klat!",
                     "Rottecanvas",
                     $"{_settings.GetMediaHost()}profilePic/canvas.png",
                     _settings.GetPlaceBumpWebhook()

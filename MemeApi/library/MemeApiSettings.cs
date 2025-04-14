@@ -74,6 +74,11 @@ public class MemeApiSettings
         return TryGetConfig("Api_Password");
     }
 
+    public string GetPlaceOwnerId()
+    {
+        return TryGetConfig("Place_Owner_Id");
+    }
+    
     public string GetAdminUsername()
     {
         return TryGetConfig("Admin_Username");

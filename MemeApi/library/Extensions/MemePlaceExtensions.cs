@@ -28,7 +28,7 @@ public static class MemePlaceExtensions
     {
         var currentWeek = ISOWeek.GetWeekOfYear(timeStamp);
         
-        return place.PlaceSubmissions
+        return !place.PlaceSubmissions
             .Any(s =>
                 s.OwnerId == user.Id &&
                 ISOWeek.GetWeekOfYear(s.CreatedAt) == currentWeek
@@ -55,7 +55,7 @@ public static class MemePlaceExtensions
         
         var dubloonGain = Math.Min(maxDubloonGain, daysSinceSubmission * dubloonGainPerDay);
 
-        var bumpingPixelDiscount = 200;
+        var bumpingPixelDiscount = isBumpingSubmission ? 200 : 0;
         var pixelChangePrice = Math.Max(0, changedPixelsCount - bumpingPixelDiscount) * currentPixelPrice.PricePerPixel;
         var requiredFunds = Math.Ceiling(pixelChangePrice - dubloonGain);
         
