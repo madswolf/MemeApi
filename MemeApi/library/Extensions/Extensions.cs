@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using HeyRed.Mime;
 using MemeApi.Models.DTO;
 using MemeApi.Models.DTO.Dubloons;
 using MemeApi.Models.DTO.Lotteries;
@@ -21,6 +22,11 @@ namespace MemeApi.library.Extensions;
 
 public static class Extensions
 {
+    public static bool IsImage(this byte[] fileBytes)
+    {
+        var mime = MimeGuesser.GuessMimeType(fileBytes);
+        return mime.StartsWith("image/");
+    }
     public static T ToVotableOfType<T>(this Votable votable) where T : Votable, new()
     {
         if (votable is not T votableOfType)
@@ -83,12 +89,6 @@ public static class Extensions
     {
         return dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerSecond));
 
-    }
-    public static async Task<byte[]> GetBytes(this IFormFile formFile)
-    {
-        await using var memoryStream = new MemoryStream();
-        await formFile.CopyToAsync(memoryStream);
-        return memoryStream.ToArray();
     }
     public static double CountDubloons(this IEnumerable<DubloonEvent> dubloonEvents)
     {
