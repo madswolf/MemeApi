@@ -7,6 +7,7 @@ using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO.Memes;
 using Microsoft.AspNetCore.Mvc;
+using HeyRed.Mime;
 
 namespace MemeApi.Controllers;
 
@@ -55,7 +56,9 @@ public class VisualsController : ControllerBase
     public async Task<ActionResult<VisualDTO>> PostMemeVisual([FromForm]VisualCreationDTO visual)
     {
         if (visual.File.Length > 5000000) return StatusCode(413);
-
+        if (!visual.File.ToByteArray().IsImage())
+            return BadRequest("The given file is not an image. Please try again with a different file");
+        
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var memeVisual = await _visualRepository.CreateMemeVisual(visual.File, visual.FileName ?? visual.File.FileName, visual.Topics, userId);
         return CreatedAtAction("GetMemeVisual", new { id = memeVisual.Id }, memeVisual.ToVisualDTO(_settings.GetMediaHost()));

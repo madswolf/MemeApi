@@ -163,9 +163,9 @@ public class MemesController : ControllerBase
     /// Use the optional Query parameters TopText and BottomText to define what the top and bottom text should be
     /// </summary>
     [HttpGet("Render")]
-    public async Task<ActionResult> RenderImage([FromForm] MemeCreationDTO memeDTO)
+    public ActionResult RenderImage([FromForm] MemeCreationDTO memeDTO)
     {
-        return File(_memeRendererService.RenderMemeFromData(await memeDTO.VisualFile.GetBytes(), memeDTO.TopText, memeDTO.BottomText), "image/png");
+        return File(_memeRendererService.RenderMemeFromData(memeDTO.VisualFile.ToByteArray(), memeDTO.TopText, memeDTO.BottomText), "image/png");
     }
 }
 
