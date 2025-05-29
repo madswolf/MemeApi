@@ -29,7 +29,7 @@ public class DiscordWebhookSender
         try
         {
             var response = await httpClient.PostAsync(webhookUrl, form, stoppingToken);
-            if (response == null)
+            if (response == null || !response.IsSuccessStatusCode)
             {
                 Console.WriteLine("Response was null");
                 return false;
