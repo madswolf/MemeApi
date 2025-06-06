@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using MemeApi.library.Extensions;
 using MemeApi.Models.Entity.Memes;
@@ -27,29 +29,53 @@ public class MemeRenderingService : IMemeRenderingService
 
     public byte[] RenderMemeFromData(byte[] data, string? toptext = null, string? bottomtext = null)
     {
-        var textSize = 40;
-        SKImageInfo info = new SKImageInfo(400, 400, SKColorType.Rgba8888, SKAlphaType.Premul);
-
-        var inputImage = SKBitmap.Decode(data);
-        var resized = inputImage.Resize(info, SKFilterQuality.High);
-        var canvas = new SKCanvas(resized);
-
-        canvas.DrawBitmap(resized, new SKPoint(0, 0));
-
-        float topTextY = resized.Height / 6;
-        DrawText(canvas, toptext, resized.Width, topTextY, SKTypeface.FromFamilyName("Impact"), textSize);
-
-        float bottomTextY = resized.Height - resized.Height / 8;
-        DrawText(canvas, bottomtext, resized.Width, bottomTextY, SKTypeface.FromFamilyName("Impact"), textSize);
-
-        using (var stream = new MemoryStream())
+        var psi = new ProcessStartInfo
         {
-            using (var imageStream = new SKManagedWStream(stream))
+            FileName = "python",
+            Arguments = $"test.py",
+            //RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+        
+        using var process = Process.Start(psi);
+        try
+        {
+            process.Start();
+
+            // Write input data to stdin
+            //using (var stdin = process.StandardInput.BaseStream)
+            //{
+            //    stdin.Write(data, 0, data.Length);
+            //}
+
+            // Read output and error streams
+            using var memoryStream = new MemoryStream();
+            var stderrTask = process.StandardError.ReadToEndAsync();
+            process.StandardOutput.BaseStream.CopyTo(memoryStream);
+
+            process.WaitForExit();
+
+            var stderr = stderrTask.Result;
+
+            if (process.ExitCode != 0)
             {
-                resized.Encode(imageStream, SKEncodedImageFormat.Png, quality: 100);
+                throw new Exception($"Python process exited with code {process.ExitCode}: {stderr}");
             }
 
-            return stream.ToArray();
+            if (!string.IsNullOrWhiteSpace(stderr))
+            {
+                throw new Exception($"Python error output: {stderr}");
+            }
+
+            memoryStream.Position = 0;
+            return memoryStream.ToArray();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Failed to render meme image using Python process", ex);
         }
     }
  

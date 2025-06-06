@@ -16,6 +16,17 @@ RUN echo "deb http://deb.debian.org/debian/ bookworm main contrib" > /etc/apt/so
     echo "deb-src http://security.debian.org/ bookworm-security main contrib" >> /etc/apt/sources.list
 RUN sed -i'.bak' 's/$/ contrib/' /etc/apt/sources.list
 RUN apt-get update; apt-get install -y ttf-mscorefonts-installer fontconfig
+
+RUN apt-get update && \
+    apt-get install -y \
+      ttf-mscorefonts-installer \
+      fontconfig \
+      python3 \
+      python3-pil \
+      python3-requests
+
+RUN ln -s /usr/bin/python3 /usr/bin/python
+COPY /MemeApi/test.py .
 WORKDIR /MemeApi
 COPY --from=build-env /MemeApi/MemeApi/out .
 ENTRYPOINT ["dotnet", "MemeApi.dll"]
