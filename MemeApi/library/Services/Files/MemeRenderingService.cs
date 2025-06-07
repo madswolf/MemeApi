@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using MemeApi.library.Extensions;
 using MemeApi.Models.Entity.Memes;
@@ -45,6 +46,19 @@ public class MemeRenderingService : IMemeRenderingService
         {
             process.Start();
 
+            using (var bw = new BinaryWriter(process.StandardInput.BaseStream))
+            {
+                byte[] toptextBytes = Encoding.UTF8.GetBytes(toptext ?? "");
+                byte[] bottomtextBytes = Encoding.UTF8.GetBytes(bottomtext ?? "");
+                
+                bw.Write(toptextBytes.Length);
+                bw.Write(bottomtextBytes.Length);
+                bw.Write(data.Length);
+
+                bw.Write(toptextBytes);
+                bw.Write(bottomtextBytes);
+                bw.Write(data);
+            }
             // Write input data to stdin
             //using (var stdin = process.StandardInput.BaseStream)
             //{
