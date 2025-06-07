@@ -1,5 +1,6 @@
 import sys
 import requests
+import struct
 from PIL import Image, ImageFont, ImageDraw
 import io
 
@@ -62,8 +63,8 @@ def get_font(size):
         #print("⚠️ Could not load 'impact.ttf', using default font.")
         return ImageFont.load_default()
 
-def render_text_on_image():
-    img = open_image_from_url("https://memeapi-file-server.fra1.digitaloceanspaces.com/profilePic/default.jpg").convert('RGB')
+def render_text_on_image(toptext, bottomtext, image_bytes):
+    img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
     # Resize to 400x400 before drawing
     img = img.resize((400, 400), Image.LANCZOS)
@@ -71,16 +72,33 @@ def render_text_on_image():
     drawer = ImageDraw.Draw(img)
     font = get_font(32)
 
-    draw_text("lakjlkwaldkjwlakjdlwkaj alwdkjaldkwjalkjdwlk ajwaldkjwaldkjwaldkj awdwakljlwadkdj lakwjdlak wjdlk jawldkjwalk djwalk jlkawjdlakwjd", font, (0, 25), (400, 50), drawer)
-    draw_text("lakjlkwaldkjwlakjdlwkaj alwdkjaldkwjalkjdwlk ajwaldkjwaldkjwaldkj awdwakljlwadkdj lakwjdlak wjdlk jawldkjwalk djwalk jlkawjdlakwjd", font, (0, 325), (400, 50), drawer)
+    draw_text(toptext, font, (0, 25), (400, 50), drawer)
+    draw_text(bottomtext, font, (0, 325), (400, 50), drawer)
 
     img_bytes = io.BytesIO()
     img.save(img_bytes, format="PNG", optimize=True)
     
-    with open("output.png", "wb") as f:
-        f.write(img_bytes.getbuffer())
     img_bytes.seek(0)
     return img_bytes
 
-bytes = render_text_on_image()
-sys.stdout.buffer.write(bytes.getvalue())
+def read_input_bytes(stream, n):
+    buf = b""
+    while len(buf) < n:
+        chunk = stream.read(n - len(buf))
+        if not chunk:
+            raise EOFError("Unexpected EOF while reading input.")
+        buf += chunk
+    return buf
+
+if __name__ == "__main__":
+    # Read header lengths
+    header = read_input_bytes(sys.stdin.buffer, 12)
+    len1, len2, len3 = struct.unpack("<III", header)
+
+    # Read fields
+    toptext = read_input_bytes(sys.stdin.buffer, len1).decode('utf-8')
+    bottomtext = read_input_bytes(sys.stdin.buffer, len2).decode('utf-8')
+    image_bytes = read_input_bytes(sys.stdin.buffer, len3)
+    
+    bytes = render_text_on_image(toptext, bottomtext, image_bytes)
+    sys.stdout.buffer.write(bytes.getvalue())
