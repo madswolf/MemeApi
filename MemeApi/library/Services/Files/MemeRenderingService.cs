@@ -33,8 +33,8 @@ public class MemeRenderingService : IMemeRenderingService
         var psi = new ProcessStartInfo
         {
             FileName = "python",
-            Arguments = $"test.py",
-            //RedirectStandardInput = true,
+            Arguments = "renderImage.py",
+            RedirectStandardInput = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,

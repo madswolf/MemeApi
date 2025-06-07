@@ -26,7 +26,7 @@ RUN apt-get update && \
       python3-requests
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
-COPY /MemeApi/test.py .
+COPY /MemeApi/renderImage.py .
 WORKDIR /MemeApi
 COPY --from=build-env /MemeApi/MemeApi/out .
 ENTRYPOINT ["dotnet", "MemeApi.dll"]
