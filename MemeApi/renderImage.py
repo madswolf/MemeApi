@@ -8,19 +8,24 @@ def open_image_from_url(url):
     response = requests.get(url)
     return Image.open(io.BytesIO(response.content))
 
-def draw_text(text, font, pos, max_size, drawer):
+def draw_text(text, font, pos, max_size, drawer,
+              text_color=(255, 255, 255), outline_color=(0, 0, 0), outline_width=2):
     multiline_text = split_line(text, font, max_size[0])
     margins = get_margins(multiline_text, font, max_size, drawer)
     pos = (pos[0] + margins[0], pos[1] + margins[1])
 
-    # Draw shadow
-    shadow_color = (0, 0, 0)
-    for offset in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-        shadow_pos = (pos[0] + offset[0], pos[1] + offset[1])
-        drawer.multiline_text(shadow_pos, multiline_text, font=font, fill=shadow_color, align="center")
+    # Offsets in 8 directions for a cleaner outline
+    offsets = [(-outline_width, -outline_width), (0, -outline_width), (outline_width, -outline_width),
+               (-outline_width, 0),                     (outline_width, 0),
+               (-outline_width, outline_width), (0, outline_width), (outline_width, outline_width)]
+
+    # Draw outline
+    for dx, dy in offsets:
+        shadow_pos = (pos[0] + dx, pos[1] + dy)
+        drawer.multiline_text(shadow_pos, multiline_text, font=font, fill=outline_color, align="center")
 
     # Draw main text
-    drawer.multiline_text(pos, multiline_text, font=font, fill=(255, 255, 255), align="center")
+    drawer.multiline_text(pos, multiline_text, font=font, fill=text_color, align="center")
 
 def split_line(text, font, width):
     result = ""
@@ -57,11 +62,8 @@ def get_margins(text, font, max_size, drawer):
     return width_margin, height_margin
 
 def get_font(size):
-    try:
-        return ImageFont.truetype("impact.ttf", size)
-    except IOError:
-        #print("⚠️ Could not load 'impact.ttf', using default font.")
-        return ImageFont.load_default()
+    return ImageFont.truetype("impact.ttf", size)
+
 
 def render_text_on_image(toptext, bottomtext, image_bytes):
     img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
@@ -70,7 +72,7 @@ def render_text_on_image(toptext, bottomtext, image_bytes):
     img = img.resize((400, 400), Image.LANCZOS)
 
     drawer = ImageDraw.Draw(img)
-    font = get_font(32)
+    font = get_font(40)
 
     draw_text(toptext, font, (0, 25), (400, 50), drawer)
     draw_text(bottomtext, font, (0, 325), (400, 50), drawer)
