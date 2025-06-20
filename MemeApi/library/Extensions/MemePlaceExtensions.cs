@@ -44,8 +44,8 @@ public static class MemePlaceExtensions
             return null;
         }
         
-        var maxDubloonGain = 100;
-        var dubloonGainPerDay = 100 / 7.0;
+        var maxDubloonGain = 700;
+        var dubloonGainPerDay = 700 / 7.0;
 
         var latestUserSubmission = place.LatestSubmissionByUser(user);
         
