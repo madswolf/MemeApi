@@ -1,6 +1,7 @@
 ﻿using System;
 using MemeApi.library;
 using MemeApi.Models.Entity;
+using MemeApi.Models.Entity.Challenges;
 using MemeApi.Models.Entity.Dubloons;
 using MemeApi.Models.Entity.Lottery;
 using MemeApi.Models.Entity.Memes;
@@ -37,6 +38,15 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
     public DbSet<LotteryItem> LotteryItems { get; set; }
     
     public DbSet<LotteryTicket> LotteryTickets { get; set; }
+    
+    public DbSet<TriviaQuestion> TriviaQuestions { get; set; }
+    
+    public DbSet<TriviaQuestion> TriviaAnswers { get; set; }
+    
+    public DbSet<Challenge> Challenges { get; set; }
+    
+    public DbSet<ChallengeAttempt> ChallengeAttempts { get; set; }
+    
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -246,6 +256,27 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .HasForeignKey(ticket => ticket.ItemId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<Challenge>()
+            .ToTable("Challenges")
+            .HasMany(challenge => challenge.Attempts)
+            .WithOne(attempt => attempt.AttemptedChallenge)
+            .HasForeignKey(attempt => attempt.ChallengeId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Challenge>().UseTptMappingStrategy().HasKey(v => v.Id);
+
+        modelBuilder.Entity<ChallengeAttempt>()
+            .ToTable("Challenges")
+            .HasOne(attempt => attempt.Owner)
+            .WithMany(user => user.ChallengeAttempts)
+            .HasForeignKey(attempt => attempt.OwnerId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<ChallengeAttempt>().UseTptMappingStrategy().HasKey(v => v.Id);
+
+        
+
 
         var admin = new User
         {
