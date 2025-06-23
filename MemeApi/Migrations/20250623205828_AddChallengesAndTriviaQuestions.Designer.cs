@@ -3,6 +3,7 @@ using System;
 using MemeApi.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MemeApi.Migrations
 {
     [DbContext(typeof(MemeContext))]
-    partial class MemeContextModelSnapshot : ModelSnapshot
+    [Migration("20250623205828_AddChallengesAndTriviaQuestions")]
+    partial class AddChallengesAndTriviaQuestions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -204,43 +207,43 @@ namespace MemeApi.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "48a86b8b-b2d2-4307-a46c-49a561e7f261",
+                            Id = "daa2a705-08f5-494e-a284-19f7adf0985d",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes created 2020-2023",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Swu-legacy",
-                            OwnerId = "fce3fc42-cbb4-4a3e-9fef-01e5a048c6f7"
+                            OwnerId = "b02d12aa-66b9-43e8-b13c-1ba164ac9543"
                         },
                         new
                         {
-                            Id = "d4a8e3e8-4300-4caf-849b-a2e31e5addf7",
+                            Id = "fdf7c3b2-d26f-4e59-89c0-ed25239ce4f1",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes are back baby!",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Rotte-Grotte",
-                            OwnerId = "fce3fc42-cbb4-4a3e-9fef-01e5a048c6f7"
+                            OwnerId = "b02d12aa-66b9-43e8-b13c-1ba164ac9543"
                         },
                         new
                         {
-                            Id = "012fddce-e395-4593-bc86-f9cae111cd81",
+                            Id = "07d20d4f-304a-48be-8103-cae551a5346c",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes are back baby!",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Bean-den",
-                            OwnerId = "fce3fc42-cbb4-4a3e-9fef-01e5a048c6f7"
+                            OwnerId = "b02d12aa-66b9-43e8-b13c-1ba164ac9543"
                         },
                         new
                         {
-                            Id = "de649f27-8409-4edd-9b2c-f3fd982da28a",
+                            Id = "4057ece5-7cc1-4b0e-a43b-e88981e5e5e2",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Memes of the day",
                             HasRestrictedPosting = false,
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "MemeOfTheDay",
-                            OwnerId = "fce3fc42-cbb4-4a3e-9fef-01e5a048c6f7"
+                            OwnerId = "b02d12aa-66b9-43e8-b13c-1ba164ac9543"
                         });
                 });
 
@@ -516,19 +519,19 @@ namespace MemeApi.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "fce3fc42-cbb4-4a3e-9fef-01e5a048c6f7",
+                            Id = "b02d12aa-66b9-43e8-b13c-1ba164ac9543",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "ef69c9ce-0635-4221-a23a-b74b007c89c7",
+                            ConcurrencyStamp = "5a1df34b-5547-4e7b-9837-23a3a72bd5c0",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "",
+                            Email = "wakabZfZ4VkUU4zBShZs",
                             EmailConfirmed = false,
-                            LastLoginAt = new DateTime(2024, 11, 26, 23, 3, 55, 31, DateTimeKind.Utc).AddTicks(2516),
+                            LastLoginAt = new DateTime(2025, 6, 23, 20, 58, 28, 29, DateTimeKind.Utc).AddTicks(7458),
                             LastUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             LockoutEnabled = false,
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "26-11-2024 23:03:55",
+                            SecurityStamp = "23-06-2025 20:58:28",
                             TwoFactorEnabled = false,
-                            UserName = ""
+                            UserName = "Admin"
                         });
                 });
 
