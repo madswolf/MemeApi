@@ -267,7 +267,7 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
         modelBuilder.Entity<Challenge>().UseTptMappingStrategy().HasKey(v => v.Id);
 
         modelBuilder.Entity<ChallengeAttempt>()
-            .ToTable("Challenges")
+            .ToTable("ChallengeAttempts")
             .HasOne(attempt => attempt.Owner)
             .WithMany(user => user.ChallengeAttempts)
             .HasForeignKey(attempt => attempt.OwnerId)
@@ -275,9 +275,16 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<ChallengeAttempt>().UseTptMappingStrategy().HasKey(v => v.Id);
 
+        modelBuilder.Entity<TriviaQuestion>()
+            .ToTable("TriviaQuestions");
+        modelBuilder.Entity<TriviaQuestion>()
+            .OwnsMany(question => question.Options);
+        modelBuilder.Entity<TriviaQuestion>()
+            .OwnsOne(question => question.CorrectOption);
         
-
-
+        modelBuilder.Entity<TriviaAnswer>()
+            .ToTable("TriviaAnswers");
+        
         var admin = new User
         {
             Id = Guid.NewGuid().ToString(),

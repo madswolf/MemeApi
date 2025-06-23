@@ -2,7 +2,7 @@
 
 namespace MemeApi.Models.Entity.Challenges;
 
-public abstract class ChallengeAttempt
+public abstract record ChallengeAttempt
 {
         public string Id { get; set; }
         
