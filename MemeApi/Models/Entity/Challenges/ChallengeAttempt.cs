@@ -1,4 +1,5 @@
-﻿using MemeApi.Models.Entity.Dubloons;
+﻿using MemeApi.Models.DTO.Challenges;
+using MemeApi.Models.Entity.Dubloons;
 
 namespace MemeApi.Models.Entity.Challenges;
 
@@ -17,4 +18,6 @@ public abstract record ChallengeAttempt
         public string? DubloonEventId { get; set; }
         
         public DubloonEvent? DubloonEvent { get; set; }
+        
+        public abstract ChallengeAttemptDTO ToChallengeAttemptDTO();
 }
