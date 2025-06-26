@@ -39,9 +39,9 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
     
     public DbSet<LotteryTicket> LotteryTickets { get; set; }
     
-    public DbSet<TriviaQuestion> TriviaQuestions { get; set; }
+    public DbSet<TriviaChallenge> TriviaChallenges { get; set; }
     
-    public DbSet<TriviaQuestion> TriviaAnswers { get; set; }
+    public DbSet<TriviaChallenge> TriviaAnswers { get; set; }
     
     public DbSet<Challenge> Challenges { get; set; }
     
@@ -275,11 +275,11 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<ChallengeAttempt>().UseTptMappingStrategy().HasKey(v => v.Id);
 
-        modelBuilder.Entity<TriviaQuestion>()
-            .ToTable("TriviaQuestions");
-        modelBuilder.Entity<TriviaQuestion>()
+        modelBuilder.Entity<TriviaChallenge>()
+            .ToTable("TriviaChallenges");
+        modelBuilder.Entity<TriviaChallenge>()
             .OwnsMany(question => question.Options);
-        modelBuilder.Entity<TriviaQuestion>()
+        modelBuilder.Entity<TriviaChallenge>()
             .OwnsOne(question => question.CorrectOption);
         
         modelBuilder.Entity<TriviaAnswer>()
