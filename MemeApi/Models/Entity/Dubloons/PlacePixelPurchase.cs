@@ -3,7 +3,7 @@ using MemeApi.Models.Entity.Places;
 
 namespace MemeApi.Models.Entity.Dubloons;
 
-public class PlacePixelPurchase : DubloonEvent
+public record PlacePixelPurchase : DubloonEvent
 {
     public string SubmissionId { get; set; }
     public PlaceSubmission Submission { get; set; }

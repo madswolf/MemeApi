@@ -4,7 +4,7 @@ using MemeApi.Models.Entity.Memes;
 
 namespace MemeApi.Models.Entity.Dubloons;
 
-public class DailyVote : DubloonEvent
+public record DailyVote : DubloonEvent
 {
     public string VoteId { get; set; }
     public Vote Vote { get; set; }
