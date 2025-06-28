@@ -1,4 +1,4 @@
-﻿namespace MemeApi.Models.Entity.Challenges;
+﻿namespace MemeApi.Models.Entity.Challenges.Trivia;
 
 public record TriviaOption
 {

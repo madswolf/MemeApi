@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MemeApi.library.Extensions;
@@ -9,6 +10,7 @@ using MemeApi.Models.Context;
 using MemeApi.Models.DTO.Lotteries;
 using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Challenges;
+using MemeApi.Models.Entity.Challenges.Trivia;
 using MemeApi.Models.Entity.Dubloons;
 using MemeApi.Models.Entity.Lottery;
 using Microsoft.EntityFrameworkCore;
@@ -62,5 +64,21 @@ public class ChallengesRepository(MemeContext context, MemeApiSettings settings)
             Owner = user,
             Result = correctAnswer ? ChallengeResult.Succeeded : ChallengeResult.Failed
         };
+        var sameDay = challenge.CreatedAt.Date == DateTime.Today;
+        var baseDubloons = sameDay ? 100 : 0;
+        
+        var dubloonEvent = new TriviaAnswerReward
+        {
+            Id = Guid.NewGuid().ToString(),
+            Dubloons =  baseDubloons * (correctAnswer ? 1.0 : 0.9),
+            Owner = user,
+            TriviaAnswer = attempt,
+        };
+        attempt.DubloonEvent = dubloonEvent;
+        
+        context.TriviaAnswers.Add(attempt);
+        await context.SaveChangesAsync();
+
+        return attempt;
     }
 }

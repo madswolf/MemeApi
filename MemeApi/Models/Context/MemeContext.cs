@@ -2,6 +2,7 @@
 using MemeApi.library;
 using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Challenges;
+using MemeApi.Models.Entity.Challenges.Trivia;
 using MemeApi.Models.Entity.Dubloons;
 using MemeApi.Models.Entity.Lottery;
 using MemeApi.Models.Entity.Memes;
@@ -41,7 +42,7 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
     
     public DbSet<TriviaChallenge> TriviaChallenges { get; set; }
     
-    public DbSet<TriviaChallenge> TriviaAnswers { get; set; }
+    public DbSet<TriviaAnswer> TriviaAnswers { get; set; }
     
     public DbSet<Challenge> Challenges { get; set; }
     

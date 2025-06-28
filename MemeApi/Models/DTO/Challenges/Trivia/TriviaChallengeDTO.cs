@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using MemeApi.Models.Entity.Challenges;
+using MemeApi.Models.Entity.Challenges.Trivia;
 
 namespace MemeApi.Models.DTO.Challenges;
 

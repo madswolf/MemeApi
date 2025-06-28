@@ -1,4 +1,5 @@
-﻿using MemeApi.Models.DTO.Challenges;
+﻿using System;
+using MemeApi.Models.DTO.Challenges;
 using MemeApi.Models.Entity.Dubloons;
 
 namespace MemeApi.Models.Entity.Challenges;
@@ -6,6 +7,8 @@ namespace MemeApi.Models.Entity.Challenges;
 public abstract record ChallengeAttempt
 {
         public string Id { get; set; }
+        
+        public DateTime CreatedAt { get; set; }
         
         public string ChallengeId { get; set; }
         
