@@ -22,50 +22,6 @@ namespace MemeApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("MemeApi.Models.Entity.Challenges.Challenge", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Category")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Challenges");
-
-                    b.UseTptMappingStrategy();
-                });
-
-            modelBuilder.Entity("MemeApi.Models.Entity.Challenges.ChallengeAttempt", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ChallengeId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("DubloonEventId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChallengeId");
-
-                    b.HasIndex("DubloonEventId");
-
-                    b.HasIndex("OwnerId");
-
-                    b.ToTable("ChallengeAttempts");
-
-                    b.UseTptMappingStrategy();
-                });
-
             modelBuilder.Entity("MemeApi.Models.Entity.Dubloons.DubloonEvent", b =>
                 {
                     b.Property<string>("Id")
@@ -668,30 +624,6 @@ namespace MemeApi.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.Challenges.TriviaQuestion", b =>
-                {
-                    b.HasBaseType("MemeApi.Models.Entity.Challenges.Challenge");
-
-                    b.Property<string>("Question")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.ToTable("TriviaQuestions", (string)null);
-                });
-
-            modelBuilder.Entity("MemeApi.Models.Entity.Challenges.TriviaAnswer", b =>
-                {
-                    b.HasBaseType("MemeApi.Models.Entity.Challenges.ChallengeAttempt");
-
-                    b.Property<int>("AnswerOptionIndex")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Result")
-                        .HasColumnType("integer");
-
-                    b.ToTable("TriviaAnswers", (string)null);
-                });
-
             modelBuilder.Entity("MemeApi.Models.Entity.Dubloons.DailyVote", b =>
                 {
                     b.HasBaseType("MemeApi.Models.Entity.Dubloons.DubloonEvent");
@@ -791,31 +723,6 @@ namespace MemeApi.Migrations
                         .HasColumnType("text");
 
                     b.ToTable("MemeVisuals", (string)null);
-                });
-
-            modelBuilder.Entity("MemeApi.Models.Entity.Challenges.ChallengeAttempt", b =>
-                {
-                    b.HasOne("MemeApi.Models.Entity.Challenges.Challenge", "AttemptedChallenge")
-                        .WithMany("Attempts")
-                        .HasForeignKey("ChallengeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MemeApi.Models.Entity.Dubloons.DubloonEvent", "DubloonEvent")
-                        .WithMany()
-                        .HasForeignKey("DubloonEventId");
-
-                    b.HasOne("MemeApi.Models.Entity.User", "Owner")
-                        .WithMany("ChallengeAttempts")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AttemptedChallenge");
-
-                    b.Navigation("DubloonEvent");
-
-                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("MemeApi.Models.Entity.Dubloons.DubloonEvent", b =>
@@ -1016,75 +923,6 @@ namespace MemeApi.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.Challenges.TriviaQuestion", b =>
-                {
-                    b.HasOne("MemeApi.Models.Entity.Challenges.Challenge", null)
-                        .WithOne()
-                        .HasForeignKey("MemeApi.Models.Entity.Challenges.TriviaQuestion", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("MemeApi.Models.Entity.Challenges.TriviaOption", "CorrectOption", b1 =>
-                        {
-                            b1.Property<string>("TriviaQuestionId")
-                                .HasColumnType("text");
-
-                            b1.Property<int>("Index")
-                                .HasColumnType("integer");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.HasKey("TriviaQuestionId");
-
-                            b1.ToTable("TriviaQuestions");
-
-                            b1.WithOwner()
-                                .HasForeignKey("TriviaQuestionId");
-                        });
-
-                    b.OwnsMany("MemeApi.Models.Entity.Challenges.TriviaOption", "Options", b1 =>
-                        {
-                            b1.Property<string>("TriviaQuestionId")
-                                .HasColumnType("text");
-
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("integer");
-
-                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
-
-                            b1.Property<int>("Index")
-                                .HasColumnType("integer");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.HasKey("TriviaQuestionId", "Id");
-
-                            b1.ToTable("TriviaQuestions_Options");
-
-                            b1.WithOwner()
-                                .HasForeignKey("TriviaQuestionId");
-                        });
-
-                    b.Navigation("CorrectOption")
-                        .IsRequired();
-
-                    b.Navigation("Options");
-                });
-
-            modelBuilder.Entity("MemeApi.Models.Entity.Challenges.TriviaAnswer", b =>
-                {
-                    b.HasOne("MemeApi.Models.Entity.Challenges.ChallengeAttempt", null)
-                        .WithOne()
-                        .HasForeignKey("MemeApi.Models.Entity.Challenges.TriviaAnswer", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("MemeApi.Models.Entity.Dubloons.DailyVote", b =>
                 {
                     b.HasOne("MemeApi.Models.Entity.Dubloons.DubloonEvent", null)
@@ -1201,11 +1039,6 @@ namespace MemeApi.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MemeApi.Models.Entity.Challenges.Challenge", b =>
-                {
-                    b.Navigation("Attempts");
-                });
-
             modelBuilder.Entity("MemeApi.Models.Entity.Lottery.Lottery", b =>
                 {
                     b.Navigation("Brackets");
@@ -1235,8 +1068,6 @@ namespace MemeApi.Migrations
 
             modelBuilder.Entity("MemeApi.Models.Entity.User", b =>
                 {
-                    b.Navigation("ChallengeAttempts");
-
                     b.Navigation("DubloonEvents");
 
                     b.Navigation("PlaceSubmissions");

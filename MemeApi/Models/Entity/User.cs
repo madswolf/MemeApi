@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using MemeApi.Models.Entity.Challenges;
 using MemeApi.Models.Entity.Dubloons;
 using MemeApi.Models.Entity.Memes;
 using MemeApi.Models.Entity.Places;
@@ -15,7 +14,6 @@ public class User : IdentityUser<string>
     public string? ProfilePicFile { get; set; }
     public List<Vote> Votes { get; set; }
     public List<Votable> Votables { get; set; }
-    public List<ChallengeAttempt> ChallengeAttempts { get; set; }
     public List<Topic>?  Topics { get; set; }
 
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]

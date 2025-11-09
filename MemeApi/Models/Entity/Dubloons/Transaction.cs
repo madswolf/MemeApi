@@ -3,7 +3,7 @@ using MemeApi.Models.DTO.Dubloons;
 
 namespace MemeApi.Models.Entity.Dubloons;
 
-public record Transaction : DubloonEvent
+public class Transaction : DubloonEvent
 {
     public User Other { get; set; }
     public string OtherUserId { get; set; }

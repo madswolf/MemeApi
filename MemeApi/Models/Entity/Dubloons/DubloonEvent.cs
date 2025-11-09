@@ -4,7 +4,7 @@ using MemeApi.Models.DTO.Dubloons;
 
 namespace MemeApi.Models.Entity.Dubloons;
 
-public abstract record DubloonEvent
+public abstract class DubloonEvent
 {
     public string Id { get; set; }
 

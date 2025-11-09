@@ -4,7 +4,7 @@ using MemeApi.Models.Entity.Lottery;
 
 namespace MemeApi.Models.Entity.Dubloons;
 
-public record LotteryTicket : DubloonEvent
+public class LotteryTicket : DubloonEvent
 {
     public string ItemId { get; set; }
     
