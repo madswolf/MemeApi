@@ -102,19 +102,12 @@ public class LotteriesController : ControllerBase
         if (lottery == null) return NotFound("A lottery with the given id does not exist.");
         if (lottery.Status != LotteryStatus.Open) return Conflict("You cannot currently buy tickets for the lottery with the given Id");
 
-        var (items,(winningItem, winningItemName, winRarity, wasFree)) = await _lotteryRepository.DrawTicket(lottery, user);
+        var result = await _lotteryRepository.DrawTicket(lottery, user);
                 
-        if(items == null) 
+        if(result == null) 
             return BadRequest("Not enough dubloons to draw a Lottery ticket. Dubloons needed: " + lottery.TicketCost);
 
-        return Ok(new LotteryTicketDrawDTO
-        {
-            Items = items,
-            WinningItem = winningItem,
-            WinningItemName = winningItemName,
-            WinningRarity = winRarity,
-            WasFree = wasFree
-        });
+        return Ok(result);
     }
     
     /// <summary>

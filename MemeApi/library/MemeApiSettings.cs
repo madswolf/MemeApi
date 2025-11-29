@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MemeApi.Models.DTO.Lotteries;
 using Microsoft.Extensions.Configuration;
 
 namespace MemeApi.library;
@@ -117,9 +118,10 @@ public class MemeApiSettings
         return TryGetConfig("Bot_Secret");
     }
 
-    public List<string> GetEasterEggs()
+
+    public List<LotterItemPreviewDTO> GetEasterEggs()
     {
-        var list = _config.GetSection("Easter_Eggs").Get<List<string>>();
+        var list = _config.GetSection("Easter_Eggs").Get<List<LotterItemPreviewDTO>>();
         if (list == null)
         {
             throw new ArgumentNullException("Setting for Easter_Eggs is missing");

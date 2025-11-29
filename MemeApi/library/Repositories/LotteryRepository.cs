@@ -123,8 +123,8 @@ public class LotteryRepository
 
         return lottery;
     }
-
-    public async Task<(List<string>? items, (string winningItem, string winningItemName, int winRarity, bool wasFree))>
+    
+    public async Task<LotteryTicketDrawDTO?>
         DrawTicket(Lottery lottery, User user)
     {
         var random = new Random();
@@ -132,18 +132,63 @@ public class LotteryRepository
         var bracketItemPairs = lottery.Brackets
             .Select(bracket =>
                 {
-                    var items = bracket.Items.Where(item => (item.ItemCount - item.Tickets.Count) > 0 || item.ItemCount == -1).ToList();
+                    var items = bracket.Items
+                        .Where(item => (item.ItemCount - item.Tickets.Count) > 0 || item.ItemCount == -1)
+                        .ToList();
                     return (Bracket: bracket, Items: items);
                 }
             )
             .Where(bracket => bracket.Items.Count != 0)
             .OrderByDescending(tuple => tuple.Bracket.ProbabilityWeight).ToList();
 
-        var (winningBracketIndex, winRarity) = WeightedRandomIndex(bracketItemPairs, random);
+        var winningItem = PickItemByBracketWeight(bracketItemPairs, random);
+        
+        var (price, isFreeSpin) = CalculatePrice(lottery, user, winningItem);
+        if (price == null)
+        {
+            return null;
+        }
+        
+        var ticket = new LotteryTicket
+        {
+            Id = Guid.NewGuid().ToString(),
+            Dubloons = price.Value,
+            Item = winningItem,
+            Owner = user
+        };
+        _context.LotteryTickets.Add(ticket);
+        await _context.SaveChangesAsync();
 
-        var winningPair = bracketItemPairs[winningBracketIndex];
-        var winningItem = winningPair.Items[random.Next(winningPair.Items.Count)];
+        var mediaHost = _settings.GetMediaHost();
+        var nonWinningItems = new List<LotterItemPreviewDTO>();
+        
+        var oneRandomFromEachBracket = bracketItemPairs.Select(b => b.Items.RandomItem().ToLotterItemPreviewDTO(mediaHost));
+        nonWinningItems.AddRange(oneRandomFromEachBracket);
+        
+        var includeEasterEgg = random.Next(2) == 0;
+        if (includeEasterEgg)
+        {
+            var easterEgg = _settings.GetEasterEggs().RandomItem();
+            nonWinningItems.Append(easterEgg);
+        }
 
+        var targetNonWinningItemCount = 9;
+        var extraPaddingNonWinningItems = 
+            Enumerable.Range(1, targetNonWinningItemCount - nonWinningItems.Count)
+                .Select(_ => PickItemByBracketWeight(bracketItemPairs, random).ToLotterItemPreviewDTO(mediaHost));
+        
+        nonWinningItems.AddRange(extraPaddingNonWinningItems);
+        
+        return new LotteryTicketDrawDTO
+        {
+            DrawnItemWin =  winningItem.ToLotterItemWinDTO(mediaHost),
+            Items = nonWinningItems,
+            WasFree = isFreeSpin
+        };
+    }
+
+    private (double? price,bool isFreeSpin) CalculatePrice(Lottery lottery, User user, LotteryItem winningItem)
+    {
         var dubloons = -lottery.TicketCost;
         
         var tickets = GetLotteryTickets(user, lottery, true);
@@ -156,57 +201,14 @@ public class LotteryRepository
             dubloons += lottery.TicketCost * 1;
         }
         if (Math.Abs(user.DubloonEvents.CountDubloons()) < Math.Abs(dubloons))
-            return (null, default);
+            return (null, false);
         
         var refundPrice = GetRefundPercentageByName(winningItem);
         if (refundPrice != null) dubloons += (int)(lottery.TicketCost * ((int)refundPrice/100.0));
-        
-        var ticket = new LotteryTicket
-        {
-            Id = Guid.NewGuid().ToString(),
-            Dubloons = dubloons,
-            Item = winningItem,
-            Owner = user
-        };
-        _context.LotteryTickets.Add(ticket);
-        await _context.SaveChangesAsync();
-
-        if (bracketItemPairs.Count > 1)
-        {
-            bracketItemPairs.RemoveAt(winningBracketIndex);
-        }
-        
-        var mediaHost = _settings.GetMediaHost();
-        var randomItems =
-            bracketItemPairs
-                .Select(tuple => tuple.Items[random.Next(tuple.Items.Count)].ToThumbnailUrl(mediaHost))
-                .ToList();
-
-        var extraItemCount = 9 - randomItems.Count;
-        var extraItems = new List<string>(new String[extraItemCount]);
-        
-        var includeEasterEgg = random.Next(2) == 0;
-        if (includeEasterEgg)
-        {
-            var easterEgg = _settings.GetEasterEggs();
-            extraItems[extraItemCount - 1] = easterEgg[random.Next(easterEgg.Count)];
-            extraItemCount -= 1;
-        }
-        
-        for (var i = 0; i < extraItemCount; i++)
-        {
-            var (randomBracketIndex, _) = WeightedRandomIndex(bracketItemPairs, random);
-            var pair = bracketItemPairs[randomBracketIndex];
-            extraItems[i] = pair.Items[random.Next(pair.Items.Count)].ToThumbnailUrl(mediaHost);
-        }
-        
-
-        randomItems.AddRange(extraItems);
-        
-        return (randomItems, (winningItem.ToThumbnailUrl(mediaHost), winningItem.Name, winRarity, isFreeSpin));
+        return (dubloons, isFreeSpin);
     }
-    
-    
+
+
     public  List<LotteryTicket> GetLotteryTickets(User user, Lottery lottery, bool filter = false)
     {
         var offset = new TimeSpan(6, 0, 0);
@@ -232,7 +234,7 @@ public class LotteryRepository
         return percentage;
     }
     
-    private static (int WinningIndex, int LikelihoodPercentage) WeightedRandomIndex(
+    private static LotteryItem PickItemByBracketWeight(
         List<(LotteryBracket Bracket, List<LotteryItem> Items)> bracketItemPairs, 
         Random random)
     {
@@ -251,14 +253,7 @@ public class LotteryRepository
             }
         }
 
-        var winningBracketWeight = bracketItemPairs[winningBracketIndex].Bracket.ProbabilityWeight;
-        
-        var lowerWeightSum = bracketItemPairs
-            .Where(tuple => tuple.Bracket.ProbabilityWeight > winningBracketWeight)
-            .Sum(tuple => tuple.Bracket.ProbabilityWeight);
-
-        var lowerWeightLikelihoodPercentage = (int)Math.Round((double)lowerWeightSum / totalWeight * 100);
-
-        return (winningBracketIndex, lowerWeightLikelihoodPercentage);
+        var (_, items) = bracketItemPairs[winningBracketIndex];
+        return items.RandomItem();
     }
 }

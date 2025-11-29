@@ -157,6 +157,21 @@ public static class Extensions
         CurrentItemCount = item.ItemCount - item.Tickets.Count,
         ItemThumbnail = mediaHost + "lotteryitems/"+ item.ThumbNailFileName
     };
+    
+    public static LotterItemPreviewDTO ToLotterItemPreviewDTO(this LotteryItem item, string mediaHost) => new()
+    {
+        ItemThumbnailURL = mediaHost + "lotteryitems/"+ item.ThumbNailFileName,
+        ItemRarityColor = $"#{new Random().Next(0x1000000):X6}" //item.Bracket.RarityHexColor
+    };
+    
+    public static LotterItemWinDTO ToLotterItemWinDTO(this LotteryItem item, string mediaHost) => new()
+    {
+        ItemThumbnailURL = "https://memeapi-file-server.fra1.digitaloceanspaces.com/eastereggs/bingus.png",
+        ItemPictureURL = mediaHost + "lotteryitems/"+ item.ThumbNailFileName,
+        ItemRarity = item.Bracket.ProbabilityWeight,
+        ItemRarityColor = $"#{new Random().Next(0x1000000):X6}", //item.Bracket.RarityHexColor
+        ItemName = item.Name
+    };
 
     public static TopicDTO ToTopicDTO(this Topic t)
     {

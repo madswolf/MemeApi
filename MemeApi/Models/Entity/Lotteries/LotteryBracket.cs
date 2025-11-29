@@ -13,6 +13,8 @@ public class LotteryBracket
     public string Name { get; set; }
     
     public int ProbabilityWeight { get; set; }
+
+    //public string RarityHexColor { get; set; }
     
     public List<LotteryItem> Items { get; set; }
 }
