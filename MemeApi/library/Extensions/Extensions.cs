@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using HeyRed.Mime;
+using MemeApi.library.Repositories;
 using MemeApi.Models.DTO;
 using MemeApi.Models.DTO.Dubloons;
 using MemeApi.Models.DTO.Lotteries;
@@ -154,21 +155,21 @@ public static class Extensions
     {
         ItemId = item.Id,
         ItemName = item.Name,
-        ItemThumbnail = mediaHost + "lotteryitems/"+ item.ThumbNailFileName,
+        ItemThumbnail = mediaHost + LotteryRepository.LotteryitemsPath + item.ThumbNailFileName,
         ItemRarityColor = item.Bracket.RarityColor,
         OutOfStock = item.ItemCount <= item.Tickets.Count
     };
     
     public static LotteryItemPreviewDTO ToLotteryItemPreviewDTO(this LotteryItem item, string mediaHost) => new()
     {
-        ItemThumbnailURL = mediaHost + "lotteryitems/"+ item.ThumbNailFileName,
+        ItemThumbnailURL = mediaHost + LotteryRepository.LotteryitemsPath + item.ThumbNailFileName,
         ItemRarityColor = item.Bracket.RarityColor
     };
     
     public static LotterItemWinDTO ToLotteryItemWinDTO(this LotteryItem item, string mediaHost) => new()
     {
-        ItemThumbnailURL = mediaHost + "lotteryitems/"+ item.ThumbNailFileName,
-        ItemPictureURL = item.ImageFileName == "" ? mediaHost + "lotteryitems/"+ item.ThumbNailFileName : item.ImageFileName,
+        ItemThumbnailURL = mediaHost + LotteryRepository.LotteryitemsPath + item.ThumbNailFileName,
+        ItemPictureURL = mediaHost + LotteryRepository.LotteryitemsPath + item.ImageFileName,
         ItemRarity = item.Bracket.ProbabilityWeight,
         ItemRarityColor = item.Bracket.RarityColor,
         ItemName = item.Name
@@ -192,7 +193,7 @@ public static class Extensions
 
     public static string ToThumbnailUrl(this LotteryItem item, string mediaHost)
     {
-        return mediaHost + "lotteryitems/" + item.ThumbNailFileName;
+        return mediaHost + LotteryRepository.LotteryitemsPath + item.ThumbNailFileName;
     }
 
     public static UserInfoDTO? ToUserInfo(this User? u, string mediaHost)

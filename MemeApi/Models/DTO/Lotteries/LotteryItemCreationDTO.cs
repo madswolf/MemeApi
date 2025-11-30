@@ -21,8 +21,13 @@ public record LotteryItemCreationDTO
     public int ItemCount { get; init; }
     
     /// <summary>
-    /// The weight of the probability for the Item
+    /// The thumbnail of the Item
     /// </summary>
     [Required]
     public IFormFile ItemThumbnail { get; init; }
+    
+    /// <summary>
+    /// The image of the Item
+    /// </summary>
+    public IFormFile? ItemImage { get; init; }
 }

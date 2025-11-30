@@ -19,6 +19,7 @@ public class LotteryRepository
     private readonly MemeContext _context;
     private readonly IFileSaver _fileSaver;
     private readonly MemeApiSettings _settings;
+    public const string LotteryitemsPath = "lotteryitems/2025/";
 
     public LotteryRepository(MemeContext context, IFileSaver fileSaver, MemeApiSettings settings)
     {
@@ -42,6 +43,7 @@ public class LotteryRepository
             Id = Guid.NewGuid().ToString(),
             Name = tuple.BracketName,
             ProbabilityWeight = tuple.ProbabilityWeight,
+            RarityColor = tuple.RarityColor,
             Lottery = lottery
         });
         
@@ -79,23 +81,32 @@ public class LotteryRepository
     
     public async Task<LotteryItem> AddLotteryItem(LotteryItemCreationDTO lotteryItemCreationDto, LotteryBracket bracket)
     {
+        var itemThumnailFileName = lotteryItemCreationDto.ItemThumbnail.FileName; 
+        
+        var itemThumbnailExistsWithSameFileName =
+            _context.LotteryItems.Any(x => x.ThumbNailFileName == itemThumnailFileName);
+        
+        if(itemThumbnailExistsWithSameFileName) 
+            itemThumnailFileName = itemThumnailFileName.PrependRandomString();
+        
         var item = new LotteryItem
         {
             Id = Guid.NewGuid().ToString(),
             Bracket = bracket,
             Name = lotteryItemCreationDto.ItemName,
             ItemCount = lotteryItemCreationDto.ItemCount,
-            ThumbNailFileName = lotteryItemCreationDto.ItemThumbnail.FileName
+            ThumbNailFileName = itemThumnailFileName,
+            ImageFileName = lotteryItemCreationDto.ItemImage != null ? itemThumnailFileName.PrependRandomString() : itemThumnailFileName
         };
 
-        var itemExistsWithSameFileName =
-            _context.LotteryItems.Any(x => x.ThumbNailFileName == item.ThumbNailFileName);
-        
-        if(itemExistsWithSameFileName) 
-            item.ThumbNailFileName = item.ThumbNailFileName.PrependRandomString();
-
         var thumbnail = lotteryItemCreationDto.ItemThumbnail;
-        await _fileSaver.SaveFile(thumbnail.ToByteArray(), "lotteryitems/", item.ThumbNailFileName, thumbnail.ContentType);
+        await _fileSaver.SaveFile(thumbnail.ToByteArray(), LotteryitemsPath, item.ThumbNailFileName, thumbnail.ContentType);
+
+        if (lotteryItemCreationDto.ItemImage != null)
+        {
+            var image = lotteryItemCreationDto.ItemImage;
+            await _fileSaver.SaveFile(image.ToByteArray(), LotteryitemsPath, item.ImageFileName, image.ContentType);
+        }
         
         _context.LotteryItems.Add(item);
         await _context.SaveChangesAsync();

@@ -31,4 +31,5 @@ public class BracketCreationDTO
 {
     public string BracketName { get; set; }
     public int ProbabilityWeight { get; set; }
+    public string RarityColor { get; set; }
 }
