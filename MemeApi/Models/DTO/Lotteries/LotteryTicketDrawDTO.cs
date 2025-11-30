@@ -4,12 +4,12 @@ namespace MemeApi.Models.DTO.Lotteries;
 
 public record LotteryTicketDrawDTO
 {
-        public List<LotterItemPreviewDTO> Items { get; init; }
+        public List<LotteryItemPreviewDTO> Items { get; init; }
         public LotterItemWinDTO DrawnItemWin { get; init; }
         public bool WasFree { get; init; }
 }
 
-public record LotterItemPreviewDTO
+public record LotteryItemPreviewDTO
 {
     public string ItemThumbnailURL { get; init; }
     public string ItemRarityColor { get; init; }

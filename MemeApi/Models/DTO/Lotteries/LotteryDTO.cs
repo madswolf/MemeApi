@@ -23,7 +23,7 @@ public record LotteryDTO
     public int TicketCost { get; init; }
     
     /// <summary>
-    /// List of Item Brackets in the Lottery
+    /// List of Items in the Lottery
     /// </summary>
-    public List<LotteryBracketDTO> Brackets { get; init; }
+    public List<LotteryItemDTO> Items { get; init; }
 }

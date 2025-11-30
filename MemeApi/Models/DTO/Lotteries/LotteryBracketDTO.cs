@@ -23,6 +23,11 @@ public record LotteryBracketDTO
     public int BracketProbabilityWeight { get; init; }
     
     /// <summary>
+    /// The Color of the Bracket in HEX 
+    /// </summary>
+    public string Color { get; init; }
+    
+    /// <summary>
     /// List of Lottery Items in the Bracket
     /// </summary>
     public List<LotteryItemDTO> Items { get; init; }

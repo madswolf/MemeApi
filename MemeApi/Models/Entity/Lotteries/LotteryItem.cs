@@ -17,5 +17,7 @@ public class LotteryItem
     
     public string ThumbNailFileName { get; set; }
     
+    public string ImageFileName { get; set; }
+    
     public List<LotteryTicket> Tickets { get; set; }
 }

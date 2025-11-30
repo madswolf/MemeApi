@@ -138,13 +138,14 @@ public static class Extensions
         Id = lottery.Id,
         Name = lottery.Name,
         TicketCost = lottery.TicketCost,
-        Brackets = lottery.Brackets.Select(bracket => bracket.ToLotteryBracketDTO(mediaHost)).ToList(),
+        Items = lottery.Brackets.SelectMany(bracket => bracket.Items.Select(i => i.ToLotteryItemDTO(mediaHost))).ToList(),
     };
     
     public static LotteryBracketDTO ToLotteryBracketDTO(this LotteryBracket bracket, string mediaHost) => new()
     {
         BracketId = bracket.Id,
         BracketName = bracket.Name,
+        Color = $"#{new Random().Next(0x1000000):X6}",
         BracketProbabilityWeight = bracket.ProbabilityWeight,
         Items = bracket.Items.Select(item => item.ToLotteryItemDTO(mediaHost)).ToList(),
     };
@@ -153,23 +154,23 @@ public static class Extensions
     {
         ItemId = item.Id,
         ItemName = item.Name,
-        InitialItemCount = item.ItemCount,
-        CurrentItemCount = item.ItemCount - item.Tickets.Count,
-        ItemThumbnail = mediaHost + "lotteryitems/"+ item.ThumbNailFileName
+        ItemThumbnail = mediaHost + "lotteryitems/"+ item.ThumbNailFileName,
+        ItemRarityColor = item.Bracket.RarityColor,
+        OutOfStock = item.ItemCount <= item.Tickets.Count
     };
     
-    public static LotterItemPreviewDTO ToLotterItemPreviewDTO(this LotteryItem item, string mediaHost) => new()
+    public static LotteryItemPreviewDTO ToLotteryItemPreviewDTO(this LotteryItem item, string mediaHost) => new()
     {
         ItemThumbnailURL = mediaHost + "lotteryitems/"+ item.ThumbNailFileName,
-        ItemRarityColor = $"#{new Random().Next(0x1000000):X6}" //item.Bracket.RarityHexColor
+        ItemRarityColor = item.Bracket.RarityColor
     };
     
-    public static LotterItemWinDTO ToLotterItemWinDTO(this LotteryItem item, string mediaHost) => new()
+    public static LotterItemWinDTO ToLotteryItemWinDTO(this LotteryItem item, string mediaHost) => new()
     {
-        ItemThumbnailURL = "https://memeapi-file-server.fra1.digitaloceanspaces.com/eastereggs/bingus.png",
-        ItemPictureURL = mediaHost + "lotteryitems/"+ item.ThumbNailFileName,
+        ItemThumbnailURL = mediaHost + "lotteryitems/"+ item.ThumbNailFileName,
+        ItemPictureURL = item.ImageFileName == "" ? mediaHost + "lotteryitems/"+ item.ThumbNailFileName : item.ImageFileName,
         ItemRarity = item.Bracket.ProbabilityWeight,
-        ItemRarityColor = $"#{new Random().Next(0x1000000):X6}", //item.Bracket.RarityHexColor
+        ItemRarityColor = item.Bracket.RarityColor,
         ItemName = item.Name
     };
 

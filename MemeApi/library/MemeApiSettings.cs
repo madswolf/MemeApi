@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using MemeApi.Models.DTO.Lotteries;
 using Microsoft.Extensions.Configuration;
 
@@ -118,16 +119,35 @@ public class MemeApiSettings
         return TryGetConfig("Bot_Secret");
     }
 
-
-    public List<LotterItemPreviewDTO> GetEasterEggs()
+    public record LotteryItemEasterEgg
     {
-        var list = _config.GetSection("Easter_Eggs").Get<List<LotterItemPreviewDTO>>();
+        public LotteryItemPreviewDTO item { get; init; }
+        public string lotteryId { get; init; }
+        public string ItemName { get; init; }
+    }
+    
+    public List<LotteryItemEasterEgg> GetAllEasterEggs()
+    {
+        var list = _config.GetSection("Easter_Eggs").Get<List<LotteryItemEasterEgg>>();
         if (list == null)
         {
             throw new ArgumentNullException("Setting for Easter_Eggs is missing");
         }
 
         return list;
+    }
+    
+    public List<LotteryItemPreviewDTO> GetEasterEggs(string lotteryID)
+    {
+        var list = _config.GetSection("Easter_Eggs").Get<List<LotteryItemEasterEgg>>();
+        if (list == null)
+        {
+            throw new ArgumentNullException("Setting for Easter_Eggs is missing");
+        }
+
+        var filteredList = list.Where(i => i.lotteryId == lotteryID).Select(i => i.item).ToList();
+
+        return filteredList;
     }
 
     private string TryGetConfig(string key)

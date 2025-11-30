@@ -16,17 +16,17 @@ public record LotteryItemDTO
     public string ItemName { get; init; } 
     
     /// <summary>
-    /// Initial count of Lottery items
-    /// </summary>
-    public int InitialItemCount { get; init; }
-    
-    /// <summary>
-    /// Current count of Lottery items
-    /// </summary>
-    public int CurrentItemCount { get; init; }
-    
-    /// <summary>
-    /// The weight of the probability for the Item
+    /// The thumbnail of the Item
     /// </summary>
     public string ItemThumbnail { get; init; }
+    
+    /// <summary>
+    /// The color for of the rarity of the Item
+    /// </summary>
+    public string ItemRarityColor { get; init; }
+    
+    /// <summary>
+    /// A boolean signifying if the given Item is out of stock
+    /// </summary>
+    public bool OutOfStock { get; init; }
 }

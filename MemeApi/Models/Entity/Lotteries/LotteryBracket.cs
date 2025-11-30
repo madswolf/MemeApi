@@ -14,7 +14,7 @@ public class LotteryBracket
     
     public int ProbabilityWeight { get; set; }
 
-    //public string RarityHexColor { get; set; }
+    public string RarityColor { get; set; }
     
     public List<LotteryItem> Items { get; set; }
 }

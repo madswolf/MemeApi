@@ -160,28 +160,28 @@ public class LotteryRepository
         await _context.SaveChangesAsync();
 
         var mediaHost = _settings.GetMediaHost();
-        var nonWinningItems = new List<LotterItemPreviewDTO>();
+        var nonWinningItems = new List<LotteryItemPreviewDTO>();
         
-        var oneRandomFromEachBracket = bracketItemPairs.Select(b => b.Items.RandomItem().ToLotterItemPreviewDTO(mediaHost));
+        var oneRandomFromEachBracket = bracketItemPairs.Select(b => b.Items.RandomItem().ToLotteryItemPreviewDTO(mediaHost));
         nonWinningItems.AddRange(oneRandomFromEachBracket);
         
         var includeEasterEgg = random.Next(2) == 0;
         if (includeEasterEgg)
         {
-            var easterEgg = _settings.GetEasterEggs().RandomItem();
-            nonWinningItems.Append(easterEgg);
+            var easterEgg = _settings.GetEasterEggs(lottery.Id).RandomItem();
+            nonWinningItems = nonWinningItems.Append(easterEgg).ToList();
         }
 
         var targetNonWinningItemCount = 9;
         var extraPaddingNonWinningItems = 
             Enumerable.Range(1, targetNonWinningItemCount - nonWinningItems.Count)
-                .Select(_ => PickItemByBracketWeight(bracketItemPairs, random).ToLotterItemPreviewDTO(mediaHost));
+                .Select(_ => PickItemByBracketWeight(bracketItemPairs, random).ToLotteryItemPreviewDTO(mediaHost));
         
         nonWinningItems.AddRange(extraPaddingNonWinningItems);
         
         return new LotteryTicketDrawDTO
         {
-            DrawnItemWin =  winningItem.ToLotterItemWinDTO(mediaHost),
+            DrawnItemWin =  winningItem.ToLotteryItemWinDTO(mediaHost),
             Items = nonWinningItems,
             WasFree = isFreeSpin
         };

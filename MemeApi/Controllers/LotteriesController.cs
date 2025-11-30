@@ -67,8 +67,25 @@ public class LotteriesController : ControllerBase
     public async Task<ActionResult<LotteryDTO>> GetLotteries()
     {
         var lotteries = await _lotteryRepository.GetLotteries();
-        
-        return Ok(lotteries.Select(lottery => lottery.ToLotteryDTO(_settings.GetMediaHost())));
+        var easterEggs = _settings.GetAllEasterEggs();
+        return Ok(lotteries.Select(lottery =>
+        {
+            var dto = lottery.ToLotteryDTO(_settings.GetMediaHost());
+            var eggs = easterEggs
+                .Where(i => i.lotteryId == lottery.Id)
+                .Select(i => new LotteryItemDTO
+                {
+                    //hack to generate the same guid for the easter egg each time
+                    ItemId = i.item.ItemThumbnailURL.ExternalUserIdToGuid(),
+                    ItemName = i.ItemName,
+                    ItemRarityColor = i.item.ItemRarityColor,
+                    ItemThumbnail = i.item.ItemThumbnailURL,
+                    OutOfStock = false
+                })
+                .ToList();
+            dto.Items.AddRange(eggs);
+            return dto;
+        }));
     }
     
     /// <summary>
