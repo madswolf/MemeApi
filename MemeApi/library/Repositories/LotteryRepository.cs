@@ -214,8 +214,8 @@ public class LotteryRepository
         if (Math.Abs(user.DubloonEvents.CountDubloons()) < Math.Abs(dubloons))
             return (null, false);
         
-        var refundPrice = GetRefundPercentageByName(winningItem);
-        if (refundPrice != null) dubloons += (int)(lottery.TicketCost * ((int)refundPrice/100.0));
+        var refundPrice = GetRefundAmountByName(winningItem);
+        if (refundPrice != null) dubloons += refundPrice.Value;
         return (dubloons, isFreeSpin);
     }
 
@@ -232,17 +232,17 @@ public class LotteryRepository
             .ToList();
     }
 
-    private static int? GetRefundPercentageByName(LotteryItem lotteryItem)
+    private static int? GetRefundAmountByName(LotteryItem lotteryItem)
     {
-        var pattern = @"^(\d+)\s*(.*)$";
-        var match = Regex.Match(lotteryItem.Name, pattern);
+        var pattern = @"^(?<Dubloons>[0-9]+) dubloons.*$";
+        var match = Regex.Match(lotteryItem.Name.ToLower(), pattern);
 
-        if (!match.Success || !int.TryParse(match.Groups[1].Value, out var percentage))
+        if (!match.Success || !int.TryParse(match.Groups["Dubloons"].Value, out var amount))
         {
             return null;
         }
 
-        return percentage;
+        return amount;
     }
     
     private static LotteryItem PickItemByBracketWeight(
