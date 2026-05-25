@@ -71,7 +71,7 @@ public class UsersController : ControllerBase
     /// </summary>
     [HttpPost]
     [Route("[controller]/update")]
-    public async Task<IActionResult> UpdateUser([FromForm]UserUpdateDTO updateDto)
+    public async Task<IActionResult> UpdateUser([FromForm] UserUpdateDTO updateDto)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var (updated, message) = await _userRepository.UpdateUser(userId, updateDto);
@@ -95,14 +95,14 @@ public class UsersController : ControllerBase
     [HttpPost]
     [Route("[controller]/register")]
     [AllowAnonymous]
-    public async Task<ActionResult<UserInfoDTO>> Register([FromForm]UserCreationDTO userDTO)
+    public async Task<ActionResult<UserInfoDTO>> Register([FromForm] UserCreationDTO userDTO)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState.Values);
 
         var user = new User
         {
             Id = Guid.NewGuid().ToString(),
-            UserName = userDTO.Username, 
+            UserName = userDTO.Username,
             Email = userDTO.Email,
             ProfilePicFile = "default.jpg",
             LastLoginAt = DateTime.UtcNow,
@@ -173,11 +173,11 @@ public class UsersController : ControllerBase
             };
         }
 
-        if (sender == null || receiver == null) return NotFound("User not found"); 
+        if (sender == null || receiver == null) return NotFound("User not found");
 
 
         var success = await _userRepository.TransferDubloons(sender, receiver, dubloonTransferDTO.DubloonsToTransfer);
-        
+
         return success ? Ok() : BadRequest("Not enough dubloons");
     }
 
@@ -186,7 +186,7 @@ public class UsersController : ControllerBase
     /// </summary>
     [HttpPost]
     [Route("[controller]/recover")]
-    public async Task<bool> RecoverUser([FromForm]string userEmail)
+    public async Task<bool> RecoverUser([FromForm] string userEmail)
     {
         var user = await _userRepository.FindByEmail(userEmail);
         if (user == null || user.Email == null) return false;
@@ -223,11 +223,11 @@ public class UsersController : ControllerBase
     [AllowAnonymous]
     [HttpPost]
     [Route("[controller]/login")]
-    public async Task<ActionResult<UserInfoDTO>> Login([FromForm]UserLoginDTO loginDTO)
+    public async Task<ActionResult<UserInfoDTO>> Login([FromForm] UserLoginDTO loginDTO)
     {
         var user = await _userManager.FindByNameAsync(loginDTO.Username);
         user ??= await _userRepository.FindByEmail(loginDTO.Username);
-        if( user == null) return Unauthorized("The entered information was not correct");
+        if (user == null) return Unauthorized("The entered information was not correct");
 
         var result = await _signInManager.PasswordSignInAsync(user, loginDTO.Password, false, false);
         if (!result.Succeeded)
@@ -245,7 +245,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if(userId == null) return Unauthorized();
+        if (userId == null) return Unauthorized();
         await _signInManager.SignOutAsync();
         return Ok();
     }
