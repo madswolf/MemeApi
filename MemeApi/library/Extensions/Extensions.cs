@@ -35,29 +35,29 @@ public static class Extensions
             Console.WriteLine($"Votable with content hash: {votable.ContentHash} and Id: {votable.Id} is not of Type: {typeof(T)}");
             return new T();
         }
-        
+
         return votableOfType;
     }
     public static string ToContentHash(this Meme meme)
     {
         return $"{meme.Visual.ContentHash}{meme.TopText?.ContentHash}{meme.BottomText?.ContentHash}".ToContentHash();
     }
-    
+
     public static string PrependRandomString(this string baseString)
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         var random = new Random();
         var prefix = new string(Enumerable.Repeat(chars, 5)
             .Select(s => s[random.Next(s.Length)]).ToArray());
-        
+
         return prefix + baseString;
     }
-    
+
     public static string ToContentHash(this string? text)
     {
         return text == null ? "" : Encoding.UTF8.GetBytes(text).ToContentHash();
     }
-    
+
     public static string ToContentHash(this byte[] content)
     {
         using var sha256 = SHA256.Create();
@@ -67,7 +67,7 @@ public static class Extensions
     {
         return set.Include(v => v.Owner).Include(v => v.Votes).Include(v => v.Topics);
     }
-    
+
     public static IIncludableQueryable<Meme, User> IncludeVotesAndVotesMemes(this DbSet<Meme> set)
     {
         return set.IncludeTopicsAndVotes()
@@ -75,12 +75,12 @@ public static class Extensions
             .ThenInclude(t => t.Votes)
             .Include(m => m.BottomText)
             .ThenInclude(t => t.Owner)
-            
+
             .Include(m => m.TopText)
             .ThenInclude(t => t.Votes)
             .Include(m => m.TopText)
             .ThenInclude(t => t.Owner)
-            
+
             .Include(meme => meme.Visual)
             .ThenInclude(v => v.Votes)
             .Include(meme => meme.Visual)
@@ -93,7 +93,7 @@ public static class Extensions
     }
     public static double CountDubloons(this IEnumerable<DubloonEvent> dubloonEvents)
     {
-        return dubloonEvents.Select(d => d.Dubloons).Sum();
+        return dubloonEvents.Sum(d => d.Dubloons);
     }
 
     public static string ExternalUserIdToGuid(this string externalUserId)
@@ -133,7 +133,7 @@ public static class Extensions
         CreatedAt = vote.CreatedAt,
         LastUpdateAt = vote.LastUpdatedAt
     };
-    
+
     public static LotteryDTO ToLotteryDTO(this Lottery lottery, string mediaHost) => new()
     {
         Id = lottery.Id,
@@ -141,7 +141,7 @@ public static class Extensions
         TicketCost = lottery.TicketCost,
         Items = lottery.Brackets.SelectMany(bracket => bracket.Items.Select(i => i.ToLotteryItemDTO(mediaHost))).ToList(),
     };
-    
+
     public static LotteryBracketDTO ToLotteryBracketDTO(this LotteryBracket bracket, string mediaHost) => new()
     {
         BracketId = bracket.Id,
@@ -159,13 +159,13 @@ public static class Extensions
         ItemRarityColor = item.Bracket.RarityColor,
         OutOfStock = item.ItemCount <= item.Tickets.Count
     };
-    
+
     public static LotteryItemPreviewDTO ToLotteryItemPreviewDTO(this LotteryItem item, string mediaHost) => new()
     {
         ItemThumbnailURL = mediaHost + LotteryRepository.LotteryitemsPath + item.ThumbNailFileName,
         ItemRarityColor = item.Bracket.RarityColor
     };
-    
+
     public static LotterItemWinDTO ToLotteryItemWinDTO(this LotteryItem item, string mediaHost) => new()
     {
         ItemThumbnailURL = mediaHost + LotteryRepository.LotteryitemsPath + item.ThumbNailFileName,
@@ -229,19 +229,19 @@ public static class Extensions
 
     public static string ToTopText(this Meme meme)
     {
-        return meme.TopText != null ? meme.TopText.Text : "";
+        return meme.TopText?.Text ?? "";
     }
 
     public static string ToBottomText(this Meme meme)
     {
-        return meme.BottomText != null ? meme.BottomText.Text : "";
+        return meme.BottomText?.Text ?? "";
     }
 
     public static bool CanUserPost(this Topic topic, string? userId = null)
     {
         var isRestricted = topic.HasRestrictedPosting;
         var isOwner = topic.Owner != null && topic.Owner?.Id == userId;
-        var isModerator = topic.Moderators.Any(m => m != null &&  m.Id == userId);
+        var isModerator = topic.Moderators.Any(m => m != null && m.Id == userId);
 
         return (!isRestricted || isOwner || isModerator);
     }
@@ -254,7 +254,7 @@ public static class Extensions
         double lowerBoundAfterFirstDecayPhase = 75.0;
         double lowerBoundAfterSecondDecayPhase = 10.0;
         double beginningOfFirstDecayPhase = TimeSpan.FromHours(1).TotalSeconds;
-        double endOfFirstDecayPhase = TimeSpan.FromHours(2).TotalSeconds; 
+        double endOfFirstDecayPhase = TimeSpan.FromHours(2).TotalSeconds;
         double endOfSecondDecayPhase = TimeSpan.FromHours(3).TotalSeconds;
         double endOfThirdDecayPhase = TimeSpan.FromDays(3).TotalSeconds;
 
@@ -270,7 +270,7 @@ public static class Extensions
                 upperDecayBound: endOfFirstDecayPhase);
         }
 
-        if (secondsDifference <= (endOfSecondDecayPhase))
+        if (secondsDifference <= endOfSecondDecayPhase)
         {
             return Interpolate(
                 secondsDifference,
@@ -280,7 +280,7 @@ public static class Extensions
                 upperDecayBound: endOfSecondDecayPhase);
         }
 
-        if (secondsDifference <= (endOfThirdDecayPhase))
+        if (secondsDifference <= endOfThirdDecayPhase)
         {
             return Interpolate(
                 secondsDifference,
@@ -306,6 +306,6 @@ public static class Extensions
     }
     public static double CalculatePortotionalDecay(double secondsDifference, double lowerDecayBound, double maxDecayBound)
     {
-        return ((secondsDifference - lowerDecayBound) / (maxDecayBound - lowerDecayBound));
+        return (secondsDifference - lowerDecayBound) / (maxDecayBound - lowerDecayBound);
     }
 }
