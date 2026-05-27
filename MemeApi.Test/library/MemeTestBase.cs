@@ -238,12 +238,14 @@ public class MemeTestBase : IAsyncLifetime
 
     public static IFormFile CreateFormFile(int size, string filename)
     {
-        var fileStream = new MemoryStream();
-        var dummyData = new byte[size];
-        fileStream.Write(dummyData, 0, size);
-        fileStream.Position = 0;
+        // PNG signature so VisualsController.IsImage() (libmagic-based) accepts it.
+        var pngHeader = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+        var totalSize = pngHeader.Length + size;
+        var bytes = new byte[totalSize];
+        Array.Copy(pngHeader, bytes, pngHeader.Length);
 
-        var file = new FormFile(fileStream, 0, size, "fileStream", filename)
+        var fileStream = new MemoryStream(bytes);
+        var file = new FormFile(fileStream, 0, totalSize, "fileStream", filename)
         {
             Headers = new HeaderDictionary(),
             ContentType = "image/png"
