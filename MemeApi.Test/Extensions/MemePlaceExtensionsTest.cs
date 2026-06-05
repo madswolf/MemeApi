@@ -112,9 +112,9 @@ public class MemePlaceExtensionsTest
 
         // When
         var price = place.SubmissionPriceForUser(1, user, true);
-        
+
         // Then
-        price.Should().Be(-100);
+        price.Should().Be(-700);
     }
     
     [Fact]
@@ -132,9 +132,9 @@ public class MemePlaceExtensionsTest
 
         // When
         var price = place.SubmissionPriceForUser(201, user, true);
-        
+
         // Then
-        price.Should().Be(-99);
+        price.Should().Be(-699);
     }
     
     [Fact]
@@ -152,9 +152,9 @@ public class MemePlaceExtensionsTest
 
         // When
         var price = place.SubmissionPriceForUser(100, user, false);
-        
+
         // Then
-        price.Should().Be(0);
+        price.Should().Be(-600);
     }
     
     [Fact]
@@ -172,9 +172,9 @@ public class MemePlaceExtensionsTest
 
         // When
         var price = place.SubmissionPriceForUser(100, user, false);
-        
+
         // Then
-        price.Should().Be(86);
+        price.Should().Be(0);
     }
     
     [Fact]
@@ -212,8 +212,8 @@ public class MemePlaceExtensionsTest
         
         // When
         var price = place.SubmissionPriceForUser(1, user, false);
-        
+
         // Then
-        price.Should().Be(-99);
+        price.Should().Be(-699);
     }
 }

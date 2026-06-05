@@ -238,12 +238,39 @@ public class MemeTestBase : IAsyncLifetime
 
     public static IFormFile CreateFormFile(int size, string filename)
     {
-        var fileStream = new MemoryStream();
-        var dummyData = new byte[size];
-        fileStream.Write(dummyData, 0, size);
-        fileStream.Position = 0;
+        var pngBytes = new byte[]
+        {
+            // PNG signature
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+            // IHDR chunk (length=13)
+            0x00, 0x00, 0x00, 0x0D,
+            0x49, 0x48, 0x44, 0x52, // "IHDR"
+            0x00, 0x00, 0x00, 0x01, // width=1
+            0x00, 0x00, 0x00, 0x01, // height=1
+            0x08, 0x02,             // bit depth=8, color type=2 (RGB)
+            0x00, 0x00, 0x00,       // compression, filter, interlace
+            0x90, 0x77, 0x53, 0xDE, // IHDR CRC
+            // IDAT chunk
+            0x00, 0x00, 0x00, 0x0C,
+            0x49, 0x44, 0x41, 0x54, // "IDAT"
+            0x08, 0xD7, 0x63, 0xF8, 0xCF, 0xC0, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01,
+            0xE2, 0x21, 0xBC, 0x33, // IDAT CRC
+            // IEND chunk
+            0x00, 0x00, 0x00, 0x00,
+            0x49, 0x45, 0x4E, 0x44, // "IEND"
+            0xAE, 0x42, 0x60, 0x82  // IEND CRC
+        };
 
-        var file = new FormFile(fileStream, 0, size, "fileStream", filename)
+        var totalSize = pngBytes.Length + size;
+        var bytes = new byte[totalSize];
+        Array.Copy(pngBytes, bytes, pngBytes.Length);
+
+        var random = new Random();
+        random.NextBytes(new Span<byte>(bytes, pngBytes.Length, size));
+
+        var fileStream = new MemoryStream(bytes);
+
+        var file = new FormFile(fileStream, 0, totalSize, "fileStream", filename)
         {
             Headers = new HeaderDictionary(),
             ContentType = "image/png"

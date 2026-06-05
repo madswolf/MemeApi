@@ -52,9 +52,9 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         var text = new MemeText { Id = Guid.NewGuid().ToString(), Text = "test", Topics = [topic], ContentHash = ""};
         _context.Texts.Add(text);
         await _context.SaveChangesAsync();
-        
+
         // When
-        var result = await _votableRepository.DeleteVotable(text, owner);
+        var result = await _votableRepository.DeleteVotable(text, owner, hardDelete: true);
 
         // Then
         result.Should().BeTrue();
@@ -177,7 +177,7 @@ public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeT
         await _context.SaveChangesAsync();
 
         // When
-        var result = await _votableRepository.DeleteVotable(text, user);
+        var result = await _votableRepository.DeleteVotable(text, user, hardDelete: true);
 
         // Then
         result.Should().BeTrue();

@@ -44,6 +44,7 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
     public async Task ResetDatabase()
     {
         await _respawner.ResetAsync(_connection);
+        Db.ChangeTracker.Clear();
     }
 
     public async Task InitializeAsync()
