@@ -31,40 +31,110 @@ public class ThirdPartyAuthorizationController : ControllerBase
     private readonly RefreshTokenRepository _refreshTokenRepository;
     private readonly MemeApiSettings _settings;
     private readonly UserManager<User> _userManager;
+    private readonly TemporaryPasswordStore _temporaryPasswordStore;
 
     public ThirdPartyAuthorizationController(
         JwtTokenService jwtTokenService,
         UserRepository userRepository,
         RefreshTokenRepository refreshTokenRepository,
         MemeApiSettings settings,
-        UserManager<User> userManager)
+        UserManager<User> userManager,
+        TemporaryPasswordStore temporaryPasswordStore)
     {
         _jwtTokenService = jwtTokenService;
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _settings = settings;
         _userManager = userManager;
+        _temporaryPasswordStore = temporaryPasswordStore;
     }
 
     /// <summary>
-    /// Issues tokens. Supports two grant types:
-    ///
-    /// grant_type=discord_bot — The Discord bot authenticates with client_secret and provides
-    /// the Discord user ID. Returns a 1-hour access token and a 14-day refresh token.
-    ///
-    /// grant_type=refresh_token — Exchange a valid refresh token for a new access token and
-    /// rotated refresh token. The old refresh token is revoked immediately.
+    /// Initiates third-party authentication for a Discord user. The bot authenticates with
+    /// client_secret and provides the Discord user ID; the API returns a short-lived temporary
+    /// password (valid for 60 seconds) that the bot can display to the user. The temporary
+    /// password is then exchanged for an access/refresh token pair via POST /auth/login.
     /// </summary>
-    [HttpPost("token")]
+    [HttpPost("initiate")]
     [AllowAnonymous]
-    public async Task<ActionResult<TokenResponseDTO>> Token([FromForm] TokenRequestDTO request)
+    public async Task<ActionResult<InitiateAuthResponseDTO>> Initiate([FromForm] string client_secret, [FromForm] string discord_user_id, [FromForm] string? discord_username)
     {
-        return request.grant_type switch
+        if (string.IsNullOrEmpty(client_secret) || string.IsNullOrEmpty(discord_user_id))
+            return BadRequest(new { error = "invalid_request" });
+
+        if (client_secret != _settings.GetBotSecret())
+            return Unauthorized(new { error = "invalid_client" });
+
+        var userId = discord_user_id.ExternalUserIdToGuid();
+        var user = await _userRepository.GetUser(userId);
+
+        if (user == null)
         {
-            "discord_bot" => await HandleDiscordBotGrant(request),
-            "refresh_token" => await HandleRefreshTokenGrant(request),
-            _ => BadRequest(new { error = "unsupported_grant_type" }),
-        };
+            user = new User
+            {
+                Id = userId,
+                UserName = discord_username ?? discord_user_id,
+                ProfilePicFile = "default.jpg",
+                LastLoginAt = DateTime.UtcNow,
+            };
+            var result = await _userManager.CreateAsync(user);
+            if (!result.Succeeded)
+                return StatusCode(500, new { error = "server_error" });
+        }
+
+        var temporaryPassword = _temporaryPasswordStore.Create(userId);
+
+        return Ok(new InitiateAuthResponseDTO
+        {
+            temporary_password = temporaryPassword,
+            expires_in = _temporaryPasswordStore.LifetimeInSeconds,
+        });
+    }
+
+    /// <summary>
+    /// Exchanges a temporary password (issued by POST /auth/initiate) for an access token
+    /// and a 14-day refresh token. The temporary password is single-use and expires after 60 seconds.
+    /// </summary>
+    [HttpPost("login")]
+    [AllowAnonymous]
+    public async Task<ActionResult<TokenResponseDTO>> Login([FromForm] LoginRequestDTO request)
+    {
+        if (string.IsNullOrEmpty(request.temporary_password))
+            return BadRequest(new { error = "invalid_request" });
+
+        var userId = _temporaryPasswordStore.TryConsume(request.temporary_password);
+        if (userId == null)
+            return Unauthorized(new { error = "invalid_grant" });
+
+        var user = await _userRepository.GetUser(userId);
+        if (user == null)
+            return Unauthorized(new { error = "invalid_grant" });
+
+        user.LastLoginAt = DateTime.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        return Ok(await IssueTokenPair(user));
+    }
+
+    /// <summary>
+    /// Exchanges a refresh token for a new access token and rotated refresh token.
+    /// The old refresh token is revoked immediately.
+    /// </summary>
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    public async Task<ActionResult<TokenResponseDTO>> Refresh([FromForm] RefreshRequestDTO request)
+    {
+        if (string.IsNullOrEmpty(request.refresh_token))
+            return BadRequest(new { error = "invalid_request" });
+
+        var stored = await _refreshTokenRepository.GetAsync(request.refresh_token);
+
+        if (stored == null || stored.IsRevoked || stored.ExpiresAt < DateTime.UtcNow)
+            return Unauthorized(new { error = "invalid_grant" });
+
+        await _refreshTokenRepository.RevokeAsync(stored);
+
+        return Ok(await IssueTokenPair(stored.User));
     }
 
     /// <summary>
@@ -98,13 +168,13 @@ public class ThirdPartyAuthorizationController : ControllerBase
         return Ok(new
         {
             issuer = _settings.GetJwtIssuer(),
-            token_endpoint = $"{baseUrl}/auth/token",
+            initiate_endpoint = $"{baseUrl}/auth/initiate",
+            login_endpoint = $"{baseUrl}/auth/login",
+            refresh_endpoint = $"{baseUrl}/auth/refresh",
             revocation_endpoint = $"{baseUrl}/auth/revoke",
             introspection_endpoint = $"{baseUrl}/auth/introspect",
             userinfo_endpoint = $"{baseUrl}/auth/userinfo",
             jwks_uri = $"{baseUrl}/.well-known/jwks",
-            grant_types_supported = new[] { "discord_bot", "refresh_token" },
-            token_endpoint_auth_methods_supported = new[] { "client_secret_post" },
             id_token_signing_alg_values_supported = new[] { "HS256" },
             subject_types_supported = new[] { "public" },
             claims_supported = new[] { "sub", "preferred_username" },
@@ -154,7 +224,7 @@ public class ThirdPartyAuthorizationController : ControllerBase
 
     /// <summary>
     /// Returns the authenticated user's profile. Requires a valid Bearer token issued
-    /// by the /auth/token endpoint.
+    /// by the /auth/login or /auth/refresh endpoint.
     /// </summary>
     [HttpGet("userinfo")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -167,55 +237,6 @@ public class ThirdPartyAuthorizationController : ControllerBase
         if (user == null) return NotFound();
 
         return Ok(user.ToUserInfo(_settings.GetMediaHost()));
-    }
-
-    private async Task<ActionResult<TokenResponseDTO>> HandleDiscordBotGrant(TokenRequestDTO request)
-    {
-        if (string.IsNullOrEmpty(request.client_secret) || string.IsNullOrEmpty(request.discord_user_id))
-            return BadRequest(new { error = "invalid_request" });
-
-        if (request.client_secret != _settings.GetBotSecret())
-            return Unauthorized(new { error = "invalid_client" });
-
-        var userId = request.discord_user_id.ExternalUserIdToGuid();
-        var user = await _userRepository.GetUser(userId);
-
-        if (user == null)
-        {
-            user = new User
-            {
-                Id = userId,
-                UserName = request.discord_username ?? request.discord_user_id,
-                ProfilePicFile = "default.jpg",
-                LastLoginAt = DateTime.UtcNow,
-            };
-            var result = await _userManager.CreateAsync(user);
-            if (!result.Succeeded)
-                return StatusCode(500, new { error = "server_error" });
-        }
-        else
-        {
-            user.LastLoginAt = DateTime.UtcNow;
-            await _userManager.UpdateAsync(user);
-        }
-
-        return Ok(await IssueTokenPair(user));
-    }
-
-    private async Task<ActionResult<TokenResponseDTO>> HandleRefreshTokenGrant(TokenRequestDTO request)
-    {
-        if (string.IsNullOrEmpty(request.refresh_token))
-            return BadRequest(new { error = "invalid_request" });
-
-        var stored = await _refreshTokenRepository.GetAsync(request.refresh_token);
-
-        if (stored == null || stored.IsRevoked || stored.ExpiresAt < DateTime.UtcNow)
-            return Unauthorized(new { error = "invalid_grant" });
-
-        // Rotate: revoke old token before issuing new pair.
-        await _refreshTokenRepository.RevokeAsync(stored);
-
-        return Ok(await IssueTokenPair(stored.User));
     }
 
     private async Task<TokenResponseDTO> IssueTokenPair(User user)

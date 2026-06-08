@@ -117,6 +117,7 @@ services.AddScoped<LotteryRepository>();
 services.AddScoped<RefreshTokenRepository>();
 
 services.AddSingleton<MemeApiSettings>();
+services.AddSingleton<TemporaryPasswordStore>();
 services.AddScoped<JwtTokenService>();
 
 
