@@ -5,10 +5,12 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using MemeApi.library;
 using MemeApi.library.Extensions;
+using MemeApi.library.Authorization;
 using MemeApi.library.repositories;
 using MemeApi.library.Repositories;
 using MemeApi.library.Services;
 using MemeApi.Models.DTO.Places;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MemeApi.Controllers;
@@ -179,6 +181,7 @@ public class MemePlacesController : ControllerBase
     /// <summary>
     /// Post a PlaceSubmission
     /// </summary>
+    [Authorize(Policy = Policies.SubmitPlace)]
     [HttpPost("submissions/submit")]
     public async Task<ActionResult<IEnumerable<PlaceSubmissionDTO>>> Submit([FromForm]PlaceSubmissionCreationDTO submissionDTO)
     {

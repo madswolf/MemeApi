@@ -57,13 +57,16 @@ public class ThirdPartyAuthorizationController : ControllerBase
     /// </summary>
     [HttpPost("initiate")]
     [AllowAnonymous]
-    public async Task<ActionResult<InitiateAuthResponseDTO>> Initiate([FromForm] string client_secret, [FromForm] string discord_user_id, [FromForm] string? discord_username)
+    public async Task<ActionResult<InitiateAuthResponseDTO>> Initiate([FromForm] string client_secret, [FromForm] string discord_user_id, [FromForm] string? discord_username, [FromForm] string scope)
     {
         if (string.IsNullOrEmpty(client_secret) || string.IsNullOrEmpty(discord_user_id))
             return BadRequest(new { error = "invalid_request" });
 
         if (client_secret != _settings.GetBotSecret())
             return Unauthorized(new { error = "invalid_client" });
+
+        if (scope != JwtTokenService.ScopeTransferDubloons && scope != JwtTokenService.ScopeSubmitPlace)
+            return BadRequest(new { error = "invalid_scope" });
 
         var userId = discord_user_id.ExternalUserIdToGuid();
         var user = await _userRepository.GetUser(userId);
@@ -82,7 +85,7 @@ public class ThirdPartyAuthorizationController : ControllerBase
                 return StatusCode(500, new { error = "server_error" });
         }
 
-        var temporaryPassword = _temporaryPasswordStore.Create(userId);
+        var temporaryPassword = _temporaryPasswordStore.Create(userId, scope);
 
         return Ok(new InitiateAuthResponseDTO
         {
@@ -102,18 +105,18 @@ public class ThirdPartyAuthorizationController : ControllerBase
         if (string.IsNullOrEmpty(request.temporary_password))
             return BadRequest(new { error = "invalid_request" });
 
-        var userId = _temporaryPasswordStore.TryConsume(request.temporary_password);
-        if (userId == null)
+        var consumed = _temporaryPasswordStore.TryConsume(request.temporary_password);
+        if (consumed == null)
             return Unauthorized(new { error = "invalid_grant" });
 
-        var user = await _userRepository.GetUser(userId);
+        var user = await _userRepository.GetUser(consumed.Value.UserId);
         if (user == null)
             return Unauthorized(new { error = "invalid_grant" });
 
         user.LastLoginAt = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);
 
-        return Ok(await IssueTokenPair(user));
+        return Ok(await IssueTokenPair(user, consumed.Value.Scope));
     }
 
     /// <summary>
@@ -134,7 +137,7 @@ public class ThirdPartyAuthorizationController : ControllerBase
 
         await _refreshTokenRepository.RevokeAsync(stored);
 
-        return Ok(await IssueTokenPair(stored.User));
+        return Ok(await IssueTokenPair(stored.User, stored.Scope));
     }
 
     /// <summary>
@@ -239,10 +242,10 @@ public class ThirdPartyAuthorizationController : ControllerBase
         return Ok(user.ToUserInfo(_settings.GetMediaHost()));
     }
 
-    private async Task<TokenResponseDTO> IssueTokenPair(User user)
+    private async Task<TokenResponseDTO> IssueTokenPair(User user, string scope)
     {
-        var (accessToken, expiresAt) = _jwtTokenService.GenerateToken(user);
-        var refreshToken = await _refreshTokenRepository.CreateAsync(user.Id);
+        var (accessToken, expiresAt) = _jwtTokenService.GenerateToken(user, scope);
+        var refreshToken = await _refreshTokenRepository.CreateAsync(user.Id, scope);
 
         return new TokenResponseDTO
         {

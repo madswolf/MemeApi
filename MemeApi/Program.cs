@@ -4,6 +4,9 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using MemeApi.library;
+using MemeApi.library.Authentication;
+using MemeApi.library.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using MemeApi.library.repositories;
 using MemeApi.library.Repositories;
 using MemeApi.library.Services;
@@ -11,6 +14,7 @@ using MemeApi.library.Services.Files;
 using MemeApi.MIddleware;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -56,7 +60,9 @@ services.AddAuthentication()
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero,
         };
-    });
+    })
+    .AddScheme<AuthenticationSchemeOptions, BotSecretAuthenticationHandler>(
+        BotSecretAuthenticationHandler.SchemeName, _ => { });
 
 services.Configure<IdentityOptions>(options =>
 {
@@ -119,6 +125,16 @@ services.AddScoped<RefreshTokenRepository>();
 services.AddSingleton<MemeApiSettings>();
 services.AddSingleton<TemporaryPasswordStore>();
 services.AddScoped<JwtTokenService>();
+services.AddSingleton<IAuthorizationHandler, ScopeOrBotSecretHandler>();
+services.AddAuthorization(options =>
+{
+    options.AddPolicy(Policies.TransferDubloons, p => p
+        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, BotSecretAuthenticationHandler.SchemeName)
+        .Requirements.Add(new ScopeRequirement(JwtTokenService.ScopeTransferDubloons)));
+    options.AddPolicy(Policies.SubmitPlace, p => p
+        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, BotSecretAuthenticationHandler.SchemeName)
+        .Requirements.Add(new ScopeRequirement(JwtTokenService.ScopeSubmitPlace)));
+});
 
 
 services.AddScoped<IMemeOfTheDayService, MemeOfTheDayService>();
@@ -145,10 +161,7 @@ var factory = app.Services.GetRequiredService<IServiceScopeFactory>();
 using (var serviceScope = factory.CreateScope())
 {
     var context = serviceScope.ServiceProvider.GetRequiredService<MemeContext>();
-    if (context.Database.EnsureCreated())
-    {
-        context.SaveChanges();
-    }
+    context.Database.Migrate();
 }
 app.UseRequestLocalization("en-US");
 app.UseMiddleware<SwaggerAuthenticationMiddleware>();

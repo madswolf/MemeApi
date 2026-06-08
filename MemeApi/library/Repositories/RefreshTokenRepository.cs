@@ -17,12 +17,13 @@ public class RefreshTokenRepository
         _context = context;
     }
 
-    public async Task<RefreshToken> CreateAsync(string userId)
+    public async Task<RefreshToken> CreateAsync(string userId, string scope)
     {
         var token = new RefreshToken
         {
             Token = GenerateSecureToken(),
             UserId = userId,
+            Scope = scope,
             ExpiresAt = DateTime.UtcNow.AddDays(TokenLifetimeDays),
             CreatedAt = DateTime.UtcNow,
             IsRevoked = false,
