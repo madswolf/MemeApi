@@ -5,6 +5,7 @@ using MemeApi.Models.Entity.Dubloons;
 using MemeApi.Models.Entity.Lottery;
 using MemeApi.Models.Entity.Memes;
 using MemeApi.Models.Entity.Places;
+using MemeApi.Models.Entity.ThirdParty;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -37,7 +38,9 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
     public DbSet<LotteryItem> LotteryItems { get; set; }
     
     public DbSet<LotteryTicket> LotteryTickets { get; set; }
-    
+
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -246,6 +249,18 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .HasForeignKey(ticket => ticket.ItemId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.ToTable("RefreshTokens");
+            entity.HasKey(r => r.Token);
+            entity.Property(r => r.Token).HasMaxLength(64);
+            entity.HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
         var admin = new User
         {
