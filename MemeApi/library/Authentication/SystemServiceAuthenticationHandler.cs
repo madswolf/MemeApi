@@ -3,19 +3,20 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using MemeApi.library.Extensions;
+using MemeApi.library.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace MemeApi.library.Authentication;
 
-public class BotSecretAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+public class SystemServiceAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public const string SchemeName = "BotSecret";
 
     private readonly MemeApiSettings _settings;
 
-    public BotSecretAuthenticationHandler(
+    public SystemServiceAuthenticationHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
@@ -30,7 +31,12 @@ public class BotSecretAuthenticationHandler : AuthenticationHandler<Authenticati
             botSecret != _settings.GetBotSecret())
             return Task.FromResult(AuthenticateResult.NoResult());
 
-        var claims = new List<Claim> { new Claim("client_type", "discord_bot") };
+        var claims = new List<Claim>
+        {
+            new Claim("client_type", "discord_bot"),
+            new Claim("preferred_username", "discord_bot"),
+            new Claim("scope", JwtTokenService.ScopeSystemService),
+        };
 
         if (Request.Headers.TryGetValue("ExternalUserId", out var externalUserId))
             claims.Add(new Claim(ClaimTypes.NameIdentifier, externalUserId.ToString().ExternalUserIdToGuid()));

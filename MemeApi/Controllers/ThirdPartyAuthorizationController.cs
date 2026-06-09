@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using MemeApi.library;
+using MemeApi.library.Authorization;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Services;
@@ -56,36 +57,17 @@ public class ThirdPartyAuthorizationController : ControllerBase
     /// password is then exchanged for an access/refresh token pair via POST /auth/login.
     /// </summary>
     [HttpPost("initiate")]
-    [AllowAnonymous]
-    public async Task<ActionResult<InitiateAuthResponseDTO>> Initiate([FromForm] string client_secret, [FromForm] string discord_user_id, [FromForm] string? discord_username, [FromForm] string scope)
+    [Authorize(Policy = Policies.SystemServiceOnly)]
+    public async Task<ActionResult<InitiateAuthResponseDTO>> Initiate([FromForm] string scope)
     {
-        if (string.IsNullOrEmpty(client_secret) || string.IsNullOrEmpty(discord_user_id))
-            return BadRequest(new { error = "invalid_request" });
-
-        if (client_secret != _settings.GetBotSecret())
-            return Unauthorized(new { error = "invalid_client" });
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = await _userRepository.GetUser(userId, includeDubloons: true);
+        if (user == null) return NotFound(userId);
 
         if (scope != JwtTokenService.ScopeTransferDubloons && scope != JwtTokenService.ScopeSubmitPlace)
             return BadRequest(new { error = "invalid_scope" });
 
-        var userId = discord_user_id.ExternalUserIdToGuid();
-        var user = await _userRepository.GetUser(userId);
-
-        if (user == null)
-        {
-            user = new User
-            {
-                Id = userId,
-                UserName = discord_username ?? discord_user_id,
-                ProfilePicFile = "default.jpg",
-                LastLoginAt = DateTime.UtcNow,
-            };
-            var result = await _userManager.CreateAsync(user);
-            if (!result.Succeeded)
-                return StatusCode(500, new { error = "server_error" });
-        }
-
-        var temporaryPassword = _temporaryPasswordStore.Create(userId, scope);
+        var temporaryPassword = _temporaryPasswordStore.Create(user.Id, scope);
 
         return Ok(new InitiateAuthResponseDTO
         {

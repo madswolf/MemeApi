@@ -4,9 +4,11 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using MemeApi.library;
+using MemeApi.library.Authorization;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MemeApi.Controllers;
@@ -58,18 +60,14 @@ public class TopicsController : ControllerBase
     /// <summary>
     /// Mod a user for the given topic. Requires the currently logged in user to be the topic owner
     /// </summary>
+    [Authorize(Policy = Policies.SystemServiceOnly)]
     [HttpPut]
     [Route("{topicId}/mod/{userId}")]
     public async Task<IActionResult> ModUser(string topicId, string userId)
     {
         var topic = await _topicRepository.GetTopic(topicId);
-        var user = await _userRepository.GetUser(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
         if (topic == null) return NotFound("Topic not found");
-        if (user == null) return Unauthorized("User not logged in");
-
-        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret()) 
-            return Unauthorized("Action is forbidden");
 
         var success = await _topicRepository.ModUser(topic, userId);
 

@@ -61,8 +61,8 @@ services.AddAuthentication()
             ClockSkew = TimeSpan.Zero,
         };
     })
-    .AddScheme<AuthenticationSchemeOptions, BotSecretAuthenticationHandler>(
-        BotSecretAuthenticationHandler.SchemeName, _ => { });
+    .AddScheme<AuthenticationSchemeOptions, SystemServiceAuthenticationHandler>(
+        SystemServiceAuthenticationHandler.SchemeName, _ => { });
 
 services.Configure<IdentityOptions>(options =>
 {
@@ -125,14 +125,18 @@ services.AddScoped<RefreshTokenRepository>();
 services.AddSingleton<MemeApiSettings>();
 services.AddSingleton<TemporaryPasswordStore>();
 services.AddScoped<JwtTokenService>();
-services.AddSingleton<IAuthorizationHandler, ScopeOrBotSecretHandler>();
+services.AddSingleton<IAuthorizationHandler, ScopeOrSystemServiceHandler>();
+services.AddSingleton<IAuthorizationHandler, SystemServiceHandler>();
 services.AddAuthorization(options =>
 {
+    options.AddPolicy(Policies.SystemServiceOnly, p => p
+        .AddAuthenticationSchemes(SystemServiceAuthenticationHandler.SchemeName)
+        .Requirements.Add(new SystemServiceRequirement()));
     options.AddPolicy(Policies.TransferDubloons, p => p
-        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, BotSecretAuthenticationHandler.SchemeName)
+        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, SystemServiceAuthenticationHandler.SchemeName)
         .Requirements.Add(new ScopeRequirement(JwtTokenService.ScopeTransferDubloons)));
     options.AddPolicy(Policies.SubmitPlace, p => p
-        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, BotSecretAuthenticationHandler.SchemeName)
+        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, SystemServiceAuthenticationHandler.SchemeName)
         .Requirements.Add(new ScopeRequirement(JwtTokenService.ScopeSubmitPlace)));
 });
 

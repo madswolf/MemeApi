@@ -11,6 +11,7 @@ public class JwtTokenService
 {
     public const string ScopeTransferDubloons = "transfer_dubloons";
     public const string ScopeSubmitPlace = "submit_place";
+    public const string ScopeSystemService = "system_service";
 
     private const int TokenLifetimeHours = 1;
     private readonly MemeApiSettings _settings;
