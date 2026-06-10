@@ -12,7 +12,6 @@ using MemeApi.Models.DTO.ThirdParty;
 using MemeApi.Models.Entity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MemeApi.Controllers;
@@ -31,7 +30,6 @@ public class ThirdPartyAuthorizationController : ControllerBase
     private readonly UserRepository _userRepository;
     private readonly RefreshTokenRepository _refreshTokenRepository;
     private readonly MemeApiSettings _settings;
-    private readonly UserManager<User> _userManager;
     private readonly TemporaryPasswordStore _temporaryPasswordStore;
 
     public ThirdPartyAuthorizationController(
@@ -39,14 +37,12 @@ public class ThirdPartyAuthorizationController : ControllerBase
         UserRepository userRepository,
         RefreshTokenRepository refreshTokenRepository,
         MemeApiSettings settings,
-        UserManager<User> userManager,
         TemporaryPasswordStore temporaryPasswordStore)
     {
         _jwtTokenService = jwtTokenService;
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _settings = settings;
-        _userManager = userManager;
         _temporaryPasswordStore = temporaryPasswordStore;
     }
 
@@ -58,7 +54,7 @@ public class ThirdPartyAuthorizationController : ControllerBase
     /// </summary>
     [HttpPost("initiate")]
     [Authorize(Policy = Policies.SystemServiceOnly)]
-    public async Task<ActionResult<InitiateAuthResponseDTO>> Initiate([FromForm] string scope)
+    public async Task<ActionResult<InitiateAuthResponseDTO>> Initiate([FromBody] string scope)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var user = await _userRepository.GetUser(userId, includeDubloons: true);
@@ -95,8 +91,7 @@ public class ThirdPartyAuthorizationController : ControllerBase
         if (user == null)
             return Unauthorized(new { error = "invalid_grant" });
 
-        user.LastLoginAt = DateTime.UtcNow;
-        await _userManager.UpdateAsync(user);
+        await _userRepository.UserLoggedIn(user);
 
         return Ok(await IssueTokenPair(user, consumed.Value.Scope));
     }
