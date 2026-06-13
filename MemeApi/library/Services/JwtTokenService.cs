@@ -13,7 +13,7 @@ public class JwtTokenService
     public const string ScopeSubmitPlace = "submit_place";
     public const string ScopeSystemService = "system_service";
 
-    private const int TokenLifetimeHours = 1;
+    private const int TokenLifetimeMinutes = 10;
     private readonly MemeApiSettings _settings;
 
     public JwtTokenService(MemeApiSettings settings)
@@ -25,7 +25,7 @@ public class JwtTokenService
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.GetJwtSecret()));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expiresAt = DateTimeOffset.UtcNow.AddHours(TokenLifetimeHours);
+        var expiresAt = DateTimeOffset.UtcNow.AddMinutes(TokenLifetimeMinutes);
 
         var claims = new[]
         {

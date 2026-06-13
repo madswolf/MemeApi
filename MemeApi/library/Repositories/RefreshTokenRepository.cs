@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using MemeApi.Models.Context;
@@ -44,6 +45,19 @@ public class RefreshTokenRepository
     {
         refreshToken.IsRevoked = true;
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<int> RevokeAllForUserAsync(string userId)
+    {
+        var active = await _context.RefreshTokens
+            .Where(r => r.UserId == userId && !r.IsRevoked)
+            .ToListAsync();
+
+        foreach (var t in active)
+            t.IsRevoked = true;
+
+        await _context.SaveChangesAsync();
+        return active.Count;
     }
 
     private static string GenerateSecureToken()

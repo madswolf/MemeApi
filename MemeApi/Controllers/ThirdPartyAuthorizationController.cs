@@ -118,9 +118,24 @@ public class ThirdPartyAuthorizationController : ControllerBase
     }
 
     /// <summary>
+    /// Revokes all active refresh tokens for the given user. System service only.
+    /// Already-issued access tokens remain valid until their 10-minute expiry.
+    /// </summary>
+    [HttpPost("revoke-all/{userId}")]
+    [Authorize(Policy = Policies.SystemServiceOnly)]
+    public async Task<IActionResult> RevokeAll(string userId)
+    {
+        var user = await _userRepository.GetUser(userId);
+        if (user == null) return NotFound();
+
+        var count = await _refreshTokenRepository.RevokeAllForUserAsync(userId);
+        return Ok(new { revoked = count });
+    }
+
+    /// <summary>
     /// Revokes a refresh token (RFC 7009). The token is immediately invalidated and cannot
     /// be used to obtain new access tokens. Already-issued access tokens remain valid until
-    /// their 1-hour expiry.
+    /// their 10-minute expiry.
     /// </summary>
     [HttpPost("revoke")]
     [AllowAnonymous]
