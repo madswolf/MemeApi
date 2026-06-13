@@ -14,7 +14,7 @@ namespace MemeApi.Test.Repositories;
 
 public class TopicRepositoryTest(IntegrationTestFactory databaseFixture) : MemeTestBase(databaseFixture)
 {
-    [Fact (Skip = "run alone because of error")]
+    [Fact]
     public async Task GIVEN_ExistingTopic_WHEN_CreatingTopicWithSameName_THEN_TopicNotCreated()
     {
         // given

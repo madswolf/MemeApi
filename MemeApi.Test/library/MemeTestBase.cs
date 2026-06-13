@@ -6,6 +6,7 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using MemeApi.Controllers;
 using MemeApi.library;
+using MemeApi.library.Authentication;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Services.Files;
@@ -71,12 +72,35 @@ public class MemeTestBase : IAsyncLifetime
         _signInManager = new FakeSignInManager();
     }
 
-    public static HttpContext GetMockedHttpContext()
+    public static HttpContext GetMockedHttpContext(MemeApiSettings? settings = null)
     {
         var context = new DefaultHttpContext();
         var mockSession = new Mock<ISession>();
-        context.RequestServices = new Mock<IServiceProvider>().Object;
         context.Session = mockSession.Object;
+
+        var mockAuthService = new Mock<IAuthenticationService>();
+        mockAuthService
+            .Setup(s => s.AuthenticateAsync(It.IsAny<HttpContext>(), SystemServiceAuthenticationHandler.SchemeName))
+            .Returns<HttpContext, string>((ctx, scheme) =>
+            {
+                if (settings != null &&
+                    ctx.Request.Headers.TryGetValue("Bot_Secret", out var secret) &&
+                    secret == settings.GetBotSecret())
+                {
+                    var claims = new[] { new Claim("client_type", "discord_bot") };
+                    var identity = new ClaimsIdentity(claims, scheme);
+                    var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), scheme);
+                    return Task.FromResult(AuthenticateResult.Success(ticket));
+                }
+                return Task.FromResult(AuthenticateResult.NoResult());
+            });
+
+        var mockServiceProvider = new Mock<IServiceProvider>();
+        mockServiceProvider
+            .Setup(s => s.GetService(typeof(IAuthenticationService)))
+            .Returns(mockAuthService.Object);
+
+        context.RequestServices = mockServiceProvider.Object;
         return context;
     }
 

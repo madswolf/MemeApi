@@ -1,4 +1,5 @@
-﻿using System.Data.Common;
+﻿using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Respawn;
 using Testcontainers.PostgreSql;
@@ -71,6 +73,22 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration(config =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Jwt_Secret"]                    = "test-jwt-secret-key-at-least-32-bytes-long!",
+                ["Jwt_Issuer"]                    = "test-issuer",
+                ["Jwt_Audience"]                  = "test-audience",
+                ["Bot_Secret"]                    = "lol",
+                ["Topic_Default_Topicname"]       = "Rotte-Grotte",
+                ["Topic_MemeOfTheDay_Topicname"]  = "MemeOfTheDay",
+                ["Media_Host"]                    = "test",
+                ["Admin_Username"]                = "Admin",
+                ["Admin_Password"]                = "wakabZfZ4VkUU4zBShZs",
+            });
+        });
+
         builder.ConfigureTestServices(services =>
         {
             services.RemoveDbContext<MemeContext>();
@@ -78,7 +96,6 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
             {
                 options.UseNpgsql(_container.GetConnectionString());
             });
-            services.EnsureDbCreated<MemeContext>();
         });
     }
 }
