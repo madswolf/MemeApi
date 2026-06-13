@@ -5,6 +5,7 @@ using System.Net.Mail;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using MemeApi.library;
+using MemeApi.library.Authorization;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Services;
@@ -151,6 +152,7 @@ public class UsersController : ControllerBase
     /// <summary>
     /// Transfer dubloons from the current user to another user
     /// </summary>
+    [Authorize(Policy = Policies.TransferDubloons)]
     [HttpPost]
     [Route("[controller]/Transfer")]
     public async Task<ActionResult> TransferDubloons([FromForm] DubloonTransferDTO dubloonTransferDTO)

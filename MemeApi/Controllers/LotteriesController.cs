@@ -3,11 +3,13 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using MemeApi.library;
+using MemeApi.library.Authorization;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.library.Repositories;
 using MemeApi.Models.DTO.Lotteries;
 using MemeApi.Models.Entity.Lottery;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MemeApi.Controllers;
@@ -34,11 +36,10 @@ public class LotteriesController : ControllerBase
     /// <summary>
     /// Create a Lottery
     /// </summary>
+    [Authorize(Policy = Policies.SystemServiceOnly)]
     [HttpPost]
     public async Task<ActionResult> CreateLottery([FromBody]LotteryCreationDTO lotteryCreationDTO)
     {
-        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret())
-            return Unauthorized("You do not have access to this action");
         var lottery = await _lotteryRepository.CreateLottery(lotteryCreationDTO);
         return Ok(lottery);
     }
@@ -46,11 +47,10 @@ public class LotteriesController : ControllerBase
     /// <summary>
     /// Add an item to a lottery
     /// </summary>
+    [Authorize(Policy = Policies.SystemServiceOnly)]
     [HttpPost("{bracketId}/items")]
     public async Task<ActionResult> AddLotteryItem([FromForm]LotteryItemCreationDTO lotteryItemCreationDto, string bracketId)
     {
-        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret())
-            return Unauthorized("You do not have access to this action");
         var bracket = await _lotteryRepository.GetLotteryBracket(bracketId);
         if (bracket == null) return NotFound("A bracket with the given id does not exist.");
         if (bracket.Lottery.Status != LotteryStatus.Initialized) return Conflict("You cannot add items to a lottery after it has been opened");
@@ -91,11 +91,10 @@ public class LotteriesController : ControllerBase
     /// <summary>
     /// Set status of a lottery
     /// </summary>
+    [Authorize(Policy = Policies.SystemServiceOnly)]
     [HttpPost("{lotteryId}/SetStatus")]
     public async Task<ActionResult> SetLotteryStatus(string lotteryId, [FromBody]LotteryStatus status)
     {
-        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret())
-            return Unauthorized("You do not have access to this action");
         var lottery = await _lotteryRepository.SetLotteryStatus(lotteryId, status);
         if (lottery == null) return NotFound("A lottery with the given id does not exist.");
 
@@ -105,13 +104,12 @@ public class LotteriesController : ControllerBase
     /// <summary>
     /// Draw a ticket from the given Lottery
     /// </summary>
+    [Authorize(Policy = Policies.SystemServiceOnly)]
     [HttpPost("{lotteryId}/DrawTicket")]
     public async Task<ActionResult<LotteryTicketDrawDTO>> DrawLotteryTicket(string lotteryId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var user = await _userRepository.GetUser(userId, true);
-        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret())
-            return Unauthorized("You do not have access to this action");        
         
         if(user == null) return NotFound("A user with the given Id does not exist.");
         

@@ -2,7 +2,11 @@ using System;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using MemeApi.library;
+using MemeApi.library.Authentication;
+using MemeApi.library.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using MemeApi.library.repositories;
 using MemeApi.library.Repositories;
 using MemeApi.library.Services;
@@ -10,12 +14,15 @@ using MemeApi.library.Services.Files;
 using MemeApi.MIddleware;
 using MemeApi.Models.Context;
 using MemeApi.Models.Entity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 
@@ -33,6 +40,29 @@ services.AddControllers().AddNewtonsoftJson(options =>
 
 services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<MemeContext>();
+
+var jwtSecret = appBuilder.Configuration["Jwt_Secret"] ?? throw new InvalidOperationException("Jwt_Secret configuration is missing");
+var jwtIssuer = appBuilder.Configuration["Jwt_Issuer"] ?? throw new InvalidOperationException("Jwt_Issuer configuration is missing");
+var jwtAudience = appBuilder.Configuration["Jwt_Audience"] ?? throw new InvalidOperationException("Jwt_Audience configuration is missing");
+
+services.AddAuthentication()
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+        };
+    })
+    .AddScheme<AuthenticationSchemeOptions, SystemServiceAuthenticationHandler>(
+        SystemServiceAuthenticationHandler.SchemeName, _ => { });
 
 services.Configure<IdentityOptions>(options =>
 {
@@ -90,8 +120,25 @@ services.AddScoped<VotableRepository>();
 services.AddScoped<TopicRepository>();
 services.AddScoped<MemePlaceRepository>();
 services.AddScoped<LotteryRepository>();
+services.AddScoped<RefreshTokenRepository>();
 
 services.AddSingleton<MemeApiSettings>();
+services.AddSingleton<TemporaryPasswordStore>();
+services.AddScoped<JwtTokenService>();
+services.AddSingleton<IAuthorizationHandler, ScopeOrSystemServiceHandler>();
+services.AddSingleton<IAuthorizationHandler, SystemServiceHandler>();
+services.AddAuthorization(options =>
+{
+    options.AddPolicy(Policies.SystemServiceOnly, p => p
+        .AddAuthenticationSchemes(SystemServiceAuthenticationHandler.SchemeName)
+        .Requirements.Add(new SystemServiceRequirement()));
+    options.AddPolicy(Policies.TransferDubloons, p => p
+        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, SystemServiceAuthenticationHandler.SchemeName)
+        .Requirements.Add(new ScopeRequirement(JwtTokenService.ScopeTransferDubloons)));
+    options.AddPolicy(Policies.SubmitPlace, p => p
+        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, SystemServiceAuthenticationHandler.SchemeName)
+        .Requirements.Add(new ScopeRequirement(JwtTokenService.ScopeSubmitPlace)));
+});
 
 
 services.AddScoped<IMemeOfTheDayService, MemeOfTheDayService>();
@@ -118,10 +165,7 @@ var factory = app.Services.GetRequiredService<IServiceScopeFactory>();
 using (var serviceScope = factory.CreateScope())
 {
     var context = serviceScope.ServiceProvider.GetRequiredService<MemeContext>();
-    if (context.Database.EnsureCreated())
-    {
-        context.SaveChanges();
-    }
+    context.Database.Migrate();
 }
 app.UseRequestLocalization("en-US");
 app.UseMiddleware<SwaggerAuthenticationMiddleware>();

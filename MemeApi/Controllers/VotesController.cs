@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using MemeApi.library;
+using MemeApi.library.Authentication;
 using MemeApi.library.Extensions;
 using MemeApi.library.repositories;
 using MemeApi.Models.DTO.Dubloons;
 using MemeApi.Models.Entity;
 using MemeApi.Models.Entity.Memes;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MemeApi.Controllers;
@@ -25,18 +26,16 @@ public class VotesController : ControllerBase
     private readonly VisualRepository _visualRepository;
     private readonly MemeRepository _memeRepository;
     private readonly UserRepository _userRepository;
-    private readonly MemeApiSettings _settings;
     /// <summary>
     /// A controller for creating managing votes
     /// </summary>
-    public VotesController(VotableRepository votableRepository, TextRepository textRepository, VisualRepository visualRepository, MemeRepository memeRepository, UserRepository userRepository, MemeApiSettings settings)
+    public VotesController(VotableRepository votableRepository, TextRepository textRepository, VisualRepository visualRepository, MemeRepository memeRepository, UserRepository userRepository)
     {
         _votableRepository = votableRepository;
         _textRepository = textRepository;
         _visualRepository = visualRepository;
         _memeRepository = memeRepository;
         _userRepository = userRepository;
-        _settings = settings;
     }
 
     /// <summary>
@@ -89,7 +88,8 @@ public class VotesController : ControllerBase
         }
 
         User? user = null;
-        if (Request.Headers["Bot_Secret"] == _settings.GetBotSecret())
+        var systemAuth = await HttpContext.AuthenticateAsync(SystemServiceAuthenticationHandler.SchemeName);
+        if (systemAuth.Succeeded)
         {
             if (voteDTO.ExternalUserID == null || voteDTO.ExternalUserName == null) return BadRequest("Please include an external user whe voting on behalf of someone else");
 

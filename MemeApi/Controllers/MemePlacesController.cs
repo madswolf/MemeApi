@@ -5,10 +5,12 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using MemeApi.library;
 using MemeApi.library.Extensions;
+using MemeApi.library.Authorization;
 using MemeApi.library.repositories;
 using MemeApi.library.Repositories;
 using MemeApi.library.Services;
 using MemeApi.Models.DTO.Places;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MemeApi.Controllers;
@@ -81,11 +83,11 @@ public class MemePlacesController : ControllerBase
     /// <summary>
     /// Create Place
     /// </summary>
+    [Authorize(Policy = Policies.SystemServiceOnly)]
     [HttpPost("ChangePrice")]
     public async Task<ActionResult<MemePlaceDTO>> ChangePixelPrice(
         [FromForm] PriceChangeDTO priceChangeDTO)
     {
-        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret()) return Unauthorized();
         var price = await _memePlaceRepository.ChangePrice(priceChangeDTO);
         if (price == null) return NotFound(priceChangeDTO);
 
@@ -144,10 +146,10 @@ public class MemePlacesController : ControllerBase
     /// <summary>
     /// Delete the Submission with the given submissionId
     /// </summary>
+    [Authorize(Policy = Policies.SystemServiceOnly)]
     [HttpDelete("submissions/{submisisonId}")]
     public async Task<ActionResult> DeleteSubmission(string submisisonId)
     {
-        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret()) return Unauthorized();
 
         var (isSuccessful,place) = await _memePlaceRepository.DeleteSubmission(submisisonId);
         if (!isSuccessful) 
@@ -162,10 +164,10 @@ public class MemePlacesController : ControllerBase
     /// <summary>
     /// Force the service rerender the place with the given place Id
     /// </summary>
+    [Authorize(Policy = Policies.SystemServiceOnly)]
     [HttpPost("{placeId}/rerender")]
     public async Task<ActionResult> RerenderPlace(string placeId)
     {
-        if (Request.Headers["Bot_Secret"] != _settings.GetBotSecret()) return Unauthorized();
 
         var place = await _memePlaceRepository.GetMemePlace(placeId);
         if (place == null) return NotFound("Cannot find place with provided Id: " + placeId);
@@ -179,6 +181,7 @@ public class MemePlacesController : ControllerBase
     /// <summary>
     /// Post a PlaceSubmission
     /// </summary>
+    [Authorize(Policy = Policies.SubmitPlace)]
     [HttpPost("submissions/submit")]
     public async Task<ActionResult<IEnumerable<PlaceSubmissionDTO>>> Submit([FromForm]PlaceSubmissionCreationDTO submissionDTO)
     {

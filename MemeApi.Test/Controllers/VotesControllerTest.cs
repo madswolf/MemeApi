@@ -26,8 +26,8 @@ public class VotesControllerTest : MemeTestBase
     [InlineData(5, Upvote.Upvote)]
     public async Task GIVEN_ExistingMemeOfTheDay_WHEN_VotingAsNewExternalUserWithBot_THEN_UserIsCreatedAndVoteStatusIsCorrect(int votenumber, Upvote expected)
     {
-        var controller = new VotesController(_votableRepository, _textRepository, _visualRepository, _memeRepository, _userRepository, _settings);
-        controller.ControllerContext.HttpContext = GetMockedHttpContext();
+        var controller = new VotesController(_votableRepository, _textRepository, _visualRepository, _memeRepository, _userRepository);
+        controller.ControllerContext.HttpContext = GetMockedHttpContext(_settings);
         controller.Request.Headers["Bot_Secret"] = _settings.GetBotSecret();
         var memeOfTheDayTopic = await _topicRepository.GetTopicByName(_settings.GetMemeOfTheDayTopicName());
         var meme = new Meme
@@ -77,8 +77,8 @@ public class VotesControllerTest : MemeTestBase
     [Fact]
     public async Task GIVEN_ExistingMemeOfTheDay_WHEN_VotingAsExistingExternalUserWithBot_THEN_UserIsNotCreated()
     {
-        var controller = new VotesController(_votableRepository, _textRepository, _visualRepository, _memeRepository, _userRepository, _settings);
-        controller.ControllerContext.HttpContext = GetMockedHttpContext();
+        var controller = new VotesController(_votableRepository, _textRepository, _visualRepository, _memeRepository, _userRepository);
+        controller.ControllerContext.HttpContext = GetMockedHttpContext(_settings);
         controller.Request.Headers["Bot_Secret"] = _settings.GetBotSecret();
         var memeOfTheDayTopic = await _topicRepository.GetTopicByName(_settings.GetMemeOfTheDayTopicName());
         var meme = new Meme
@@ -133,8 +133,8 @@ public class VotesControllerTest : MemeTestBase
     [Fact]
     public async Task GIVEN_ExistingMemeOfTheDayAndVote_WHEN_VotingWithBot_THEN_VoteChanged()
     {
-        var controller = new VotesController(_votableRepository, _textRepository, _visualRepository, _memeRepository, _userRepository, _settings);
-        controller.ControllerContext.HttpContext = GetMockedHttpContext();
+        var controller = new VotesController(_votableRepository, _textRepository, _visualRepository, _memeRepository, _userRepository);
+        controller.ControllerContext.HttpContext = GetMockedHttpContext(_settings);
         controller.Request.Headers["Bot_Secret"] = _settings.GetBotSecret();
         var memeOfTheDayTopic = await _topicRepository.GetTopicByName(_settings.GetMemeOfTheDayTopicName());
         var meme = new Meme
@@ -199,7 +199,7 @@ public class VotesControllerTest : MemeTestBase
     [Fact]
     public async Task WHEN_VotingAsExistingExternalUserWithoutSecret_THEN_NotFound()
     {
-        var controller = new VotesController(_votableRepository, _textRepository, _visualRepository, _memeRepository, _userRepository, _settings);
+        var controller = new VotesController(_votableRepository, _textRepository, _visualRepository, _memeRepository, _userRepository);
         controller.ControllerContext.HttpContext = GetMockedHttpContext();
 
         var meme = new Meme

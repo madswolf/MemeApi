@@ -5,6 +5,7 @@ using MemeApi.Models.Entity.Dubloons;
 using MemeApi.Models.Entity.Lottery;
 using MemeApi.Models.Entity.Memes;
 using MemeApi.Models.Entity.Places;
+using MemeApi.Models.Entity.ThirdParty;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -37,7 +38,9 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
     public DbSet<LotteryItem> LotteryItems { get; set; }
     
     public DbSet<LotteryTicket> LotteryTickets { get; set; }
-    
+
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -247,48 +250,36 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.ToTable("RefreshTokens");
+            entity.HasKey(r => r.Token);
+            entity.Property(r => r.Token).HasMaxLength(64);
+            entity.HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        const string adminId = "d88e15fa-1035-422f-92ea-978f658e84ae";
+
         var admin = new User
         {
-            Id = Guid.NewGuid().ToString(),
-            UserName = _settings.GetAdminUsername() ,
+            Id = adminId,
+            UserName = _settings.GetAdminUsername(),
             Email = _settings.GetAdminPassword(),
-            SecurityStamp = DateTime.UtcNow.ToString(),
-            LastLoginAt = DateTime.UtcNow,
-        };
-
-        var defaultTopic = new Topic
-        {
-            Id = Guid.NewGuid().ToString(),
-            OwnerId = admin.Id,
-            Name = "Swu-legacy",
-            Description = "Memes created 2020-2023",
-        };
-
-        var defaultTopic2 = new Topic
-        {
-            Id = Guid.NewGuid().ToString(),
-            OwnerId = admin.Id,
-            Name = "Rotte-Grotte",
-            Description = "Memes are back baby!",
-        };
-
-        var defaultTopic3 = new Topic
-        {
-            Id = Guid.NewGuid().ToString(),
-            OwnerId = admin.Id,
-            Name = "Bean-den",
-            Description = "Memes are back baby!",
-        };
-
-        var memeOfTheDayTopic = new Topic
-        {
-            Id = Guid.NewGuid().ToString(),
-            OwnerId = admin.Id,
-            Name = "MemeOfTheDay",
-            Description = "Memes of the day",
+            ConcurrencyStamp = "9750d044-7660-4996-bde5-aa0ab86349d8",
+            SecurityStamp = "29-11-2025 23:46:00",
+            LastLoginAt = new DateTime(2025, 11, 29, 23, 46, 0, 831, DateTimeKind.Utc).AddTicks(2393),
         };
 
         modelBuilder.Entity<User>().HasData(admin);
-        modelBuilder.Entity<Topic>().HasData(defaultTopic, defaultTopic2, defaultTopic3, memeOfTheDayTopic);
+        modelBuilder.Entity<Topic>().HasData(
+            new Topic { Id = "e90125a4-cff6-457d-8587-8e575b7cbc7f", OwnerId = adminId, Name = "Swu-legacy",   Description = "Memes created 2020-2023" },
+            new Topic { Id = "064217c1-eeaa-41bc-9db9-f7f2f02a7181", OwnerId = adminId, Name = "Rotte-Grotte", Description = "Memes are back baby!" },
+            new Topic { Id = "2d3c0302-656a-417e-afb4-2ceab2b7d235", OwnerId = adminId, Name = "Bean-den",     Description = "Memes are back baby!" },
+            new Topic { Id = "5e5935ae-bad2-46e1-bfc4-2bff2ba91680", OwnerId = adminId, Name = "MemeOfTheDay", Description = "Memes of the day" }
+        );
     }
 }

@@ -119,6 +119,21 @@ public class MemeApiSettings
         return TryGetConfig("Bot_Secret");
     }
 
+    public string GetJwtSecret()
+    {
+        return TryGetConfig("Jwt_Secret");
+    }
+
+    public string GetJwtIssuer()
+    {
+        return TryGetConfig("Jwt_Issuer");
+    }
+
+    public string GetJwtAudience()
+    {
+        return TryGetConfig("Jwt_Audience");
+    }
+
     public record LotteryItemEasterEgg
     {
         public LotteryItemPreviewDTO item { get; init; }
