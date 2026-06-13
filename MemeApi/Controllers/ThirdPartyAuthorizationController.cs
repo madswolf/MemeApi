@@ -121,10 +121,11 @@ public class ThirdPartyAuthorizationController : ControllerBase
     /// Revokes all active refresh tokens for the given user. System service only.
     /// Already-issued access tokens remain valid until their 10-minute expiry.
     /// </summary>
-    [HttpPost("revoke-all/{userId}")]
+    [HttpPost("revoke-all")]
     [Authorize(Policy = Policies.SystemServiceOnly)]
-    public async Task<IActionResult> RevokeAll(string userId)
+    public async Task<IActionResult> RevokeAll()
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var user = await _userRepository.GetUser(userId);
         if (user == null) return NotFound();
 

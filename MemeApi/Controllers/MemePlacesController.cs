@@ -179,6 +179,28 @@ public class MemePlacesController : ControllerBase
     }
 
     /// <summary>
+    /// Returns the estimated dubloon cost (negative = earned) for submitting a given number of pixels to a place,
+    /// with all discounts applied. Does not create a submission.
+    /// </summary>
+    [Authorize(Policy = Policies.SubmitPlace)]
+    [HttpPost("submissions/{placeId}/price")]
+    public async Task<ActionResult<double>> GetSubmissionPrice(string placeId, [FromBody] int pixelCount)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = await _userRepository.GetUser(userId, includeDubloons: false, includePlaceSubmissions: true);
+        if (user == null) return NotFound(userId);
+
+        var place = await _memePlaceRepository.GetMemePlace(placeId);
+        if (place == null) return NotFound(placeId);
+
+        var isBumpingSubmission = user.IsFirstPlaceSubmissionThisWeek(DateTime.UtcNow);
+        var price = place.SubmissionPriceForUser(pixelCount, user, isBumpingSubmission);
+        if (price == null) return BadRequest("Failed to get the current pixel price");
+
+        return Ok(price);
+    }
+
+    /// <summary>
     /// Post a PlaceSubmission
     /// </summary>
     [Authorize(Policy = Policies.SubmitPlace)]
