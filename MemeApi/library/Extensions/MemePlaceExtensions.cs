@@ -24,15 +24,10 @@ public static class MemePlaceExtensions
         return datetime;
     }
 
-    public static bool IsBumpingForUser(this MemePlace place, User user, DateTime timeStamp)
+    public static bool IsFirstPlaceSubmissionThisWeek(this User user, DateTime timeStamp)
     {
         var currentWeek = ISOWeek.GetWeekOfYear(timeStamp);
-        
-        return !place.PlaceSubmissions
-            .Any(s =>
-                s.OwnerId == user.Id &&
-                ISOWeek.GetWeekOfYear(s.CreatedAt) == currentWeek
-            );
+        return user.PlaceSubmissions.All(s => ISOWeek.GetWeekOfYear(s.CreatedAt) != currentWeek);
     }
     
     public static double? SubmissionPriceForUser(this MemePlace place, int changedPixelsCount, User user, bool isBumpingSubmission)
@@ -58,8 +53,8 @@ public static class MemePlaceExtensions
         var bumpingPixelDiscount = isBumpingSubmission ? 200 : 0;
         var pixelChangePrice = Math.Max(0, changedPixelsCount - bumpingPixelDiscount) * currentPixelPrice.PricePerPixel;
         var requiredFunds = Math.Ceiling(pixelChangePrice - dubloonGain);
-        
-        return requiredFunds;
+
+        return isBumpingSubmission ? requiredFunds : Math.Max(0, requiredFunds);
     }
 
     public static PlaceSubmission? LatestSubmissionByUser(this MemePlace place, User user)

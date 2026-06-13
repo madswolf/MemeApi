@@ -189,7 +189,7 @@ public class MemePlacesController : ControllerBase
             return StatusCode(413);
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var user = await _userRepository.GetUser(userId, includeDubloons: true);
+        var user = await _userRepository.GetUser(userId, includeDubloons: true, includePlaceSubmissions: true);
         if (user == null) return NotFound(userId);
 
         var place = await _memePlaceRepository.GetMemePlace(submissionDTO.PlaceId);
@@ -205,7 +205,7 @@ public class MemePlacesController : ControllerBase
         if (changedPixels.Count == 0)
             return BadRequest("The submission did not change any pixels. Please try again.");
 
-        var isBumpingSubmission = place.IsBumpingForUser(user, DateTime.UtcNow);
+        var isBumpingSubmission = user.IsFirstPlaceSubmissionThisWeek(DateTime.UtcNow);
         var requiredFunds = place.SubmissionPriceForUser(changedPixels.Count, user, isBumpingSubmission);
         if (requiredFunds == null)
             return BadRequest("Failed to get the current pixel price");

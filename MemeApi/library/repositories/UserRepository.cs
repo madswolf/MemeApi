@@ -33,13 +33,15 @@ public class UserRepository
         return await _memeContext.Users.Include(u => u.Topics).ToListAsync();
     }
 
-    public async Task<User?> GetUser(string? id, bool includeDubloons = false)
+    public async Task<User?> GetUser(string? id, bool includeDubloons = false, bool includePlaceSubmissions = false)
     {
         if (id == null) return null;
         IQueryable<User> queryable = _memeContext.Users.Include(u => u.Topics);
 
-        if(includeDubloons) 
+        if(includeDubloons)
             queryable = queryable.Include(u => u.DubloonEvents);
+        if (includePlaceSubmissions)
+            queryable = queryable.Include(u => u.PlaceSubmissions);
         return await queryable.FirstOrDefaultAsync(u => u.Id == id || u.Id == id.ExternalUserIdToGuid());
     }
 
