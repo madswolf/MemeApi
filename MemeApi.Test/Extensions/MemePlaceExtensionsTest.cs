@@ -63,10 +63,10 @@ public class MemePlaceExtensionsTest
     }
 
     [Fact]
-    public void GIVEN_MemePlace_AND_User_With_No_Submissions_And_Is_Bumping_WHEN_GettingSubmissionPrice_THEN_Price_Is_Discounted_and_User_Gains_Dubloons()
+    public void GIVEN_MemePlace_AND_User_With_No_Submissions_Anywhere_And_Is_Bumping_WHEN_GettingSubmissionPrice_THEN_Price_Is_Discounted_and_User_Gains_Dubloons()
     {
         // Given
-        var user = new User { Id = Guid.NewGuid().ToString() };
+        var user = new User { Id = Guid.NewGuid().ToString(), PlaceSubmissions = [] };
         var place = new MemePlace
         {
             Id = Guid.NewGuid().ToString(),
@@ -83,10 +83,10 @@ public class MemePlaceExtensionsTest
     }
 
     [Fact]
-    public void GIVEN_MemePlace_AND_User_With_No_Submissions_And_Is_Bumping_And_Over_Free_Pixel_ThreshHold_WHEN_GettingSubmissionPrice_THEN_Price_Is_Discounted_and_User_Gains_Almost_Full_Dubloons()
+    public void GIVEN_MemePlace_AND_User_With_No_Submissions_Anywhere_And_Is_Bumping_And_Over_Free_Pixel_ThreshHold_WHEN_GettingSubmissionPrice_THEN_Price_Is_Discounted_and_User_Gains_Full_Dubloons()
     {
         // Given
-        var user = new User { Id = Guid.NewGuid().ToString() };
+        var user = new User { Id = Guid.NewGuid().ToString(), PlaceSubmissions = [] };
         var place = new MemePlace
         {
             Id = Guid.NewGuid().ToString(),
@@ -99,14 +99,14 @@ public class MemePlaceExtensionsTest
         var price = place.SubmissionPriceForUser(201, user, true);
 
         // Then
-        price.Should().Be(-699);
+        price.Should().Be(-700);
     }
 
     [Fact]
-    public void GIVEN_MemePlace_AND_User_With_No_Submissions_And_Bumping_WHEN_GettingSubmissionPrice_THEN_Price_Is_Discounted_And_Dubloons_Earned()
+    public void GIVEN_MemePlace_AND_User_With_No_Submissions_Anywhere_And_Not_Bumping_WHEN_GettingSubmissionPrice_THEN_User_Still_Earns_Dubloons()
     {
         // Given
-        var user = new User { Id = Guid.NewGuid().ToString() };
+        var user = new User { Id = Guid.NewGuid().ToString(), PlaceSubmissions = [] };
         var place = new MemePlace
         {
             Id = Guid.NewGuid().ToString(),
@@ -119,14 +119,18 @@ public class MemePlaceExtensionsTest
         var price = place.SubmissionPriceForUser(100, user, false);
 
         // Then
-        price.Should().Be(0);
+        // Earning dubloons no longer requires this to be the first ("bumping") submission of the week.
+        price.Should().Be(-700);
     }
-    
+
     [Fact]
-    public void GIVEN_MemePlace_AND_User_With_No_Submissions_And_Not_Bumping_WHEN_GettingSubmissionPrice_THEN_Price_Is_Discounted_But_Clamped_To_0()
+    public void GIVEN_User_With_Submission_On_A_Different_Place_3_Days_Ago_WHEN_GettingSubmissionPrice_THEN_CrossPlaceEarning_Reflects_That_History()
     {
         // Given
         var user = new User { Id = Guid.NewGuid().ToString() };
+        var submissionOnOtherPlace = new PlaceSubmission { Id = "1", CreatedAt = DateTime.UtcNow.AddDays(-3), OwnerId = user.Id };
+        user.PlaceSubmissions = [submissionOnOtherPlace];
+
         var place = new MemePlace
         {
             Id = Guid.NewGuid().ToString(),
@@ -139,27 +143,30 @@ public class MemePlaceExtensionsTest
         var price = place.SubmissionPriceForUser(100, user, false);
 
         // Then
-        price.Should().Be(0);
+        price.Should().Be(-300);
     }
 
     [Fact]
-    public void GIVEN_MemePlace_AND_User_With_Submission_1_day_Ago_WHEN_GettingSubmissionPrice_THEN_Price_Is_Partially_Discounted()
+    public void GIVEN_MemePlace_AND_User_With_Submission_1_day_Ago_WHEN_GettingSubmissionPrice_THEN_Price_Is_Partially_Discounted_And_Partially_Earned()
     {
         // Given
         var user = new User { Id = Guid.NewGuid().ToString() };
+        var submission = new PlaceSubmission { Id = "1", CreatedAt = DateTime.UtcNow.AddDays(-1), OwnerId = user.Id };
         var place = new MemePlace
         {
             Id = Guid.NewGuid().ToString(),
             Name = "Test",
-            PlaceSubmissions = [new PlaceSubmission { CreatedAt = DateTime.UtcNow.AddDays(-1), OwnerId = user.Id}],
+            PlaceSubmissions = [submission],
             PriceHistory = [new PlacePixelPrice {PricePerPixel = 1}]
         };
+        user.PlaceSubmissions = [submission];
 
         // When
         var price = place.SubmissionPriceForUser(100, user, false);
 
         // Then
-        price.Should().Be(0);
+        
+        price.Should().Be(-100);
     }
 
     [Fact]
@@ -167,18 +174,40 @@ public class MemePlaceExtensionsTest
     {
         // Given
         var user = new User { Id = Guid.NewGuid().ToString() };
+        var submission = new PlaceSubmission { Id = "1", CreatedAt = DateTime.UtcNow, OwnerId = user.Id };
         var place = new MemePlace
         {
             Id = Guid.NewGuid().ToString(),
             Name = "Test",
-            PlaceSubmissions = [new PlaceSubmission { CreatedAt = DateTime.UtcNow, OwnerId = user.Id}],
+            PlaceSubmissions = [submission],
             PriceHistory = [new PlacePixelPrice {PricePerPixel = 1}]
         };
+        user.PlaceSubmissions = [submission];
 
         // When
         var price = place.SubmissionPriceForUser(100, user, false);
 
         // Then
         price.Should().Be(100);
+    }
+    [Fact]
+    public void GIVEN_MemePlace_AND_User_With_No_Submissions_and_Bumping_WHEN_GettingSubmissionPrice_for_PixelCount_of_bumping_discount_plus_place_THEN_Still_Max_Dubloons_Earned()
+    {
+        // Given
+        var user = new User { Id = Guid.NewGuid().ToString() , PlaceSubmissions = []};
+
+        var place = new MemePlace
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "Test",
+            PlaceSubmissions = [],
+            PriceHistory = [new PlacePixelPrice {PricePerPixel = 1}]
+        };
+
+        // When
+        var price = place.SubmissionPriceForUser(200 + 700, user, true);
+
+        // Then
+        price.Should().Be(-700);
     }
 }

@@ -38,23 +38,28 @@ public static class MemePlaceExtensions
             Console.WriteLine("Failed to get the current pixel price");
             return null;
         }
-        
+
         var maxDubloonGain = 700;
         var dubloonGainPerDay = 700 / 7.0;
 
-        var latestUserSubmission = place.LatestSubmissionByUser(user);
-        
-        var latestSubmissionDate = latestUserSubmission?.CreatedAt.Date ?? DateTime.UtcNow.AddDays(-8).Date;
-        var currentDate = DateTime.UtcNow.Date;
-        var daysSinceSubmission = Math.Max(0, (currentDate - latestSubmissionDate).Days);
-        
-        var dubloonGain = Math.Min(maxDubloonGain, daysSinceSubmission * dubloonGainPerDay);
+        // Per-place discount: only reduces this submission's cost, can never push the price below 0.
+        var placeDiscount = DubloonGainSince(place.LatestSubmissionByUser(user)?.CreatedAt, maxDubloonGain, dubloonGainPerDay);
+
+        // Cross-place earning: based on the user's last submission to any place, can push the price negative (= dubloons earned).
+        var dubloonsEarned = DubloonGainSince(user.LatestSubmission()?.CreatedAt, maxDubloonGain, dubloonGainPerDay);
 
         var bumpingPixelDiscount = isBumpingSubmission ? 200 : 0;
         var pixelChangePrice = Math.Max(0, changedPixelsCount - bumpingPixelDiscount) * currentPixelPrice.PricePerPixel;
-        var requiredFunds = Math.Ceiling(pixelChangePrice - dubloonGain);
+        var priceAfterPlaceDiscount = Math.Max(0, pixelChangePrice - placeDiscount);
 
-        return isBumpingSubmission ? requiredFunds : Math.Max(0, requiredFunds);
+        return Math.Ceiling(priceAfterPlaceDiscount - dubloonsEarned);
+    }
+
+    private static double DubloonGainSince(DateTime? lastSubmissionDate, int maxGain, double gainPerDay)
+    {
+        var fromDate = lastSubmissionDate?.Date ?? DateTime.UtcNow.AddDays(-8).Date;
+        var daysSince = Math.Max(0, (DateTime.UtcNow.Date - fromDate).Days);
+        return Math.Min(maxGain, daysSince * gainPerDay);
     }
 
     public static PlaceSubmission? LatestSubmissionByUser(this MemePlace place, User user)
@@ -63,6 +68,11 @@ public static class MemePlaceExtensions
             .Where(p => p.OwnerId == user.Id)
             .OrderByDescending(p => p.CreatedAt)
             .FirstOrDefault();
+    }
+
+    public static PlaceSubmission? LatestSubmission(this User user)
+    {
+        return user.PlaceSubmissions.OrderByDescending(s => s.CreatedAt).FirstOrDefault();
     }
 
     public static PlacePixelPrice? CurrentPixelPrice(this MemePlace place)
