@@ -51,6 +51,7 @@ public class MemeOfTheDayService : IMemeOfTheDayService
 
             Console.Error.WriteLine("Failed meme");
             Console.Error.WriteLine(Regex.Replace(jsonResponse, @"[^\x20-\x7E]", "X"));
+            throw new InvalidOperationException("Meme of the day webhook failed.");
         }
 
         //TODO: add subscribers

@@ -1,86 +1,64 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MemeApi.library.repositories;
 using MemeApi.library.Services;
+using MemeApi.Models.Context;
+using MemeApi.Models.Entity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NCrontab;
+using Microsoft.Extensions.Logging;
 
 namespace MemeApi.library;
 
-public class ConsumeScopedServiceHostedService : BackgroundService
+public class ConsumeScopedServiceHostedService(
+    IServiceProvider services,
+    ILogger<ConsumeScopedServiceHostedService> logger) : BackgroundService
 {
-    private DateTime _nextRun;
-    private static readonly List<string> Schedule =
-    [	    //"* * * * *",
-            "30 12 * * *",
-    ];
-
-    public IServiceProvider Services { get; }
-    public ConsumeScopedServiceHostedService(IServiceProvider services)
-    {
-        _nextRun = CalCulateNextRun(DateTime.UtcNow);
-        Services = services;
-    }
+    private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(15);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var occurencePast = CalCulateNextRun(DateTime.UtcNow.AddMinutes(-60));
-            var occurenceNow = CalCulateNextRun(DateTime.UtcNow);
-            using var scope = Services.CreateScope();
-            if (occurencePast != occurenceNow)
+            try
             {
-                var service = scope.ServiceProvider.GetRequiredService<MemeRepository>();
-                var memeCreated = await service.HasMemeCreatedInTimeSpan(occurencePast, occurenceNow);
-                if (!memeCreated)
-                {
-                    try
-                    {
-                        await InvokeMemeOfTheDayService(scope, stoppingToken);
-                    } catch (Exception ex)
-                    {
-                        Console.WriteLine(ex);
-                        throw;
-                    }
-                } else
-                {
-                    Console.WriteLine($"Meme created in interval {occurencePast} - {occurenceNow}");
-                }
+                await PostIfDue(stoppingToken);
             }
-
-            await Task.Delay(UntilNextExecution(), stoppingToken); // wait until next time
-            await InvokeMemeOfTheDayService(scope, stoppingToken);
-
-            _nextRun = CalCulateNextRun(DateTime.UtcNow);
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Failed to post meme of the day");
+            }
+            await Task.Delay(PollInterval, stoppingToken);
         }
     }
 
-    private static async Task InvokeMemeOfTheDayService(IServiceScope scope, CancellationToken stoppingToken)
+    public async Task PostIfDue(CancellationToken cancellationToken)
     {
-        var scopedProcessingService =
-            scope.ServiceProvider
-                .GetRequiredService<IMemeOfTheDayService>();
-
-        await scopedProcessingService.ExecuteAsync(stoppingToken);
-    }
-
-    private DateTime CalCulateNextRun(DateTime time)
-    {
-        var occurrences = Schedule.Select(s => CrontabSchedule.Parse(s).GetNextOccurrence(time)).ToList();
-        occurrences.Sort(DateTime.Compare);
-        return occurrences.First();
-    }
-
-    private int UntilNextExecution() => Math.Max(0, (int)_nextRun.Subtract(DateTime.UtcNow).TotalMilliseconds);
-
-
-    public override async Task StopAsync(CancellationToken stoppingToken)
-    {
-        await base.StopAsync(stoppingToken);
+        using var scope = services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<MemeContext>();
+        await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+        // Serialize posting and schedule edits, including across API instances.
+        var schedule = await context.MemeOfTheDaySchedules
+            .FromSqlRaw("SELECT * FROM \"MemeOfTheDaySchedules\" WHERE \"Id\" = 1 FOR UPDATE")
+            .SingleAsync(cancellationToken);
+        var now = DateTime.UtcNow;
+        if (schedule.HasMissedWindow(now))
+        {
+            schedule.PlanNextRun(now);
+        }
+        else if (schedule.NextRunUtc <= now)
+        {
+            // shortcut: a crash after webhook delivery can duplicate a retry; add message reconciliation if required.
+            await scope.ServiceProvider.GetRequiredService<IMemeOfTheDayService>().ExecuteAsync(cancellationToken);
+            schedule.LastPostedDate = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(now, MemeOfTheDaySchedule.TimeZone));
+            schedule.PlanNextRun(now);
+        }
+        await context.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
 }

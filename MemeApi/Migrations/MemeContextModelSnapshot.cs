@@ -126,6 +126,39 @@ namespace MemeApi.Migrations
                     b.ToTable("LotteryItems", (string)null);
                 });
 
+            modelBuilder.Entity("MemeApi.Models.Entity.MemeOfTheDaySchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EndMinute")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly?>("LastPostedDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("NextRunUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StartMinute")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MemeOfTheDaySchedules");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            EndMinute = 870,
+                            StartMinute = 870
+                        });
+                });
+
             modelBuilder.Entity("MemeApi.Models.Entity.Memes.Topic", b =>
                 {
                     b.Property<string>("Id")

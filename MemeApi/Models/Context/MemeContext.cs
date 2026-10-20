@@ -40,10 +40,12 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
     public DbSet<LotteryTicket> LotteryTickets { get; set; }
 
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<MemeOfTheDaySchedule> MemeOfTheDaySchedules { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<MemeOfTheDaySchedule>().HasData(new MemeOfTheDaySchedule());
 
         modelBuilder.Entity<User>().HasIndex(u => u.UserName).IsUnique();
         modelBuilder.Entity<User>()

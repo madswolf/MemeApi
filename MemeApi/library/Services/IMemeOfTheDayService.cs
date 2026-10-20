@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace MemeApi.library.Services;
 
-internal interface IMemeOfTheDayService
+public interface IMemeOfTheDayService
 {
     public Task ExecuteAsync(CancellationToken stoppingToken);
 }

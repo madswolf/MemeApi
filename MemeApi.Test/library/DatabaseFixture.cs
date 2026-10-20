@@ -91,6 +91,8 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
 
         builder.ConfigureTestServices(services =>
         {
+            var scheduler = services.Single(x => x.ImplementationType == typeof(MemeApi.library.ConsumeScopedServiceHostedService));
+            services.Remove(scheduler);
             services.RemoveDbContext<MemeContext>();
             services.AddDbContext<MemeContext>(options =>
             {
