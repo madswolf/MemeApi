@@ -30,7 +30,7 @@ public class MemeOfTheDayScheduleTest
         for (var i = 0; i < 50; i++)
         {
             schedule.PlanNextRun(Utc(now));
-            var local = TimeZoneInfo.ConvertTimeFromUtc(schedule.NextRunUtc!.Value, MemeOfTheDaySchedule.TimeZone);
+            var local = TimeZoneInfo.ConvertTimeFromUtc(schedule.NextRunUtc!.Value, schedule.TimeZone);
             Assert.InRange(local.TimeOfDay, TimeSpan.FromHours(13), TimeSpan.FromHours(15));
             Assert.Equal(Utc(now).Date, local.Date);
         }
@@ -87,6 +87,55 @@ public class MemeOfTheDayScheduleTest
     public void ValidatesTimeInput(string start, string? end, bool valid)
     {
         var dto = new MemeOfTheDayScheduleDTO { Start = start, End = end };
+        Assert.Equal(valid, Validator.TryValidateObject(dto, new ValidationContext(dto), new List<ValidationResult>(), true));
+    }
+
+    [Theory]
+    [InlineData("America/New_York", "2026-10-24T18:30:00Z")]
+    [InlineData("Asia/Kolkata", "2026-10-24T09:00:00Z")]
+    [InlineData("UTC", "2026-10-24T14:30:00Z")]
+    public void FixedTimeUsesSelectedTimeZone(string timeZone, string expected)
+    {
+        var schedule = new MemeOfTheDaySchedule { TimeZoneId = timeZone };
+        schedule.PlanNextRun(Utc("2026-10-24T06:00:00Z"));
+        Assert.Equal(Utc(expected), schedule.NextRunUtc);
+        Assert.False(schedule.HasMissedWindow(Utc(expected).AddSeconds(15)));
+        Assert.True(schedule.HasMissedWindow(Utc(expected).AddMinutes(1)));
+    }
+
+    [Theory]
+    [InlineData("2026-10-31T06:00:00Z", "2026-10-31T18:30:00Z")]
+    [InlineData("2026-11-01T06:00:00Z", "2026-11-01T19:30:00Z")]
+    public void SelectedTimeZoneUsesItsOwnDaylightSavingDates(string now, string expected)
+    {
+        var schedule = new MemeOfTheDaySchedule { TimeZoneId = "America/New_York" };
+        schedule.PlanNextRun(Utc(now));
+        Assert.Equal(Utc(expected), schedule.NextRunUtc);
+    }
+
+    [Theory]
+    [InlineData("America/Los_Angeles", "2026-10-24T00:30:00Z")]
+    [InlineData("Pacific/Auckland", "2026-10-24T18:30:00Z")]
+    public void ChangingTimeZonePreservesAlreadyPostedToday(string timeZone, string now)
+    {
+        var schedule = new MemeOfTheDaySchedule { LastPostedDate = new DateOnly(2026, 10, 24) };
+        schedule.SetTimeZone(timeZone, Utc(now));
+        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(Utc(now), schedule.TimeZone));
+        Assert.Equal(today, schedule.LastPostedDate);
+        schedule.PlanNextRun(Utc(now));
+        Assert.Equal(today.AddDays(1), DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(schedule.NextRunUtc!.Value, schedule.TimeZone)));
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData("Europe/Copenhagen", true)]
+    [InlineData("America/New_York", true)]
+    [InlineData("UTC", true)]
+    [InlineData("", false)]
+    [InlineData("MadeUp/TimeZone", false)]
+    public void ValidatesTimeZone(string? timeZone, bool valid)
+    {
+        var dto = new MemeOfTheDayScheduleDTO { Start = "13:00", TimeZone = timeZone };
         Assert.Equal(valid, Validator.TryValidateObject(dto, new ValidationContext(dto), new List<ValidationResult>(), true));
     }
 

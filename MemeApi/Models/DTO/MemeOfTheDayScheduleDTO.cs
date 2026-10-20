@@ -10,9 +10,15 @@ public class MemeOfTheDayScheduleDTO : IValidatableObject
     [Required]
     public string Start { get; set; } = "";
     public string? End { get; set; }
+    [StringLength(100)]
+    public string? TimeZone { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
+        if (TimeZone != null && !TimeZoneInfo.TryFindSystemTimeZoneById(TimeZone, out _))
+        {
+            yield return new ValidationResult("Use a valid timezone, for example Europe/Copenhagen or America/New_York.", [nameof(TimeZone)]);
+        }
         if (!TimeOnly.TryParseExact(Start, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var start) ||
             !TimeOnly.TryParseExact(End ?? Start, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var end))
         {

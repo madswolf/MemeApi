@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MemeApi.library.Services;
 using MemeApi.Models.Context;
-using MemeApi.Models.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -55,7 +54,7 @@ public class ConsumeScopedServiceHostedService(
         {
             // shortcut: a crash after webhook delivery can duplicate a retry; add message reconciliation if required.
             await scope.ServiceProvider.GetRequiredService<IMemeOfTheDayService>().ExecuteAsync(cancellationToken);
-            schedule.LastPostedDate = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(now, MemeOfTheDaySchedule.TimeZone));
+            schedule.LastPostedDate = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(now, schedule.TimeZone));
             schedule.PlanNextRun(now);
         }
         await context.SaveChangesAsync(cancellationToken);

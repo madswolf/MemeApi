@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MemeApi.Models.Entity;
 
 public class MemeOfTheDaySchedule
 {
-    public static readonly TimeZoneInfo TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Copenhagen");
+    public string TimeZoneId { get; set; } = "Europe/Copenhagen";
+
+    [NotMapped]
+    public TimeZoneInfo TimeZone => TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
 
     public int Id { get; set; } = 1;
     public int StartMinute { get; set; } = 14 * 60 + 30;
@@ -13,9 +17,19 @@ public class MemeOfTheDaySchedule
     public DateTime? NextRunUtc { get; set; }
     public DateOnly? LastPostedDate { get; set; }
 
+    public void SetTimeZone(string timeZoneId, DateTime utcNow)
+    {
+        var oldToday = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(utcNow, TimeZone));
+        TimeZoneId = timeZoneId;
+        var newToday = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(utcNow, TimeZone));
+        // Preserve whether today's post was sent when switching across calendar dates.
+        LastPostedDate = LastPostedDate?.AddDays(newToday.DayNumber - oldToday.DayNumber);
+    }
+
     public void PlanNextRun(DateTime utcNow)
     {
-        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(utcNow, TimeZone));
+        var timeZone = TimeZone;
+        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZone));
         var date = LastPostedDate >= today ? LastPostedDate.Value.AddDays(1) : today;
         while (true)
         {
@@ -24,8 +38,8 @@ public class MemeOfTheDaySchedule
             {
                 var localTime = date.ToDateTime(TimeOnly.MinValue).AddMinutes(minute);
                 // Skip missing spring-clock minutes; ambiguous autumn minutes use standard time.
-                if (TimeZone.IsInvalidTime(localTime)) continue;
-                var utcTime = TimeZoneInfo.ConvertTimeToUtc(localTime, TimeZone);
+                if (timeZone.IsInvalidTime(localTime)) continue;
+                var utcTime = TimeZoneInfo.ConvertTimeToUtc(localTime, timeZone);
                 if (utcTime >= utcNow) candidates.Add(utcTime);
             }
 

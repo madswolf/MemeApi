@@ -146,6 +146,13 @@ namespace MemeApi.Migrations
                     b.Property<int>("StartMinute")
                         .HasColumnType("integer");
 
+                    b.Property<string>("TimeZoneId")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasDefaultValue("Europe/Copenhagen");
+
                     b.HasKey("Id");
 
                     b.ToTable("MemeOfTheDaySchedules");
@@ -155,7 +162,8 @@ namespace MemeApi.Migrations
                         {
                             Id = 1,
                             EndMinute = 870,
-                            StartMinute = 870
+                            StartMinute = 870,
+                            TimeZoneId = "Europe/Copenhagen"
                         });
                 });
 

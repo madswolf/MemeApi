@@ -18,6 +18,40 @@ namespace MemeApi.Test.Controllers;
 
 public class MemeOfTheDayControllerTest(IntegrationTestFactory fixture) : MemeTestBase(fixture)
 {
+    [Fact]
+    public async Task TimeZoneIsPersistedAndOmittingItPreservesTheSavedZone()
+    {
+        _context.MemeOfTheDaySchedules.Add(new MemeOfTheDaySchedule());
+        await _context.SaveChangesAsync();
+        using var client = _fixture.CreateClient();
+        client.DefaultRequestHeaders.Add("Bot_Secret", "lol");
+        var response = await client.PutAsJsonAsync("/memeoftheday/schedule", new { start = "13:00", timeZone = "America/New_York" });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        response = await client.PutAsJsonAsync("/memeoftheday/schedule", new { start = "14:00", end = "15:00" });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("\"timeZone\":\"America/New_York\"", await response.Content.ReadAsStringAsync());
+        _context.ChangeTracker.Clear();
+        var saved = await _context.MemeOfTheDaySchedules.SingleAsync();
+        Assert.Equal("America/New_York", saved.TimeZoneId);
+        var localNext = TimeZoneInfo.ConvertTimeFromUtc(saved.NextRunUtc!.Value, saved.TimeZone);
+        Assert.InRange(localNext.TimeOfDay, TimeSpan.FromHours(14), TimeSpan.FromHours(15));
+    }
+
+    [Fact]
+    public async Task InvalidTimeZoneIsRejectedWithoutChangingSchedule()
+    {
+        _context.MemeOfTheDaySchedules.Add(new MemeOfTheDaySchedule());
+        await _context.SaveChangesAsync();
+        using var client = _fixture.CreateClient();
+        client.DefaultRequestHeaders.Add("Bot_Secret", "lol");
+        var response = await client.PutAsJsonAsync("/memeoftheday/schedule", new { start = "13:00", timeZone = "MadeUp/TimeZone" });
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        _context.ChangeTracker.Clear();
+        var saved = await _context.MemeOfTheDaySchedules.SingleAsync();
+        Assert.Equal("Europe/Copenhagen", saved.TimeZoneId);
+        Assert.Equal(870, saved.StartMinute);
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("wrong-secret")]

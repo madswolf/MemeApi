@@ -16,7 +16,7 @@ namespace MemeApi.Controllers;
 [Authorize(Policy = Policies.SystemServiceOnly)]
 public class MemeOfTheDayController(MemeContext context) : ControllerBase
 {
-    // The trusted bot enforces Discord Administrator permissions.
+    // The trusted bot enforces Administrator permissions and owner-only timezone changes.
     [HttpPut]
     public async Task<IActionResult> SetSchedule(MemeOfTheDayScheduleDTO request, CancellationToken cancellationToken)
     {
@@ -26,9 +26,11 @@ public class MemeOfTheDayController(MemeContext context) : ControllerBase
             .SingleAsync(cancellationToken);
         schedule.StartMinute = (int)TimeOnly.ParseExact(request.Start, "HH:mm", CultureInfo.InvariantCulture).ToTimeSpan().TotalMinutes;
         schedule.EndMinute = (int)TimeOnly.ParseExact(request.End ?? request.Start, "HH:mm", CultureInfo.InvariantCulture).ToTimeSpan().TotalMinutes;
-        schedule.PlanNextRun(DateTime.UtcNow);
+        var now = DateTime.UtcNow;
+        if (request.TimeZone != null) schedule.SetTimeZone(request.TimeZone, now);
+        schedule.PlanNextRun(now);
         await context.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        return Ok(new { request.Start, End = request.End ?? request.Start, TimeZone = "Europe/Copenhagen", schedule.NextRunUtc });
+        return Ok(new { request.Start, End = request.End ?? request.Start, TimeZone = schedule.TimeZoneId, schedule.NextRunUtc });
     }
 }

@@ -46,6 +46,8 @@ public class MemeContext : IdentityDbContext<User, IdentityRole<string>, string>
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<MemeOfTheDaySchedule>().HasData(new MemeOfTheDaySchedule());
+        modelBuilder.Entity<MemeOfTheDaySchedule>().Property(s => s.TimeZoneId)
+            .HasMaxLength(100).HasDefaultValue("Europe/Copenhagen");
 
         modelBuilder.Entity<User>().HasIndex(u => u.UserName).IsUnique();
         modelBuilder.Entity<User>()

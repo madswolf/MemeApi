@@ -16,16 +16,20 @@ automatically. MonsterBot administrators can update it through
 `PUT /memeoftheday/schedule` using the existing `Bot_Secret` authentication:
 
 ```json
-{ "start": "13:00", "end": "15:00" }
+{ "start": "13:00", "end": "15:00", "timeZone": "Europe/Copenhagen" }
 ```
 
-Omit `end` for a fixed time. Times are 24-hour `HH:mm`; intervals stay within one
+Omit `end` for a fixed time and `timeZone` to retain the saved timezone.
+MonsterBot permits only Discord server owners to set the timezone; administrators
+can still change the posting time. The timezone applies to the existing shared
+webhook schedule. Times are 24-hour `HH:mm`; intervals stay within one
 day. A random minute is saved for each day, so restarting does not reroll it.
 Changes apply to today's remaining interval unless today's post was already sent.
 Missed intervals are skipped; the scheduler polls every 15 seconds. Missing
 spring-clock minutes are skipped and repeated autumn minutes use standard time.
 
-The migration runs through the existing startup migration setup. Deploy this API
+The migrations run through the existing startup migration setup. Existing schedules
+receive `Europe/Copenhagen` as their timezone. Deploy this API
 change before the MonsterBot slash command. No webhook configuration changes are needed.
 
 ## Installation (produktion)
