@@ -62,7 +62,9 @@ def get_margins(text, font, max_size, drawer):
     return width_margin, height_margin
 
 def get_font(size):
-    return ImageFont.truetype("impact.ttf", size)
+    FONT_PATH = os.environ.get("MEME_FONT_PATH", "/var/lib/memeapi/impact.ttf")
+
+    return ImageFont.truetype(FONT_PATH, size)
 
 
 def render_text_on_image(toptext, bottomtext, image_bytes):
