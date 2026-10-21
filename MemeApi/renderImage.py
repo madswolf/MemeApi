@@ -3,6 +3,7 @@ import requests
 import struct
 from PIL import Image, ImageFont, ImageDraw
 import io
+import os
 
 def open_image_from_url(url):
     response = requests.get(url)

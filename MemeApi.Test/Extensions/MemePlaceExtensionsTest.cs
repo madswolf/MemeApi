@@ -128,7 +128,7 @@ public class MemePlaceExtensionsTest
     {
         // Given
         var user = new User { Id = Guid.NewGuid().ToString() };
-        var submissionOnOtherPlace = new PlaceSubmission { Id = "1", CreatedAt = DateTime.UtcNow.AddDays(-3), OwnerId = user.Id };
+        var submissionOnOtherPlace = new PlaceSubmission { Id = "1", CreatedAt = DateTime.UtcNow.AddDays(-3), OwnerId = user.Id, PixelChangeCount = 700 };
         user.PlaceSubmissions = [submissionOnOtherPlace];
 
         var place = new MemePlace
@@ -151,7 +151,7 @@ public class MemePlaceExtensionsTest
     {
         // Given
         var user = new User { Id = Guid.NewGuid().ToString() };
-        var submission = new PlaceSubmission { Id = "1", CreatedAt = DateTime.UtcNow.AddDays(-1), OwnerId = user.Id };
+        var submission = new PlaceSubmission { Id = "1", CreatedAt = DateTime.UtcNow.AddDays(-1), OwnerId = user.Id, PixelChangeCount = 700 };
         var place = new MemePlace
         {
             Id = Guid.NewGuid().ToString(),
@@ -174,7 +174,7 @@ public class MemePlaceExtensionsTest
     {
         // Given
         var user = new User { Id = Guid.NewGuid().ToString() };
-        var submission = new PlaceSubmission { Id = "1", CreatedAt = DateTime.UtcNow, OwnerId = user.Id };
+        var submission = new PlaceSubmission { Id = "1", CreatedAt = DateTime.UtcNow, OwnerId = user.Id, PixelChangeCount = 700 };
         var place = new MemePlace
         {
             Id = Guid.NewGuid().ToString(),
@@ -206,6 +206,29 @@ public class MemePlaceExtensionsTest
 
         // When
         var price = place.SubmissionPriceForUser(200 + 700, user, true);
+
+        // Then
+        price.Should().Be(-700);
+    }
+    
+    [Fact]
+    public void GIVEN_MemePlace_AND_User_With_One_Submission_With_Not_All_Discount_Used__WHEN_GettingSubmissionPrice_THEN_discount_carried_over()
+    {
+        // Given
+        var user = new User { Id = Guid.NewGuid().ToString() , PlaceSubmissions = []};
+        var submission = new PlaceSubmission { Id = "1", CreatedAt = DateTime.UtcNow, OwnerId = user.Id, PixelChangeCount = 1};
+        
+        var place = new MemePlace
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "Test",
+            PlaceSubmissions = [submission],
+            PriceHistory = [new PlacePixelPrice {PricePerPixel = 1}]
+        };
+        user.PlaceSubmissions.Add(submission);
+
+        // When
+        var price = place.SubmissionPriceForUser( 699, user, false);
 
         // Then
         price.Should().Be(-700);
