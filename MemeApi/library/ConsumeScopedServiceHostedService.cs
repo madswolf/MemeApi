@@ -8,79 +8,118 @@ using MemeApi.library.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NCrontab;
-
+ 
 namespace MemeApi.library;
-
+ 
 public class ConsumeScopedServiceHostedService : BackgroundService
 {
-    private DateTime _nextRun;
+    // Cron expressions are interpreted in Copenhagen wall-clock time (DST handled automatically).
     private static readonly List<string> Schedule =
-    [	    //"* * * * *",
-            "30 12 * * *",
+    [
+        //"* * * * *",
+        "30 17 * * *",
     ];
-
+ 
+    private static readonly TimeZoneInfo CopenhagenTz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Copenhagen");
+ 
+    private const int CatchUpWindowMinutes = 60;
+ 
     public IServiceProvider Services { get; }
+ 
     public ConsumeScopedServiceHostedService(IServiceProvider services)
     {
-        _nextRun = CalCulateNextRun(DateTime.UtcNow);
         Services = services;
     }
-
+ 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await RunIfMissedAsync(stoppingToken);
+ 
+        var from = DateTime.UtcNow;
         while (!stoppingToken.IsCancellationRequested)
         {
-            var occurencePast = CalCulateNextRun(DateTime.UtcNow.AddMinutes(-60));
-            var occurenceNow = CalCulateNextRun(DateTime.UtcNow);
-            using var scope = Services.CreateScope();
-            if (occurencePast != occurenceNow)
+            var nextRun = CalculateNextRun(from);
+ 
+            var delay = nextRun - DateTime.UtcNow;
+            if (delay > TimeSpan.Zero)
             {
-                var service = scope.ServiceProvider.GetRequiredService<MemeRepository>();
-                var memeCreated = await service.HasMemeCreatedInTimeSpan(occurencePast, occurenceNow);
-                if (!memeCreated)
-                {
-                    try
-                    {
-                        await InvokeMemeOfTheDayService(scope, stoppingToken);
-                    } catch (Exception ex)
-                    {
-                        Console.WriteLine(ex);
-                        throw;
-                    }
-                } else
-                {
-                    Console.WriteLine($"Meme created in interval {occurencePast} - {occurenceNow}");
-                }
+                await Task.Delay(delay, stoppingToken);
             }
-
-            await Task.Delay(UntilNextExecution(), stoppingToken); // wait until next time
-            await InvokeMemeOfTheDayService(scope, stoppingToken);
-
-            _nextRun = CalCulateNextRun(DateTime.UtcNow);
+ 
+            await InvokeMemeOfTheDayService(stoppingToken);
+ 
+            var now = DateTime.UtcNow;
+            from = now > nextRun ? now : nextRun;
         }
     }
-
-    private static async Task InvokeMemeOfTheDayService(IServiceScope scope, CancellationToken stoppingToken)
+ 
+    /// <summary>
+    /// Catch-up check for when the app was down at the scheduled time:
+    /// if a run was due in the last hour and no meme was created, run now.
+    /// </summary>
+    private async Task RunIfMissedAsync(CancellationToken stoppingToken)
     {
-        var scopedProcessingService =
-            scope.ServiceProvider
-                .GetRequiredService<IMemeOfTheDayService>();
-
-        await scopedProcessingService.ExecuteAsync(stoppingToken);
+        var now = DateTime.UtcNow;
+        var occurrencePast = CalculateNextRun(now.AddMinutes(-CatchUpWindowMinutes));
+        var occurrenceNow = CalculateNextRun(now);
+ 
+        if (occurrencePast == occurrenceNow)
+        {
+            return; 
+        }
+ 
+        using var scope = Services.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<MemeRepository>();
+ 
+        if (await repository.HasMemeCreatedInTimeSpan(occurrencePast, occurrenceNow))
+        {
+            Console.WriteLine($"Meme created in interval {occurrencePast:u} - {occurrenceNow:u}");
+            return;
+        }
+ 
+        await RunMemeOfTheDayInScope(scope, stoppingToken);
     }
-
-    private DateTime CalCulateNextRun(DateTime time)
+ 
+    private async Task InvokeMemeOfTheDayService(CancellationToken stoppingToken)
     {
-        var occurrences = Schedule.Select(s => CrontabSchedule.Parse(s).GetNextOccurrence(time)).ToList();
-        occurrences.Sort(DateTime.Compare);
-        return occurrences.First();
+        using var scope = Services.CreateScope();
+        await RunMemeOfTheDayInScope(scope, stoppingToken);
     }
-
-    private int UntilNextExecution() => Math.Max(0, (int)_nextRun.Subtract(DateTime.UtcNow).TotalMilliseconds);
-
-
-    public override async Task StopAsync(CancellationToken stoppingToken)
+ 
+    private static async Task RunMemeOfTheDayInScope(IServiceScope scope, CancellationToken stoppingToken)
     {
-        await base.StopAsync(stoppingToken);
+        try
+        {
+            var service = scope.ServiceProvider.GetRequiredService<IMemeOfTheDayService>();
+            await service.ExecuteAsync(stoppingToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+    }
+ 
+    /// <summary>
+    /// Takes a UTC time and returns the next scheduled run as UTC.
+    /// The cron schedule itself is evaluated in Copenhagen time.
+    /// </summary>
+    private static DateTime CalculateNextRun(DateTime utcTime)
+    {
+        var local = TimeZoneInfo.ConvertTimeFromUtc(utcTime, CopenhagenTz);
+ 
+        var nextLocal = Schedule
+            .Select(s => CrontabSchedule.Parse(s).GetNextOccurrence(local))
+            .Min();
+ 
+        nextLocal = DateTime.SpecifyKind(nextLocal, DateTimeKind.Unspecified);
+ 
+        if (CopenhagenTz.IsInvalidTime(nextLocal))
+        {
+            nextLocal = nextLocal.AddHours(1);
+        }
+ 
+        return TimeZoneInfo.ConvertTimeToUtc(nextLocal, CopenhagenTz);
     }
 }
