@@ -17,7 +17,7 @@ public class ConsumeScopedServiceHostedService : BackgroundService
     private static readonly List<string> Schedule =
     [
         //"* * * * *",
-        "20 19 * * *",
+        "30 14 * * *",
     ];
  
     private static readonly TimeZoneInfo CopenhagenTz =
