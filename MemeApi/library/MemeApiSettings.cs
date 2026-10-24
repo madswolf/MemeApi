@@ -99,6 +99,11 @@ public class MemeApiSettings
     {
         return TryGetConfig("BlobStorage_ServiceUrl");
     }
+    
+    public string GetBlobStorageRegion()
+    {
+        return TryGetConfig("BlobStorage_Region");
+    }
 
     public string GetBlobStorageBucketName()
     {

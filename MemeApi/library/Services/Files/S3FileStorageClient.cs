@@ -21,6 +21,7 @@ public class S3FileStorageClient : IFileSaver, IFileRemover
 
         AmazonS3Config config = new AmazonS3Config();
         config.ServiceURL = _settings.GetBlobStorageServiceUrl();
+        config.AuthenticationRegion = _settings.GetBlobStorageRegion();
 
         _client = new AmazonS3Client(
             accessKey,
